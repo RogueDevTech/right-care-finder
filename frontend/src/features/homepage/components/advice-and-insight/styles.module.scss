@@ -1,0 +1,50 @@
+.container {
+  background-color: #f6f6f6;
+  padding: 40px 44px;
+  display: flex;
+  flex-direction: column;
+  .header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    h1 {
+      max-width: 630px;
+      width: 100%;
+      text-align: center;
+      font-weight: 600;
+      font-size: 40px;
+      margin: 0 auto;
+    }
+    p {
+      max-width: 390px;
+      width: 100%;
+      text-align: center;
+      margin: 0 auto;
+      line-height: 154%;
+      color: #7f7d7d;
+    }
+  }
+  .adviceCard {
+    display: flex;
+    gap: 12px;
+  }
+}
+.careGuides {
+  display: flex;
+  flex-direction: column;
+  gap: 38px;
+}
+.funding,
+.wellbeing,
+.careAdvise {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.funding h2,
+.wellbeing h2,
+.careAdvise h2 {
+  //   font-family: Work Sans;
+  font-weight: 500;
+  font-size: 24px;
+}

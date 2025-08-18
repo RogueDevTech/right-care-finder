@@ -1,0 +1,110 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  background-color: #f6f6f6;
+  padding: 40px 44px;
+  .header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    .intro {
+      max-width: 1095px;
+      margin: auto;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      h1 {
+        font-weight: 600;
+        font-style: SemiBold;
+        font-size: 40px;
+        text-align: center;
+      }
+      p {
+        line-height: 154%;
+        text-align: center;
+        color: #7f7d7d;
+      }
+    }
+    .filter {
+      display: flex;
+      justify-content: center;
+      gap: 25px;
+      margin-bottom: 25px;
+    }
+    .toggle {
+      width: 104px;
+      img {
+        width: 100%;
+      }
+    }
+  }
+  .cardWrapper {
+    // display: grid;
+    // grid-template-columns: minmax(auto, 300px) 1fr;
+    display: flex;
+    min-width: 235px;
+    flex-wrap: wrap;
+    gap: 40px;
+  }
+}
+.sortCard {
+  display: flex;
+  align-items: center;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #fff;
+  width: fit-content;
+  cursor: pointer;
+}
+
+.label {
+  margin-right: 6px;
+  color: #666;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdownBtn {
+  background: none;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+}
+
+.dropdownBtn:focus {
+  outline: none;
+}
+
+.dropdownContent {
+  display: none;
+  position: absolute;
+  top: 25px;
+  left: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  min-width: 120px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.dropdown:hover .dropdownContent {
+  display: block;
+}
+
+.dropdownItem {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.dropdownItem:hover {
+  background-color: #f0f0f0;
+}

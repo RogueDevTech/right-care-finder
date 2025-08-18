@@ -1,0 +1,68 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sortCard {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  padding: 20px 20px;
+  border-radius: 6px;
+  background: #fff;
+  width: fit-content;
+  height: 100%;
+  cursor: pointer;
+}
+
+.label {
+  margin-right: 6px;
+  color: #666;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdownBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.dropdownBtn:focus {
+  outline: none;
+}
+
+.dropdownContent {
+  display: none;
+  position: absolute;
+  top: 25px;
+  left: 0;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  min-width: 120px;
+  width: max-content;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.dropdown:hover .dropdownContent {
+  display: block;
+  width: 100%;
+}
+
+.dropdownItem {
+  padding: 8px 12px;
+  width: max-content;
+  display: flex;
+  flex-wrap: nowrap;
+  cursor: pointer;
+}
+
+.dropdownItem:hover {
+  background-color: #f0f0f0;
+}

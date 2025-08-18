@@ -19,8 +19,8 @@ async function bootstrap() {
 
   // Swagger configuration
   const config = new DocumentBuilder()
-    .setTitle("Favina Store API")
-    .setDescription("The Favina Store API documentation")
+    .setTitle("Right care finder API")
+    .setDescription("The Right care finder API documentation")
     .setVersion("1.0")
     .addBearerAuth()
     .build();
@@ -30,10 +30,10 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT || 4001, () => {
     console.log(
-      `---------Server is running on port ${process.env.PORT || 4001}👍👍👍 ---------`,
+      `---------Server is running on port ${process.env.PORT || 4001}👍👍👍 ---------`
     );
     console.log(
-      `Swagger documentation available at http://localhost:${process.env.PORT || 4001}/api`,
+      `Swagger documentation available at http://localhost:${process.env.PORT || 4001}/api`
     );
   });
 }

@@ -1,36 +1,27 @@
 import { User } from "../modules/users/entities/user.entity";
 import { Address } from "../modules/users/entities/address.entity";
-import { Order } from "../modules/orders/entities/order.entity";
-import { OrderItem } from "../modules/orders/entities/order-item.entity";
-import { Product } from "../modules/products/entities/product.entity";
-import { Category } from "../modules/products/entities/category.entity";
-import { Brand } from "../modules/products/entities/brand.entity";
-import { Payment } from "../modules/payments/entities/payment.entity";
-import { Wishlist } from "../modules/wishlists/entities/wishlist.entity";
-import { WishlistItem } from "../modules/wishlists/entities/wishlist-item.entity";
+import { CareHome } from "../modules/healthcare-homes/entities/care-home.entity";
+import { CareType } from "../modules/healthcare-homes/entities/care-type.entity";
+import { CareHomeFacility } from "../modules/healthcare-homes/entities/care-home-facility.entity";
+import { CareHomeImage } from "../modules/healthcare-homes/entities/care-home-image.entity";
+import { CareHomeReview } from "../modules/healthcare-homes/entities/care-home-review.entity";
 
 export const entities = {
   User,
   Address,
-  Order,
-  OrderItem,
-  Product,
-  Category,
-  Brand,
-  Payment,
-  Wishlist,
-  WishlistItem,
+  CareHome,
+  CareType,
+  CareHomeFacility,
+  CareHomeImage,
+  CareHomeReview,
 };
 
 export {
   User,
   Address,
-  Order,
-  OrderItem,
-  Product,
-  Category,
-  Brand,
-  Payment,
-  Wishlist,
-  WishlistItem,
+  CareHome,
+  CareType,
+  CareHomeFacility,
+  CareHomeImage,
+  CareHomeReview,
 };

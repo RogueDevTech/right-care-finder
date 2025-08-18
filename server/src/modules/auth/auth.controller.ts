@@ -73,12 +73,8 @@ export class AuthController {
     description: "Invalid input data",
   })
   async register(
-    @Body() registerDto: RegisterDto,
-  ): Promise<
-    BaseResponseDto<
-      Omit<User, "password" | "orders" | "payments" | "wishlists" | "addresses">
-    >
-  > {
+    @Body() registerDto: RegisterDto
+  ): Promise<BaseResponseDto<any>> {
     const user = await this.authService.register(registerDto);
     return BaseResponseDto.success("User registered successfully", user);
   }
@@ -101,7 +97,7 @@ export class AuthController {
     description: "User not found",
   })
   async forgotPassword(
-    @Body() forgotPasswordDto: ForgotPasswordDto,
+    @Body() forgotPasswordDto: ForgotPasswordDto
   ): Promise<BaseResponseDto<null>> {
     console.log("firstfirstfirstfirstfirstfirstfirstfirstfirstfirstfirstfirst");
 
@@ -132,11 +128,10 @@ export class AuthController {
     await this.authService.resetPassword(
       resetPasswordDto.email,
       resetPasswordDto.code,
-      resetPasswordDto.newPassword,
+      resetPasswordDto.newPassword
     );
     return BaseResponseDto.success("Password reset successfully", null);
   }
-
 
   @Version("v1")
   @Post("contact-support")
@@ -156,7 +151,7 @@ export class AuthController {
     description: "Invalid email",
   })
   async contactSupport(
-    @Body() contactSupportDto: ContactSupportDto,
+    @Body() contactSupportDto: ContactSupportDto
   ): Promise<BaseResponseDto<null>> {
     await this.authService.contactSupport(contactSupportDto);
     return BaseResponseDto.success("Support message sent successfully", null);

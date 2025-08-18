@@ -6,14 +6,13 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from "typeorm";
-import { Order } from "../../orders/entities/order.entity";
-import { Payment } from "../../payments/entities/payment.entity";
-import { Wishlist } from "../../wishlists/entities/wishlist.entity";
 import { Address } from "./address.entity";
+import { CareHomeReview } from "../../healthcare-homes/entities/care-home-review.entity";
 
 export enum UserRole {
   ADMIN = "admin",
-  CUSTOMER = "customer",
+  USER = "user",
+  PROVIDER = "provider",
   STAFF = "staff",
 }
 
@@ -37,15 +36,12 @@ export class User {
   @Column({
     type: "enum",
     enum: UserRole,
-    default: UserRole.CUSTOMER,
+    default: UserRole.USER,
   })
   role: UserRole;
 
   @Column({ nullable: true })
   phoneNumber: string;
-
-  @Column({ nullable: true })
-  address: string;
 
   @Column({ nullable: true })
   dateOfBirth: Date;
@@ -59,17 +55,24 @@ export class User {
   @Column({ nullable: true })
   lastLoginAt: Date;
 
-  @OneToMany(() => Order, (order) => order.user)
-  orders: Order[];
+  // Healthcare-specific fields
+  @Column({ nullable: true })
+  emergencyContact: string;
 
-  @OneToMany(() => Payment, (payment) => payment.user)
-  payments: Payment[];
+  @Column({ nullable: true })
+  emergencyPhone: string;
 
-  @OneToMany(() => Wishlist, (wishlist) => wishlist.user)
-  wishlists: Wishlist[];
+  @Column({ nullable: true })
+  medicalNotes: string;
+
+  @Column({ nullable: true })
+  preferredContactMethod: string;
 
   @OneToMany(() => Address, (address) => address.user)
   addresses: Address[];
+
+  @OneToMany(() => CareHomeReview, (review) => review.user)
+  reviews: CareHomeReview[];
 
   @CreateDateColumn()
   createdAt: Date;

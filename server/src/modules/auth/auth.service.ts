@@ -69,12 +69,9 @@ export class AuthService {
       const user = await this.usersService.create({
         ...registerDto,
         password: hashedPassword,
-        role: UserRole.CUSTOMER,
+        role: UserRole.USER,
         isEmailVerified: false,
         isActive: true,
-        orders: [],
-        payments: [],
-        wishlists: [],
       });
 
       return this.mapUserToResponse(user);
@@ -122,7 +119,6 @@ export class AuthService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       phoneNumber: user.phoneNumber,
-      address: user.address,
       dateOfBirth: user.dateOfBirth,
       lastLoginAt: user.lastLoginAt,
     };

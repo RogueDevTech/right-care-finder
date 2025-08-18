@@ -44,7 +44,7 @@ export class PasswordResetService {
     try {
       await this.emailService.sendEmail({
         to: email,
-        subject: "Password Reset Code - Favina Store",
+        subject: "Password Reset Code - Right Care Finder",
         html: this.getResetEmailHtml(code),
       });
       console.log(`Reset code ${code} sent to ${email}`);
@@ -116,7 +116,7 @@ export class PasswordResetService {
           <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 30px;">
             <p style="color: #718096; font-size: 12px; margin: 0;">
               Best regards,<br>
-              The Favina Store Team
+              The Right care finder Team
             </p>
           </div>
         </div>

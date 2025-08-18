@@ -45,7 +45,7 @@ export class UpdateUserDto {
     description: "User role",
     enum: UserRole,
     required: false,
-    example: UserRole.CUSTOMER,
+    example: UserRole.USER,
   })
   @IsEnum(UserRole)
   @IsOptional()
@@ -59,15 +59,6 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   phoneNumber?: string;
-
-  @ApiProperty({
-    description: "User address",
-    required: false,
-    example: "123 Main St, City, Country",
-  })
-  @IsString()
-  @IsOptional()
-  address?: string;
 
   @ApiProperty({
     description: "User date of birth",
@@ -111,7 +102,7 @@ export class UserResponseDto {
   @ApiProperty({
     description: "User role",
     enum: UserRole,
-    example: UserRole.CUSTOMER,
+    example: UserRole.USER,
   })
   @IsEnum(UserRole)
   role: UserRole;
@@ -123,14 +114,6 @@ export class UserResponseDto {
   })
   @IsString()
   phoneNumber: string;
-
-  @ApiProperty({
-    description: "User address",
-    example: "123 Main St, City, Country",
-    nullable: true,
-  })
-  @IsString()
-  address: string;
 
   @ApiProperty({
     description: "User date of birth",

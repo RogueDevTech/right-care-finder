@@ -1,0 +1,25 @@
+.wrapper {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  .image {
+    max-width: 64px;
+    width: 100%;
+    img {
+      width: 100%;
+    }
+  }
+  .description {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    h5 {
+      font-weight: 600;
+      font-size: 16px;
+      color: #0d0d0d;
+    }
+    p {
+      color: #7f7d7d;
+    }
+  }
+}

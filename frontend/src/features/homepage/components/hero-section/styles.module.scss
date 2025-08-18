@@ -1,0 +1,30 @@
+.container {
+  background-color: #f6f6f6;
+  padding: 70px 0;
+  .header {
+    max-width: 952px;
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 44px;
+    .headerContent {
+      h1 {
+        font-weight: 600;
+        font-size: 48px;
+        text-align: center;
+      }
+      p {
+        max-width: 450px;
+        margin: 0 auto;
+        font-size: 20px;
+        text-align: center;
+        color: #676767;
+      }
+    }
+  }
+  .input {
+    display: flex;
+    justify-content: center;
+  }
+}

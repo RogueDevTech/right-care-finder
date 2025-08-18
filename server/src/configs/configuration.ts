@@ -18,15 +18,5 @@ export const configuration = () => {
     jwt: {
       secret: process.env.JWT_SECRET,
     },
-    paystack: {
-      secretKey: process.env.PAYSTACK_SECRET_KEY,
-    },
-    // email: {
-    //   smtpHost: process.env.SMTP_HOST,
-    //   smtpPort: process.env.SMTP_PORT,
-    //   smtpUser: process.env.SMTP_USER,
-    //   smtpPass: process.env.SMTP_PASS,
-    //   supportEmail: process.env.SUPPORT_EMAIL,
-    // },
   };
 };

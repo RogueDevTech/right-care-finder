@@ -23,13 +23,11 @@ import {
   ApiParam,
   ApiBody,
 } from "@nestjs/swagger";
-import { CreateProductDto } from "../products/dto/create-product.dto";
-import { UpdateProductDto } from "../products/dto/update-product.dto";
-import { UpdateOrderDto } from "../orders/dto/update-order.dto";
+import { CreateCareHomeDto } from "../healthcare-homes/dto/create-care-home.dto";
+import { UpdateCareHomeDto } from "../healthcare-homes/dto/update-care-home.dto";
 import { UpdateUserDto } from "../users/dto/user.dto";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../auth/decorators/roles.decorator";
-import { ChartDataDto } from "./dto/chart-data.dto";
 import { UserRole } from "../users/entities/user.entity";
 
 @ApiTags("Admin")
@@ -45,7 +43,7 @@ export class AdminController {
   @ApiOperation({
     summary: "Get admin dashboard data",
     description:
-      "Retrieves comprehensive dashboard data including total users, orders, products, revenue, and recent activities",
+      "Retrieves comprehensive dashboard data including total users, care homes, and recent activities",
   })
   @ApiResponse({
     status: 200,
@@ -54,17 +52,26 @@ export class AdminController {
       type: "object",
       properties: {
         totalUsers: { type: "number", description: "Total number of users" },
-        totalOrders: { type: "number", description: "Total number of orders" },
-        totalProducts: {
+        totalCareHomes: {
           type: "number",
-          description: "Total number of products",
+          description: "Total number of care homes",
         },
-        revenue: { type: "number", description: "Total revenue" },
-        pendingOrders: {
+        activeCareHomes: {
           type: "number",
-          description: "Number of pending orders",
+          description: "Number of active care homes",
         },
-        recentOrders: { type: "array", description: "List of recent orders" },
+        verifiedCareHomes: {
+          type: "number",
+          description: "Number of verified care homes",
+        },
+        totalReviews: {
+          type: "number",
+          description: "Total number of reviews",
+        },
+        recentCareHomes: {
+          type: "array",
+          description: "List of recent care homes",
+        },
       },
     },
   })
@@ -104,7 +111,7 @@ export class AdminController {
   })
   async updateUser(
     @Param("id") id: string,
-    @Body() updateUserDto: UpdateUserDto,
+    @Body() updateUserDto: UpdateUserDto
   ) {
     return this.adminService.updateUser(id, updateUserDto);
   }
@@ -124,130 +131,111 @@ export class AdminController {
     return this.adminService.deleteUser(id);
   }
 
-  // Order Management
+  // Care Home Management
   @Version("v1")
-  @Get("orders")
+  @Get("care-homes")
   @ApiOperation({
-    summary: "Get all orders",
-    description: "Retrieves a list of all orders in the system",
+    summary: "Get all care homes",
+    description: "Retrieves a list of all care homes in the system",
   })
   @ApiResponse({
     status: 200,
-    description: "Returns list of all orders",
+    description: "Returns list of all care homes",
   })
-  async getAllOrders(
+  async getAllCareHomes(
     @Query("search") search?: string,
-    @Query("status") status?: string,
-    @Query("minAmount") minAmount?: string,
-    @Query("maxAmount") maxAmount?: string,
-    @Query("dateRange") dateRange?: string,
+    @Query("city") city?: string,
+    @Query("county") county?: string,
+    @Query("careTypeId") careTypeId?: string,
+    @Query("isVerified") isVerified?: boolean,
+    @Query("isFeatured") isFeatured?: boolean
   ) {
     const filters = {
       search,
-      status,
-      minAmount: minAmount ? parseFloat(minAmount) : undefined,
-      maxAmount: maxAmount ? parseFloat(maxAmount) : undefined,
-      dateRange,
+      city,
+      county,
+      careTypeId,
+      isVerified,
+      isFeatured,
     };
-    return this.adminService.getAllOrders(filters);
+    return this.adminService.getAllCareHomes(filters);
   }
 
   @Version("v1")
-  @Get("orders/:id")
+  @Get("care-homes/:id")
   @ApiOperation({
-    summary: "Get order details",
-    description: "Retrieves detailed information about a specific order",
+    summary: "Get care home details",
+    description: "Retrieves detailed information about a specific care home",
   })
-  @ApiParam({ name: "id", description: "Order ID" })
+  @ApiParam({ name: "id", description: "Care home ID" })
   @ApiResponse({
     status: 200,
-    description: "Returns order details",
+    description: "Returns care home details",
   })
-  async getOrderDetails(@Param("id") id: string) {
-    return this.adminService.getOrderDetails(id);
+  async getCareHomeDetails(@Param("id") id: string) {
+    return this.adminService.getCareHomeDetails(id);
   }
 
   @Version("v1")
-  @Put("orders/:id")
+  @Post("care-homes")
   @ApiOperation({
-    summary: "Update order status",
-    description: "Updates the status and tracking information of an order",
-  })
-  @ApiParam({ name: "id", description: "Order ID" })
-  @ApiBody({ type: UpdateOrderDto })
-  @ApiResponse({
-    status: 200,
-    description: "Order updated successfully",
-    type: UpdateOrderDto,
-  })
-  async updateOrderStatus(
-    @Param("id") id: string,
-    @Body() updateOrderDto: UpdateOrderDto,
-  ) {
-    return this.adminService.updateOrderStatus(id, updateOrderDto);
-  }
-
-  // Product Management
-  @Version("v1")
-  @Post("products")
-  @ApiOperation({
-    summary: "Create new product",
+    summary: "Create new care home",
     description:
-      "Creates a new product with specified details including name, price, stock, and category",
+      "Creates a new care home with specified details including name, address, care type, and facilities",
   })
-  @ApiBody({ type: CreateProductDto })
+  @ApiBody({ type: CreateCareHomeDto })
   @ApiResponse({
     status: 201,
-    description: "Product created successfully",
-    type: CreateProductDto,
+    description: "Care home created successfully",
+    type: CreateCareHomeDto,
   })
-  async createProduct(@Body() createProductDto: CreateProductDto) {
-    return this.adminService.createProduct(createProductDto);
+  async createCareHome(@Body() createCareHomeDto: CreateCareHomeDto) {
+    return this.adminService.createCareHome(createCareHomeDto);
   }
 
   @Version("v1")
-  @Put("products/:id")
+  @Put("care-homes/:id")
   @ApiOperation({
-    summary: "Update product",
+    summary: "Update care home",
     description:
-      "Updates product information including price, stock, and other details",
+      "Updates care home information including details, facilities, and verification status",
   })
-  @ApiParam({ name: "id", description: "Product ID" })
-  @ApiBody({ type: UpdateProductDto })
+  @ApiParam({ name: "id", description: "Care home ID" })
+  @ApiBody({ type: UpdateCareHomeDto })
   @ApiResponse({
     status: 200,
-    description: "Product updated successfully",
-    type: UpdateProductDto,
+    description: "Care home updated successfully",
+    type: UpdateCareHomeDto,
   })
-  async updateProduct(
+  async updateCareHome(
     @Param("id") id: string,
-    @Body() updateProductDto: UpdateProductDto,
+    @Body() updateCareHomeDto: UpdateCareHomeDto
   ) {
-    return this.adminService.updateProduct(id, updateProductDto);
+    return this.adminService.updateCareHome(id, updateCareHomeDto);
   }
 
   @Version("v1")
-  @Delete("products/:id")
+  @Delete("care-homes/:id")
   @ApiOperation({
-    summary: "Delete product",
-    description: "Permanently removes a product from the system",
+    summary: "Delete care home",
+    description: "Permanently removes a care home from the system",
   })
-  @ApiParam({ name: "id", description: "Product ID" })
+  @ApiParam({ name: "id", description: "Care home ID" })
   @ApiResponse({
     status: 200,
-    description: "Product deleted successfully",
+    description: "Care home deleted successfully",
   })
-  async deleteProduct(@Param("id") id: string) {
-    return this.adminService.deleteProduct(id);
+  async deleteCareHome(@Param("id") id: string) {
+    return this.adminService.deleteCareHome(id);
   }
 
   // Analytics
   @Version("v1")
-  @Get("analytics/sales")
+  @Get("analytics/care-homes")
   @ApiOperation({
-    summary: "Get sales analytics",
+    summary: "Get care home analytics",
     description:
-      "Retrieves sales analytics data for a specified date range including total sales, order count, and average order value",
+      "Retrieves care home analytics data for a specified date range including total care homes, reviews, and user engagement",
   })
   @ApiQuery({
     name: "startDate",
@@ -263,56 +251,31 @@ export class AdminController {
   })
   @ApiResponse({
     status: 200,
-    description: "Returns sales analytics data",
+    description: "Returns care home analytics data",
     schema: {
       type: "object",
       properties: {
-        totalSales: { type: "number", description: "Total sales amount" },
-        orderCount: { type: "number", description: "Total number of orders" },
-        averageOrderValue: {
+        totalCareHomes: { type: "number", description: "Total care homes" },
+        totalReviews: {
           type: "number",
-          description: "Average value per order",
+          description: "Total number of reviews",
         },
-        salesByDate: {
+        averageRating: {
+          type: "number",
+          description: "Average rating across all care homes",
+        },
+        careHomesByDate: {
           type: "object",
-          description: "Daily sales breakdown",
+          description: "Daily care home registrations",
           additionalProperties: { type: "number" },
         },
       },
     },
   })
-  async getSalesAnalytics(
+  async getCareHomeAnalytics(
     @Query("startDate") startDate: Date,
-    @Query("endDate") endDate: Date,
+    @Query("endDate") endDate: Date
   ) {
-    return this.adminService.getSalesAnalytics(startDate, endDate);
-  }
-
-  @Get("dashboard/charts")
-  @ApiOperation({
-    summary: "Get dashboard chart data",
-    description:
-      "Retrieves data for dashboard charts including top categories, revenue by day, order status distribution, and top products",
-  })
-  @ApiResponse({
-    status: 200,
-    description: "Returns chart data for dashboard visualization",
-    type: ChartDataDto,
-  })
-  async getChartData(): Promise<ChartDataDto> {
-    return this.adminService.getChartData();
-  }
-
-  @Get("dashboard/recent-orders")
-  @ApiOperation({
-    summary: "Get recent orders",
-    description: "Retrieves the most recent orders for the dashboard",
-  })
-  @ApiResponse({
-    status: 200,
-    description: "Returns list of recent orders",
-  })
-  async getRecentOrders() {
-    return this.adminService.getRecentOrders();
+    return this.adminService.getCareHomeAnalytics(startDate, endDate);
   }
 }

@@ -21,7 +21,7 @@ export class ContactSupportDto {
 
   @ApiProperty({
     description: "Subject of the message",
-    example: "Help with my order",
+    example: "Help finding a care home",
   })
   @IsString()
   @IsNotEmpty()
@@ -29,7 +29,7 @@ export class ContactSupportDto {
 
   @ApiProperty({
     description: "Message content",
-    example: "I need help with my recent order...",
+    example: "I need help finding a suitable care home for my mother...",
   })
   @IsString()
   @IsNotEmpty()

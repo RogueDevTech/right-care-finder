@@ -25,7 +25,7 @@ export class EmailService {
     const fromEmail =
       from ||
       this.configService.get<string>("SENDGRID_FROM_EMAIL") ||
-      "noreply@favina.com";
+      "noreply@rightcarefinder.com";
     const msg = {
       to,
       from: fromEmail,

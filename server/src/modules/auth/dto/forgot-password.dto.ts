@@ -12,7 +12,7 @@ export class ForgotPasswordDto {
 
   @ApiProperty({
     description: "Subject of the email",
-    example: "Password Reset Code - Favina Store",
+    example: "Password Reset Code - Right Care Finder",
   })
   @IsString()
   @IsNotEmpty()

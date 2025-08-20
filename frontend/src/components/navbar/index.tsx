@@ -2,6 +2,7 @@ import styles from "../navbar/styles.module.scss";
 import Image from "next/image";
 import AppLogo from "@/../public/right-care-logo.png";
 import Link from "next/link";
+import { MenuIcon } from "../icon";
 export default function NavBar() {
   return (
     <div className={styles.container}>
@@ -41,7 +42,10 @@ export default function NavBar() {
           </div>
         </div>
       </div>
-      <div className="">Contact Us</div>
+      <div className={styles.contactUs}>Contact Us</div>
+      <div className={styles.MenuIcon}>
+        <MenuIcon />
+      </div>
     </div>
   );
 }

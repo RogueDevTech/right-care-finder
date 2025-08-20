@@ -1,5 +1,6 @@
 import styles from "../homepage/styles.module.scss";
 import AdviseAndInsight from "./components/advice-and-insight";
+// import FeaturedCareHome from "./components/featured-care-home";
 import FindBestCare from "./components/find-best-care";
 import HeroSection from "./components/hero-section";
 import HowItWorks from "./components/how-it-works";
@@ -8,6 +9,7 @@ export default function Homepage() {
     <div className={styles.container}>
       <HeroSection />
       <HowItWorks />
+      {/* <FeaturedCareHome /> */}
       <FindBestCare />
       <AdviseAndInsight />
     </div>

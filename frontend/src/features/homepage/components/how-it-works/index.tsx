@@ -2,6 +2,7 @@ import React from "react";
 import styles from "./styles.module.scss";
 import Image from "next/image";
 import BlurBackground from "@/../public/how-it-works-blur.png";
+import mobileBlur from "@/../public/mobileBlur.png";
 import { CompareIcon, ContactIcon, SearchIcon } from "@/components/icon";
 // import { FaSearch, FaSlidersH, FaPhoneAlt } from "react-icons/fa";
 
@@ -10,6 +11,9 @@ export default function HowItWorks() {
     <div className={styles.container}>
       <div className={styles.blurBackground}>
         <Image src={BlurBackground} alt="blur background" />
+      </div>
+      <div className={styles.mobileBlur}>
+        <Image src={mobileBlur} alt="blur background" />
       </div>
       <main className={styles.main}>
         <h1 className={styles.title}>How it works</h1>

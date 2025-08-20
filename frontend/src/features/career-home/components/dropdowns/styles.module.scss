@@ -2,6 +2,9 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  @media (max-width: 500px) {
+    width: 100%;
+  }
 }
 .sortCard {
   display: flex;
@@ -14,6 +17,10 @@
   width: fit-content;
   height: 100%;
   cursor: pointer;
+  @media (max-width: 500px) {
+    width: 100%;
+    padding: 16px;
+  }
 }
 
 .label {
@@ -30,6 +37,9 @@
   border: none;
   cursor: pointer;
   padding: 0;
+  @media (max-width: 500px) {
+    font-size: 12px;
+  }
 }
 
 .dropdownBtn:focus {

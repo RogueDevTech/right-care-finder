@@ -1,0 +1,56 @@
+.aboutCareHome {
+  display: flex;
+  gap: 131px;
+  padding: 27px 60px;
+  @media (max-width: 500px) {
+    flex-direction: column;
+    padding: 27px 16px;
+    gap: 10px;
+  }
+  .mobile {
+    display: none;
+    @media (max-width: 500px) {
+      display: flex;
+    }
+  }
+  .careHomeDetail {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    gap: 36px;
+    @media (max-width: 500px) {
+      width: 100%;
+    }
+    div {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      h5 {
+        font-weight: 600;
+        font-size: 24px;
+        color: #1c1c1c;
+        @media (max-width: 500px) {
+          font-size: 20px;
+        }
+      }
+      p {
+        color: #636363;
+      }
+      div {
+        display: flex;
+        flex-direction: column;
+      }
+    }
+  }
+  .ownersSectionImage {
+    display: block;
+    width: 100%;
+    object-fit: cover;
+    @media (max-width: 500px) {
+      display: none;
+    }
+    img {
+      width: 100%;
+    }
+  }
+}

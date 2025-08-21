@@ -1,6 +1,12 @@
 .container {
   background-color: #f6f6f6;
   padding: 70px 0;
+  @media (max-width: 500px) {
+    padding: 70px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
   .header {
     max-width: 952px;
     width: 100%;
@@ -13,6 +19,9 @@
         font-weight: 600;
         font-size: 48px;
         text-align: center;
+        @media (max-width: 500px) {
+          font-size: 32px;
+        }
       }
       p {
         max-width: 450px;
@@ -20,6 +29,9 @@
         font-size: 20px;
         text-align: center;
         color: #676767;
+        @media (max-width: 500px) {
+          font-size: 14px;
+        }
       }
     }
   }

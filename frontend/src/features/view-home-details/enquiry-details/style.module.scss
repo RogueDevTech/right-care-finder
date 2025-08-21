@@ -1,0 +1,89 @@
+.details {
+  background: linear-gradient(90deg, #ea9115 0%, #0b3d44 100%);
+  opacity: 1;
+  border-radius: 16px;
+  margin: 0 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 25px 52px;
+  @media (max-width: 500px) {
+    padding: 25px 16px;
+    margin: 0 16px;
+  }
+  border: 1px solid #c0c0c0;
+  .nameAndReview {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    .nameSection {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      color: #fff;
+      h3 {
+        font-weight: 500;
+        font-size: 32px;
+        @media (max-width: 500px) {
+          font-size: 24px;
+        }
+      }
+      p {
+        display: flex;
+        align-items: center;
+      }
+    }
+    .review {
+      display: flex;
+      flex-direction: column;
+      color: #fff;
+      gap: 8px;
+      .stars {
+        width: 90px;
+        img {
+          width: 100%;
+        }
+      }
+      p {
+        text-decoration: underline;
+      }
+    }
+  }
+  .getInTouch {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    @media (max-width: 500px) {
+      flex-direction: column;
+    }
+    .contactUs {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      @media (max-width: 500px) {
+        flex-direction: column;
+        width: 100%;
+      }
+      button {
+        color: white;
+        background-color: transparent;
+        border: 1px solid #d9d9d9;
+        border-radius: 8px;
+        @media (max-width: 500px) {
+          width: 100%;
+        }
+        span {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px;
+        }
+      }
+    }
+    .price {
+      color: #fff;
+      font-size: 32px;
+      font-weight: 700;
+    }
+  }
+}

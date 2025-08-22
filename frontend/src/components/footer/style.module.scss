@@ -26,7 +26,9 @@
       margin: 0;
       padding: 0;
       gap: 16px;
-      text-align: center;
+      @media (max-width: 500px) {
+        text-align: center;
+      }
     }
     div {
       display: flex;

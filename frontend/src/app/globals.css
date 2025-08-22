@@ -6,5 +6,6 @@
   margin: 0;
 }
 body {
+  position: relative;
   font-family: var(--font-manrope), sans-serif;
 }

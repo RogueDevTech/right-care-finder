@@ -1,12 +1,21 @@
+"use client";
+import { useCounterStore } from "@/store/useStore";
 import styles from "./styles.module.scss";
 import Image from "next/image";
 import rating from "@/../public/starRating.png";
+import ReviewModal from "./review-modal";
 export default function RatingsAndReview() {
+  const { openReviewModal, setOpenReviewModal } = useCounterStore();
   return (
     <div className={styles.ratingsAndReviewWrapper}>
       <div className={styles.header}>
         <h2>Rating and reviews</h2>
-        <button>Leave a review</button>
+        <button onClick={setOpenReviewModal}>Leave a review</button>
+        {openReviewModal && (
+          <div className={styles.reviewModal} onClick={setOpenReviewModal}>
+            <ReviewModal onClose={setOpenReviewModal} />
+          </div>
+        )}
       </div>
       <div className={styles.reviewsSection}>
         <div className={styles.reviewCard}>

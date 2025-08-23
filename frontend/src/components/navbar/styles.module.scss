@@ -1,16 +1,24 @@
 .container {
   display: flex;
   padding: 24px 60px;
+  align-items: center;
   justify-content: space-between;
   background-color: rgba(246, 246, 246, 1);
   border-bottom: 1px solid #d0cfcf;
+  @media (max-width: 500px) {
+    padding: 24px 16px;
+  }
 }
 .leftNav {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   .logo {
     max-width: 194px;
     width: 100%;
+    @media (max-width: 500px) {
+      max-width: 138px;
+    }
     img {
       width: 100%;
     }
@@ -19,6 +27,9 @@
 .nav {
   display: flex;
   align-items: center;
+  @media (max-width: 500px) {
+    display: none;
+  }
 }
 .dropdown {
   position: relative;
@@ -33,6 +44,9 @@
     cursor: pointer;
     padding: 8px 12px;
     outline: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
   }
 
   .dropdownContent {
@@ -40,15 +54,41 @@
     top: 100%;
     left: 0;
     background-color: #fff;
-    border: 1px solid #000;
     border-radius: 5px;
     display: none;
     flex-direction: column;
-    min-width: 160px;
+    // min-width: 160px;
+    width: max-content;
     z-index: 5;
     opacity: 0;
     transition: opacity 0.2s ease;
-    padding: 10px;
+    box-shadow: 0px 4px 9.9px 0px #00000021;
+    padding: 10px 12px;
+    .dropdownRegion {
+      display: flex;
+      gap: 12px;
+      .region {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        h3 {
+          font-weight: 600;
+        }
+        div {
+          display: flex;
+          flex-direction: column;
+          a {
+            padding: 10px 12px;
+            text-decoration: none;
+            color: #292929;
+
+            &:hover {
+              background-color: #f2f2f2;
+            }
+          }
+        }
+      }
+    }
     a {
       padding: 10px 12px;
       text-decoration: none;
@@ -63,5 +103,141 @@
   &:hover .dropdownContent {
     display: flex;
     opacity: 1;
+  }
+}
+.rightNav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  @media (max-width: 500px) {
+    display: none;
+  }
+}
+
+.adminLink {
+  font-size: 16px;
+  font-weight: 500;
+  color: #667eea;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #667eea;
+    color: white;
+  }
+}
+
+.contactUs {
+  display: block;
+  @media (max-width: 500px) {
+    display: none;
+  }
+}
+
+// Profile Section Styles
+.profileSection {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.profileAvatar {
+  width: 40px;
+  height: 40px;
+  background: #1c7c8a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+
+  &:hover {
+    border-color: #145e6a;
+    transform: scale(1.05);
+  }
+}
+
+.avatarText {
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.profileDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  margin-top: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.profileSection:hover .profileDropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.profileInfo {
+  padding: 16px;
+  border-bottom: 1px solid #e9ecef;
+  background: #f8f9fa;
+
+  .userName {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+  }
+}
+
+.profileActions {
+  padding: 8px 0;
+
+  .profileLink,
+  .logoutButton {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    text-align: left;
+    background: none;
+    border: none;
+    font-size: 14px;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+
+    &:hover {
+      background: #f8f9fa;
+      color: #1c7c8a;
+    }
+  }
+
+  .logoutButton {
+    color: #dc3545;
+
+    &:hover {
+      background: #fff5f5;
+      color: #c82333;
+    }
+  }
+}
+.menuIcon {
+  display: none;
+  @media (max-width: 500px) {
+    display: flex;
   }
 }

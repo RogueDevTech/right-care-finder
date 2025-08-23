@@ -13,10 +13,6 @@ export default function CareerPage() {
       </div>
       <div className={styles.cardWrapper}>
         <CareerHomeCard />
-        <CareerHomeCard />
-        <CareerHomeCard />
-        <CareerHomeCard />
-        <CareerHomeCard />
       </div>
     </div>
   );

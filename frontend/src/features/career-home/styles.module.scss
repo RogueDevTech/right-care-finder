@@ -7,9 +7,16 @@
     margin: 40px auto 0;
     display: flex;
     justify-content: space-between;
+    @media (max-width: 500px) {
+      flex-direction: column;
+      gap: 16px;
+    }
     .dropdownWrapper {
       display: flex;
       height: 100%;
+      @media (max-width: 500px) {
+        width: 100%;
+      }
     }
   }
   .cardWrapper {
@@ -18,5 +25,8 @@
     gap: 24px;
     width: 90%;
     margin: 40px auto;
+    @media (max-width: 500px) {
+      grid-template-columns: 1fr;
+    }
   }
 }

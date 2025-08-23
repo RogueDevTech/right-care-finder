@@ -23,10 +23,6 @@ export class CareHomeQueryDto {
 
   @IsOptional()
   @IsString()
-  area?: string; // Local area/district
-
-  @IsOptional()
-  @IsString()
   postcode?: string;
 
   @IsOptional()

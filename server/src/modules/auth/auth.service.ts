@@ -55,10 +55,13 @@ export class AuthService {
 
   async register(registerDto: RegisterDto) {
     try {
+      console.log("Registration attempt with data:", registerDto);
+      
       const existingUser = await this.usersService.findByEmail(
         registerDto.email
       );
-      console.log(existingUser, "existingUserexistingUserexistingUser");
+      console.log("Existing user check:", existingUser);
+      
       if (existingUser) {
         throw new ConflictException("Email already exists");
       }
@@ -66,16 +69,26 @@ export class AuthService {
       const hashedPassword = await this.bcryptService.hash(
         registerDto.password
       );
-      const user = await this.usersService.create({
+      console.log("Password hashed successfully");
+      
+      const userData = {
         ...registerDto,
         password: hashedPassword,
         role: UserRole.USER,
         isEmailVerified: false,
         isActive: true,
-      });
+      };
+      console.log("Creating user with data:", { ...userData, password: '[HIDDEN]' });
+      
+      const user = await this.usersService.create(userData);
+      console.log("User created successfully:", user.id);
 
       return this.mapUserToResponse(user);
     } catch (error) {
+      console.error("Registration error:", error);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
+      
       if (
         error instanceof ConflictException ||
         error instanceof BadRequestException

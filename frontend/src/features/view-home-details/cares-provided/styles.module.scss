@@ -1,0 +1,61 @@
+.CaresProvidedWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  padding: 34px 60px;
+  @media (max-width: 500px) {
+    padding: 34px 16px;
+  }
+  h2 {
+    font-weight: 600;
+    font-size: 32px;
+    text-align: center;
+  }
+  .serviceProvided {
+    display: flex;
+    gap: 24px;
+    overflow: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    @media (max-width: 500px) {
+      flex-direction: column;
+    }
+    .careCard {
+      display: flex;
+      flex-direction: column;
+      gap: 19px;
+      .image {
+        min-width: 310px;
+        // max-width: 310px;
+        height: 79px;
+        img {
+          width: 100%;
+          height: 100%;
+        }
+      }
+      .CareContent {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        h3 {
+          font-weight: 600;
+          font-size: 16px;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+        }
+        ul {
+          display: flex;
+          flex-direction: column;
+          gap: 7px;
+          li {
+            color: #636363;
+          }
+        }
+      }
+    }
+  }
+}
+.serviceProvided::-webkit-scrollbar {
+  display: none;
+}

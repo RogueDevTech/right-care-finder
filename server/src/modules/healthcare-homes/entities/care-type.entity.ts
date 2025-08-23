@@ -10,8 +10,8 @@ import { CareHome } from "./care-home.entity";
 
 @Entity("care_types")
 export class CareType {
-  @PrimaryGeneratedColumn("uuid")
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column({ unique: true })
   name: string;
@@ -24,9 +24,6 @@ export class CareType {
 
   @Column({ default: true })
   isActive: boolean;
-
-  @Column({ default: 0 })
-  sortOrder: number;
 
   @OneToMany(() => CareHome, (careHome) => careHome.careType)
   careHomes: CareHome[];

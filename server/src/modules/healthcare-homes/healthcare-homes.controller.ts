@@ -22,7 +22,7 @@ import {
   ApiBearerAuth,
 } from "@nestjs/swagger";
 import { HealthcareHomesService } from "./healthcare-homes.service";
-import { CreateCareHomeDto } from "./dto/create-care-home.dto";
+import { CreateCareHomeDto, exampleCareHomeData } from "./dto/create-care-home.dto";
 import { UpdateCareHomeDto } from "./dto/update-care-home.dto";
 import { CareHomeQueryDto } from "./dto/care-home-query.dto";
 import { CreateReviewDto } from "./dto/create-review.dto";
@@ -52,9 +52,19 @@ export class HealthcareHomesController {
   @ApiOperation({
     summary: "Create a new care home",
     description:
-      "Creates a new care home listing. Requires ADMIN or PROVIDER role.",
+      "Creates a new care home listing with comprehensive details including basic information, location, pricing, services, facilities, opening hours, and media. Requires ADMIN or PROVIDER role.",
   })
-  @ApiBody({ type: CreateCareHomeDto })
+  @ApiBody({ 
+    type: CreateCareHomeDto,
+    description: "Care home data with comprehensive details",
+    examples: {
+      complete: {
+        summary: "Complete Care Home Example",
+        description: "A complete example of care home data with all fields",
+        value: exampleCareHomeData
+      }
+    }
+  })
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: "Care home created successfully",

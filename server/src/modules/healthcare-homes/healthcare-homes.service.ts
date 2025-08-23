@@ -350,7 +350,7 @@ export class HealthcareHomesService {
   async getCareTypes(): Promise<CareType[]> {
     return this.careTypeRepository.find({
       where: { isActive: true },
-      order: { sortOrder: "ASC" },
+      order: { name: "ASC" },
     });
   }
 

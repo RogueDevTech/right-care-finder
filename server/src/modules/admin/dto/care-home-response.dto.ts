@@ -53,13 +53,6 @@ export class CareHomeResponseDto {
   postcode: string;
 
   @ApiProperty({
-    description: "Local area/district within the city",
-    example: "Westminster",
-    required: false,
-  })
-  area?: string;
-
-  @ApiProperty({
     description: "Country where the care home is located",
     example: "United Kingdom",
     required: false,

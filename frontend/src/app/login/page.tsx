@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
 import styles from "./login.module.scss";
@@ -14,7 +13,6 @@ export default function LoginPage() {
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
   const { login } = useUserActions();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,7 +62,7 @@ export default function LoginPage() {
         password: formData.password,
       });
       console.log(result, "result ------");
-    } catch (error) {
+    } catch {
       const errorMessage = "Network error. Please try again.";
       toast.error(errorMessage);
       setErrors({ general: errorMessage });

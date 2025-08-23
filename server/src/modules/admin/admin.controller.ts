@@ -216,7 +216,7 @@ export class AdminController {
             city: "London",
             region: "Greater London",
             postcode: "SW1A 1AA",
-            area: "Westminster",
+
             country: "United Kingdom",
             latitude: 51.5074,
             longitude: -0.1278,

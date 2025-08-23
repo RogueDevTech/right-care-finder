@@ -105,7 +105,7 @@ export class HealthcareHomesService {
     // Search functionality
     if (search) {
       queryBuilder.andWhere(
-        "(careHome.name ILIKE :search OR careHome.description ILIKE :search OR careHome.city ILIKE :search OR careHome.area ILIKE :search OR careHome.addressLine1 ILIKE :search)",
+        "(careHome.name ILIKE :search OR careHome.description ILIKE :search OR careHome.city ILIKE :search OR careHome.addressLine1 ILIKE :search)",
         { search: `%${search}%` }
       );
     }
@@ -118,12 +118,6 @@ export class HealthcareHomesService {
     if (query.region) {
       queryBuilder.andWhere("careHome.region ILIKE :region", {
         region: `%${query.region}%`,
-      });
-    }
-
-    if (query.area) {
-      queryBuilder.andWhere("careHome.area ILIKE :area", {
-        area: `%${query.area}%`,
       });
     }
 

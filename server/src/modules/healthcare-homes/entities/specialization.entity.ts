@@ -2,30 +2,30 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToMany,
+  ManyToMany,
   CreateDateColumn,
   UpdateDateColumn,
 } from "typeorm";
 import { CareHome } from "./care-home.entity";
 
-@Entity("care_types")
-export class CareType {
+@Entity("specializations")
+export class Specialization {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ unique: true })
   name: string;
 
-  @Column("text")
+  @Column("text", { nullable: true })
   description: string;
-
-  @Column({ nullable: true })
-  icon: string;
 
   @Column({ default: true })
   isActive: boolean;
 
-  @OneToMany(() => CareHome, (careHome) => careHome.careType)
+  @Column({ default: 0 })
+  sortOrder: number;
+
+  @ManyToMany(() => CareHome, (careHome) => careHome.specializations)
   careHomes: CareHome[];
 
   @CreateDateColumn()

@@ -68,7 +68,7 @@ export default function AdminPage() {
       };
 
       setStats(mockStats);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load dashboard stats");
     } finally {
       setIsLoading(false);

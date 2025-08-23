@@ -105,10 +105,134 @@
     opacity: 1;
   }
 }
+.rightNav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  @media (max-width: 500px) {
+    display: none;
+  }
+}
+
+.adminLink {
+  font-size: 16px;
+  font-weight: 500;
+  color: #667eea;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #667eea;
+    color: white;
+  }
+}
+
 .contactUs {
   display: block;
   @media (max-width: 500px) {
     display: none;
+  }
+}
+
+// Profile Section Styles
+.profileSection {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.profileAvatar {
+  width: 40px;
+  height: 40px;
+  background: #1c7c8a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+
+  &:hover {
+    border-color: #145e6a;
+    transform: scale(1.05);
+  }
+}
+
+.avatarText {
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+.profileDropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+  margin-top: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.profileSection:hover .profileDropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.profileInfo {
+  padding: 16px;
+  border-bottom: 1px solid #e9ecef;
+  background: #f8f9fa;
+
+  .userName {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+  }
+}
+
+.profileActions {
+  padding: 8px 0;
+
+  .profileLink,
+  .logoutButton {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    text-align: left;
+    background: none;
+    border: none;
+    font-size: 14px;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+
+    &:hover {
+      background: #f8f9fa;
+      color: #1c7c8a;
+    }
+  }
+
+  .logoutButton {
+    color: #dc3545;
+
+    &:hover {
+      background: #fff5f5;
+      color: #c82333;
+    }
   }
 }
 .menuIcon {

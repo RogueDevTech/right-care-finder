@@ -1,9 +1,15 @@
+"use client";
+
 import styles from "../navbar/styles.module.scss";
 import Image from "next/image";
 import AppLogo from "@/../public/right-care-logo.png";
 import Link from "next/link";
 import { DropIcon, MenuIcon } from "../icon";
-export default function NavBar() {
+import { ISession } from "@/interfaces";
+
+export default function NavBar({ session }: { session: ISession }) {
+  const handleLogout = () => {};
+
   return (
     <div className={styles.container}>
       <div className={styles.leftNav}>
@@ -97,7 +103,42 @@ export default function NavBar() {
           </div>
         </div>
       </div>
-      <div className={styles.contactUs}>Contact Us</div>
+      <div className={styles.rightNav}>
+        {session.isLoggedIn && session.user?.role === "admin" && (
+          <Link href="/admin">
+            <div className={styles.adminLink}>Admin</div>
+          </Link>
+        )}
+        {session.isLoggedIn ? (
+          <div className={styles.profileSection}>
+            <div className={styles.profileAvatar}>
+              <span className={styles.avatarText}>
+                {session.user?.firstName?.charAt(0) || "U"}
+                {session.user?.lastName?.charAt(0) || ""}
+              </span>
+            </div>
+            <div className={styles.profileDropdown}>
+              <div className={styles.profileInfo}>
+                <span className={styles.userName}>
+                  {session.user?.firstName} {session.user?.lastName}
+                </span>
+              </div>
+              <div className={styles.profileActions}>
+                <Link href="/profile" className={styles.profileLink}>
+                  Profile
+                </Link>
+                <button onClick={handleLogout} className={styles.logoutButton}>
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <Link href="/login">
+            <div className={styles.contactUs}>Login</div>
+          </Link>
+        )}
+      </div>
       <div className={styles.menuIcon}>
         <MenuIcon />
       </div>

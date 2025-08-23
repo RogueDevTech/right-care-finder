@@ -26,6 +26,10 @@ import {
 import { CreateCareHomeDto } from "../healthcare-homes/dto/create-care-home.dto";
 import { UpdateCareHomeDto } from "../healthcare-homes/dto/update-care-home.dto";
 import { UpdateUserDto } from "../users/dto/user.dto";
+import {
+  CareHomeResponseDto,
+  CareHomesListResponseDto,
+} from "./dto/care-home-response.dto";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { UserRole } from "../users/entities/user.entity";
@@ -136,11 +140,169 @@ export class AdminController {
   @Get("care-homes")
   @ApiOperation({
     summary: "Get all care homes",
-    description: "Retrieves a list of all care homes in the system",
+    description:
+      "Retrieves a paginated list of all care homes in the system with optional filtering and search capabilities. This endpoint is restricted to admin users only.",
+  })
+  @ApiQuery({
+    name: "search",
+    description: "Search term to filter care homes by name or description",
+    required: false,
+    type: String,
+    example: "dementia care",
+  })
+  @ApiQuery({
+    name: "city",
+    description: "Filter care homes by city",
+    required: false,
+    type: String,
+    example: "London",
+  })
+  @ApiQuery({
+    name: "county",
+    description: "Filter care homes by county/region",
+    required: false,
+    type: String,
+    example: "Greater London",
+  })
+  @ApiQuery({
+    name: "careTypeId",
+    description: "Filter care homes by care type ID",
+    required: false,
+    type: String,
+    example: "123e4567-e89b-12d3-a456-426614174001",
+  })
+  @ApiQuery({
+    name: "isVerified",
+    description: "Filter by verification status",
+    required: false,
+    type: Boolean,
+    example: true,
+  })
+  @ApiQuery({
+    name: "isFeatured",
+    description: "Filter by featured status",
+    required: false,
+    type: Boolean,
+    example: false,
+  })
+  @ApiQuery({
+    name: "page",
+    description: "Page number for pagination (default: 1)",
+    required: false,
+    type: Number,
+    example: 1,
+  })
+  @ApiQuery({
+    name: "limit",
+    description: "Number of items per page (default: 20, max: 100)",
+    required: false,
+    type: Number,
+    example: 20,
   })
   @ApiResponse({
     status: 200,
-    description: "Returns list of all care homes",
+    description: "Successfully retrieved list of care homes",
+    type: CareHomesListResponseDto,
+    schema: {
+      example: {
+        data: [
+          {
+            id: "123e4567-e89b-12d3-a456-426614174000",
+            name: "Sunset Care Home",
+            description:
+              "A modern care home providing exceptional care for elderly residents...",
+            addressLine1: "123 High Street",
+            addressLine2: "Suite 4B",
+            city: "London",
+            region: "Greater London",
+            postcode: "SW1A 1AA",
+            area: "Westminster",
+            country: "United Kingdom",
+            latitude: 51.5074,
+            longitude: -0.1278,
+            phone: "+44 20 1234 5678",
+            email: "info@sunsetcarehome.com",
+            website: "https://www.sunsetcarehome.com",
+            weeklyPrice: 850.0,
+            monthlyPrice: 3400.0,
+            totalBeds: 50,
+            availableBeds: 12,
+            isActive: true,
+            isVerified: true,
+            isFeatured: false,
+            specializations: [
+              "Dementia Care",
+              "Respite Care",
+              "Palliative Care",
+            ],
+            cqcRating: "Good",
+            lastInspectionDate: "2024-01-15T00:00:00.000Z",
+            ageRestriction: "65+",
+            acceptingNewResidents: true,
+            openingHours: {
+              Monday: "8:00 AM - 8:00 PM",
+              Tuesday: "8:00 AM - 8:00 PM",
+              Wednesday: "8:00 AM - 8:00 PM",
+              Thursday: "8:00 AM - 8:00 PM",
+              Friday: "8:00 AM - 8:00 PM",
+              Saturday: "9:00 AM - 6:00 PM",
+              Sunday: "9:00 AM - 6:00 PM",
+            },
+            contactInfo: {
+              emergency: "+44 20 1234 5679",
+              manager: "John Smith",
+              managerPhone: "+44 20 1234 5680",
+            },
+            rating: 4.5,
+            reviewCount: 25,
+            careType: {
+              id: "123e4567-e89b-12d3-a456-426614174001",
+              name: "Residential Care",
+              description: "24-hour residential care for elderly residents",
+            },
+            facilities: [
+              {
+                id: "123e4567-e89b-12d3-a456-426614174002",
+                name: "Garden",
+                description: "Beautiful garden for residents to enjoy",
+              },
+            ],
+            images: [
+              {
+                id: "123e4567-e89b-12d3-a456-426614174003",
+                url: "https://example.com/image1.jpg",
+                altText: "Main entrance of the care home",
+                isPrimary: true,
+              },
+            ],
+            createdBy: {
+              id: "123e4567-e89b-12d3-a456-426614174004",
+              firstName: "John",
+              lastName: "Doe",
+              email: "john.doe@example.com",
+            },
+            createdAt: "2024-01-15T10:30:00.000Z",
+            updatedAt: "2024-01-20T14:45:00.000Z",
+          },
+        ],
+        total: 150,
+        page: 1,
+        limit: 20,
+        totalPages: 8,
+      },
+    },
+  })
+  @ApiResponse({
+    status: 401,
+    description: "Unauthorized - Invalid or missing authentication token",
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Forbidden - User does not have admin privileges",
+  })
+  @ApiResponse({
+    status: 500,
+    description: "Internal server error",
   })
   async getAllCareHomes(
     @Query("search") search?: string,
@@ -148,7 +310,9 @@ export class AdminController {
     @Query("county") county?: string,
     @Query("careTypeId") careTypeId?: string,
     @Query("isVerified") isVerified?: boolean,
-    @Query("isFeatured") isFeatured?: boolean
+    @Query("isFeatured") isFeatured?: boolean,
+    @Query("page") page?: number,
+    @Query("limit") limit?: number
   ) {
     const filters = {
       search,
@@ -157,6 +321,8 @@ export class AdminController {
       careTypeId,
       isVerified,
       isFeatured,
+      page: page || 1,
+      limit: limit || 20,
     };
     return this.adminService.getAllCareHomes(filters);
   }

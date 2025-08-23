@@ -1,15 +1,16 @@
-import "./globals.css";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
+import { getSession } from "@/actions-server/auth";
 
-export default function Layout({
+export default async function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getSession();
   return (
     <div>
-      <NavBar />
+      <NavBar session={session} />
       {children}
       <Footer />
     </div>

@@ -59,13 +59,13 @@
   line-height: 1;
 
   .logoText {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     font-weight: 700;
     color: #1c7c8a;
   }
 
   .logoSubtext {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: #6c757d;
     margin-top: 0.125rem;
   }
@@ -99,7 +99,7 @@
 }
 
 .navTitle {
-  font-size: 0.75rem;
+  font-size: 0.625rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -121,7 +121,7 @@
 .navLink {
   display: flex;
   align-items: center;
-  padding: 0.875rem 1.25rem;
+  padding: 0.75rem 1.25rem;
   color: #495057;
   text-decoration: none;
   transition: all 0.2s ease;
@@ -149,7 +149,7 @@
 }
 
 .navText {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: inherit;
 }
@@ -223,7 +223,7 @@
 
 .breadcrumb {
   .breadcrumbText {
-    font-size: 1.125rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #495057;
   }
@@ -285,11 +285,11 @@
   justify-content: center;
   color: white;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
 }
 
 .userName {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 500;
   color: #495057;
 }
@@ -304,7 +304,7 @@
 // Page Content
 .pageContent {
   flex: 1;
-  padding: 2rem;
+  padding: 1.5rem;
   overflow-y: auto;
 }
 
@@ -340,7 +340,7 @@
   }
 
   .pageContent {
-    padding: 1rem;
+    padding: 0.75rem;
   }
 
   .topNavbar {
@@ -354,15 +354,15 @@
 
 @media (max-width: 576px) {
   .pageContent {
-    padding: 0.75rem;
+    padding: 0.5rem;
   }
 
   .topNavbar {
-    padding: 0 0.75rem;
+    padding: 0 0.5rem;
   }
 
   .breadcrumbText {
-    font-size: 1rem;
+    font-size: 0.875rem;
   }
 }
 

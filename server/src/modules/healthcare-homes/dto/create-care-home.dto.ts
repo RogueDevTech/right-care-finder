@@ -7,9 +7,60 @@ import {
   IsObject,
   IsUUID,
   Min,
+  IsNotEmpty,
 } from "class-validator";
-import { Type } from "class-transformer";
+import { Type, Transform } from "class-transformer";
 import { ApiProperty } from "@nestjs/swagger";
+
+// Example care home data for Swagger documentation
+export const exampleCareHomeData = {
+  name: "Sunset Gardens Care Home",
+  description: [
+    "A modern, purpose-built care home providing exceptional care in a warm and welcoming environment.",
+    "Our dedicated team of professionals ensures personalized care for each resident.",
+    "Located in a peaceful neighborhood with beautiful gardens and modern amenities.",
+  ],
+  addressLine1: "123 Care Street",
+  addressLine2: "Suite 101",
+  city: "Manchester",
+  region: "Greater Manchester",
+  postcode: "M1 1AA",
+
+  country: "United Kingdom",
+  latitude: 53.4808,
+  longitude: -2.2426,
+  phone: "+44 161 123 4567",
+  email: "info@sunsetgardens.co.uk",
+  website: "https://www.sunsetgardens.co.uk",
+  weeklyPrice: 1200,
+  monthlyPrice: 4800,
+  totalBeds: 50,
+  availableBeds: 5,
+  isActive: true,
+  specializations: ["Dementia Care", "Respite Care", "End of Life Care"],
+  openingHours: {
+    Monday: "9:00 AM - 5:00 PM",
+    Tuesday: "9:00 AM - 5:00 PM",
+    Wednesday: "9:00 AM - 5:00 PM",
+    Thursday: "9:00 AM - 5:00 PM",
+    Friday: "9:00 AM - 5:00 PM",
+    Saturday: "9:00 AM - 5:00 PM",
+    Sunday: "9:00 AM - 5:00 PM",
+  },
+  contactInfo: {
+    emergency: "+44 161 999 9999",
+    manager: "John Smith",
+  },
+  careTypeId: "123e4567-e89b-12d3-a456-426614174000",
+  facilityIds: [
+    "123e4567-e89b-12d3-a456-426614174001",
+    "123e4567-e89b-12d3-a456-426614174002",
+  ],
+  imageUrls: [
+    "https://example.com/image1.jpg",
+    "https://example.com/image2.jpg",
+  ],
+};
 
 export class CreateCareHomeDto {
   @ApiProperty({
@@ -17,21 +68,38 @@ export class CreateCareHomeDto {
     example: "Sunset Gardens Care Home",
   })
   @IsString()
+  @IsNotEmpty({ message: "Care home name is required" })
   name: string;
 
   @ApiProperty({
-    description: "Detailed description of the care home",
-    example:
+    description: "Detailed description of the care home as an array of strings",
+    example: [
       "A modern, purpose-built care home providing exceptional care in a warm and welcoming environment.",
+      "Our dedicated team of professionals ensures personalized care for each resident.",
+      "Located in a peaceful neighborhood with beautiful gardens and modern amenities.",
+    ],
+    type: [String],
   })
-  @IsString()
-  description: string;
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty({ message: "Description is required" })
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) {
+      // Filter out empty strings and trim whitespace
+      return (value as string[])
+        .filter((line) => line.trim() !== "")
+        .map((line) => line.trim());
+    }
+    return value;
+  })
+  description: string[];
 
   @ApiProperty({
     description: "Building number and street name",
     example: "123 Care Street",
   })
   @IsString()
+  @IsNotEmpty({ message: "Address line 1 is required" })
   addressLine1: string;
 
   @ApiProperty({
@@ -48,6 +116,7 @@ export class CreateCareHomeDto {
     example: "Manchester",
   })
   @IsString()
+  @IsNotEmpty({ message: "City is required" })
   city: string;
 
   @ApiProperty({
@@ -64,16 +133,8 @@ export class CreateCareHomeDto {
     example: "M1 1AA",
   })
   @IsString()
+  @IsNotEmpty({ message: "Postcode is required" })
   postcode: string;
-
-  @ApiProperty({
-    description: "Local area/district within the city",
-    example: "Northern Quarter",
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-  area?: string;
 
   @ApiProperty({
     description: "Country where the care home is located",
@@ -110,6 +171,7 @@ export class CreateCareHomeDto {
     example: "+44 161 123 4567",
   })
   @IsString()
+  @IsNotEmpty({ message: "Phone number is required" })
   phone: string;
 
   @ApiProperty({
@@ -219,10 +281,12 @@ export class CreateCareHomeDto {
 
   @ApiProperty({
     description: "ID of the care type",
-    example: "123e4567-e89b-12d3-a456-426614174000",
+    example: 1,
   })
-  @IsUUID()
-  careTypeId: string;
+  @IsNumber()
+  @Type(() => Number)
+  @IsNotEmpty({ message: "Care type ID is required" })
+  careTypeId: number;
 
   @ApiProperty({
     description: "Array of facility IDs",

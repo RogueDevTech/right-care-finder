@@ -23,8 +23,8 @@ export class CareHome {
   @Column()
   name: string;
 
-  @Column("text")
-  description: string;
+  @Column("text", { array: true, default: [] })
+  description: string[];
 
   @Column()
   addressLine1: string; // Building number and street name
@@ -40,9 +40,6 @@ export class CareHome {
 
   @Column()
   postcode: string;
-
-  @Column({ nullable: true })
-  area: string; // Local area/district within city
 
   @Column({ nullable: true })
   country: string; // Default to "United Kingdom"

@@ -115,46 +115,29 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   <span className={styles.navText}>Care Homes</span>
                 </Link>
               </li>
-              <li className={styles.navItem}>
-                <Link
-                  href="/admin/reviews"
-                  className={`${styles.navLink} ${
-                    isActiveLink("/admin/reviews") ? styles.active : ""
-                  }`}
-                >
-                  <svg
-                    className={styles.navIcon}
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                  </svg>
-                  <span className={styles.navText}>Reviews</span>
-                </Link>
-              </li>
-              <li className={styles.navItem}>
-                <Link
-                  href="/admin/analytics"
-                  className={`${styles.navLink} ${
-                    isActiveLink("/admin/analytics") ? styles.active : ""
-                  }`}
-                >
-                  <svg
-                    className={styles.navIcon}
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
-                  </svg>
-                  <span className={styles.navText}>Analytics</span>
-                </Link>
-              </li>
             </ul>
           </div>
 
           <div className={styles.navSection}>
             <h3 className={styles.navTitle}>Settings</h3>
             <ul className={styles.navList}>
+              <li className={styles.navItem}>
+                <Link
+                  href="/admin/config"
+                  className={`${styles.navLink} ${
+                    isActiveLink("/admin/config") ? styles.active : ""
+                  }`}
+                >
+                  <svg
+                    className={styles.navIcon}
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.22-.08-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z" />
+                  </svg>
+                  <span className={styles.navText}>Configuration</span>
+                </Link>
+              </li>
               <li className={styles.navItem}>
                 <Link
                   href="/admin/settings"
@@ -216,8 +199,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 {pathname === "/admin" && "Dashboard"}
                 {pathname === "/admin/users" && "User Management"}
                 {pathname === "/admin/care-homes" && "Care Home Management"}
-                {pathname === "/admin/reviews" && "Reviews & Ratings"}
-                {pathname === "/admin/analytics" && "Analytics & Reports"}
+                {pathname === "/admin/config" && "Configuration Management"}
                 {pathname === "/admin/settings" && "Settings"}
               </span>
             </div>

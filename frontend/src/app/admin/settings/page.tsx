@@ -93,7 +93,7 @@ export default function SettingsPage() {
       // TODO: Replace with actual API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       toast.success(`${section} settings saved successfully!`);
-    } catch (error) {
+    } catch {
       toast.error("Failed to save settings");
     } finally {
       setIsLoading(false);
@@ -106,7 +106,7 @@ export default function SettingsPage() {
       // TODO: Replace with actual API call
       await new Promise((resolve) => setTimeout(resolve, 2000));
       toast.success("All settings saved successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to save settings");
     } finally {
       setIsLoading(false);

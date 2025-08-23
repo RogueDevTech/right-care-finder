@@ -87,7 +87,7 @@ export default function CareHomesPage() {
       ];
 
       setCareHomes(mockCareHomes);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load care homes");
     } finally {
       setIsLoading(false);
@@ -107,46 +107,6 @@ export default function CareHomesPage() {
 
     return matchesSearch && matchesStatus && matchesRegion;
   });
-
-  const handleStatusChange = async (careHomeId: string, newStatus: string) => {
-    try {
-      // TODO: Replace with actual API call
-      setCareHomes((prev) =>
-        prev.map((careHome) =>
-          careHome.id === careHomeId
-            ? {
-                ...careHome,
-                status: newStatus as "active" | "pending" | "inactive",
-              }
-            : careHome
-        )
-      );
-      toast.success("Care home status updated successfully");
-    } catch (error) {
-      toast.error("Failed to update care home status");
-    }
-  };
-
-  const handleVerificationToggle = async (
-    careHomeId: string,
-    currentVerified: boolean
-  ) => {
-    try {
-      // TODO: Replace with actual API call
-      setCareHomes((prev) =>
-        prev.map((careHome) =>
-          careHome.id === careHomeId
-            ? { ...careHome, isVerified: !currentVerified }
-            : careHome
-        )
-      );
-      toast.success(
-        `Care home ${currentVerified ? "unverified" : "verified"} successfully`
-      );
-    } catch (error) {
-      toast.error("Failed to update verification status");
-    }
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -195,7 +155,12 @@ export default function CareHomesPage() {
             </Link>
             <h1>Care Home Management</h1>
           </div>
-          <button className={styles.addButton}>+ Add New Care Home</button>
+          <button
+            className={styles.addButton}
+            onClick={() => router.push("/admin/care-homes/add")}
+          >
+            + Add New Care Home
+          </button>
         </div>
 
         <div className={styles.filters}>
@@ -238,7 +203,12 @@ export default function CareHomesPage() {
 
         <div className={styles.careHomesGrid}>
           {filteredCareHomes.map((careHome) => (
-            <div key={careHome.id} className={styles.careHomeCard}>
+            <div
+              key={careHome.id}
+              className={styles.careHomeCard}
+              onClick={() => router.push(`/admin/care-homes/${careHome.id}`)}
+              style={{ cursor: "pointer" }}
+            >
               <div className={styles.cardHeader}>
                 <div className={styles.careHomeInfo}>
                   <h3>{careHome.name}</h3>
@@ -299,8 +269,6 @@ export default function CareHomesPage() {
                   </div>
                 </div>
               </div>
-
-            
             </div>
           ))}
         </div>

@@ -112,43 +112,6 @@ export interface Transaction {
   };
 }
 
-export interface TransactionsResponse {
-  transactions: Transaction[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
-  };
-}
-
-export interface TransactionsQueryParams {
-  page?: number;
-  limit?: number;
-  status?: "pending" | "success" | "failed" | "cancelled";
-  transactionType?: "payment" | "refund" | "fee" | "verification";
-  userId?: string;
-  search?: string;
-  startDate?: string;
-  endDate?: string;
-  sortBy?: string;
-  sortOrder?: "ASC" | "DESC";
-}
-
-export interface PromoCodesResponse {
-  promoCodes: PromoCode[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
-  };
-}
-
 export interface AdminUser {
   id: string;
   email: string;
@@ -202,34 +165,129 @@ export interface UsersQueryParams {
   sortOrder?: "ASC" | "DESC";
 }
 
-export interface DashboardOverview {
-  totalUsers: {
-    count: number;
-    thisMonth: number;
-  };
-  properties: {
+// Care Home Interfaces
+export interface CareHome {
+  id: string;
+  name: string;
+  description: string[];
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  region: string;
+  postcode: string;
+  country: string;
+  latitude?: number;
+  longitude?: number;
+  phone: string;
+  email?: string;
+  website?: string;
+  weeklyPrice?: number;
+  monthlyPrice?: number;
+  totalBeds: number;
+  availableBeds: number;
+  isActive: boolean;
+  isVerified: boolean;
+  isFeatured: boolean;
+  specializations: string[];
+  openingHours: Record<string, string>;
+  contactInfo: Record<string, string>;
+  careTypeId: string;
+  facilityIds: string[];
+  imageUrls: string[];
+  rating?: number;
+  reviewCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCareHomeData {
+  name: string;
+  description: string[];
+  addressLine1: string;
+  addressLine2?: string;
+  city: string;
+  region: string;
+  postcode: string;
+  country: string;
+  countryCode: string;
+  latitude?: number;
+  longitude?: number;
+  phone: string;
+  email?: string;
+  website?: string;
+  weeklyPrice?: number;
+  monthlyPrice?: number;
+  totalBeds?: number;
+  availableBeds?: number;
+  isActive: boolean;
+  specializations: string[];
+  openingHours: Record<string, string>;
+  contactInfo: Record<string, string>;
+  careTypeId: string;
+  facilityIds: string[];
+  imageUrls: string[];
+}
+
+export interface CareHomesResponse {
+  careHomes: CareHome[];
+  pagination: {
+    page: number;
+    limit: number;
     total: number;
-    verified: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
   };
-  applications: {
-    total: number;
-    thisMonth: number;
-  };
-  verifications: {
-    total: number;
-    pending: number;
-    completed: number;
-  };
-  usersByRole: {
-    developers: number;
-    brokers: number;
-    owners: number;
-    lenders: number;
-    buyers: number;
-  };
-  pendingApprovals: number;
-  verifiedUsers: number;
-  rejectedUsers: number;
+}
+
+export interface CareHomesQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  city?: string;
+  region?: string;
+  country?: string;
+  careTypeId?: string;
+  isActive?: boolean;
+  isVerified?: boolean;
+  isFeatured?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
+  hasAvailableBeds?: boolean;
+  sortBy?: string;
+  sortOrder?: "ASC" | "DESC";
+}
+
+// Configuration Interfaces
+export interface CareType {
+  id: number;
+  name: string;
+  description: string;
+  icon?: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Specialization {
+  id: number;
+  name: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Facility {
+  id: string;
+  name: string;
+  description?: string;
+  icon?: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export const useAdminActions = () => {
@@ -279,194 +337,43 @@ export const useAdminActions = () => {
     }
   };
 
-  const updateUser = async (userId: string, userData: Partial<AdminUser>) => {
-    const response = await client.patch(`/admin/users/${userId}`, userData);
+  // Care Home Management
+  const getCareHomes = async (params: CareHomesQueryParams = {}) => {
+    const queryParams = new URLSearchParams();
 
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data as AdminUser,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
+    if (params.page) queryParams.append("page", params.page.toString());
+    if (params.limit) queryParams.append("limit", params.limit.toString());
+    if (params.search) queryParams.append("search", params.search);
+    if (params.city) queryParams.append("city", params.city);
+    if (params.region) queryParams.append("region", params.region);
+    if (params.country) queryParams.append("country", params.country);
+    if (params.careTypeId) queryParams.append("careTypeId", params.careTypeId);
+    if (params.isActive !== undefined)
+      queryParams.append("isActive", params.isActive.toString());
+    if (params.isVerified !== undefined)
+      queryParams.append("isVerified", params.isVerified.toString());
+    if (params.isFeatured !== undefined)
+      queryParams.append("isFeatured", params.isFeatured.toString());
+    if (params.minPrice)
+      queryParams.append("minPrice", params.minPrice.toString());
+    if (params.maxPrice)
+      queryParams.append("maxPrice", params.maxPrice.toString());
+    if (params.hasAvailableBeds)
+      queryParams.append(
+        "hasAvailableBeds",
+        params.hasAvailableBeds.toString()
+      );
+    if (params.sortBy) queryParams.append("sortBy", params.sortBy);
+    if (params.sortOrder) queryParams.append("sortOrder", params.sortOrder);
 
-  const deleteUser = async (userId: string) => {
-    const response = await client.delete(`/admin/users/${userId}`);
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const bulkUpdateUsers = async (
-    userIds: string[],
-    updates: Partial<AdminUser>
-  ) => {
-    const response = await client.patch("/admin/users/bulk", {
-      userIds,
-      updates,
-    });
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const bulkDeleteUsers = async (userIds: string[]) => {
-    const response = await client.delete("/admin/users/bulk", {
-      data: { userIds },
-    });
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const bulkActivateUsers = async (userIds: string[]) => {
-    const response = await client.patch("/admin/users/bulk-activate", {
-      userIds,
-    });
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const bulkDeactivateUsers = async (userIds: string[]) => {
-    const response = await client.patch("/admin/users/bulk-deactivate", {
-      userIds,
-    });
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const activateUser = async (userId: string) => {
-    const response = await client.patch(`/admin/users/${userId}/activate`);
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const deactivateUser = async (userId: string) => {
-    const response = await client.patch(`/admin/users/${userId}/deactivate`);
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const sendBulkEmail = async (data: {
-    emails: string[];
-    subject: string;
-    message: string;
-    attachment?: string; // base64 encoded file data
-    attachmentName?: string; // original filename
-    attachmentType?: string; // MIME type
-  }) => {
-    const response = await client.post("/admin/bulk-email", data);
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const getDashboardOverview = async () => {
-    const response = await client.get("/admin/dashboard");
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data as DashboardOverview,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const getRecentActivity = async (limit: number = 10) => {
     const response = await client.get(
-      `/admin/dashboard/recent-activity?limit=${limit}`
+      `/admin/care-homes?${queryParams.toString()}`
     );
 
     if (response.data) {
       return {
         success: true,
-        data: response.data,
+        data: response.data as CareHomesResponse,
       };
     } else {
       return {
@@ -476,8 +383,62 @@ export const useAdminActions = () => {
     }
   };
 
-  const getVerificationStats = async () => {
-    const response = await client.get("/admin/verification-stats");
+  const getCareHomeById = async (careHomeId: string) => {
+    const response = await client.get(`/admin/care-homes/${careHomeId}`);
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as CareHome,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const createCareHome = async (careHomeData: CreateCareHomeData) => {
+    const response = await client.post("/admin/care-homes", careHomeData);
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as CareHome,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const updateCareHome = async (
+    careHomeId: string,
+    careHomeData: Partial<CreateCareHomeData>
+  ) => {
+    const response = await client.patch(
+      `/admin/care-homes/${careHomeId}`,
+      careHomeData
+    );
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as CareHome,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const deleteCareHome = async (careHomeId: string) => {
+    const response = await client.delete(`/admin/care-homes/${careHomeId}`);
 
     if (response.data) {
       return {
@@ -492,26 +453,110 @@ export const useAdminActions = () => {
     }
   };
 
-  // Promo Codes Management
-  const createPromoCode = async (promoData: {
-    code: string;
+  const toggleCareHomeStatus = async (
+    careHomeId: string,
+    isActive: boolean
+  ) => {
+    const response = await client.patch(
+      `/admin/care-homes/${careHomeId}/status`,
+      {
+        isActive,
+      }
+    );
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as CareHome,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const toggleCareHomeVerification = async (
+    careHomeId: string,
+    isVerified: boolean
+  ) => {
+    const response = await client.patch(
+      `/admin/care-homes/${careHomeId}/verification`,
+      {
+        isVerified,
+      }
+    );
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as CareHome,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const toggleCareHomeFeatured = async (
+    careHomeId: string,
+    isFeatured: boolean
+  ) => {
+    const response = await client.patch(
+      `/admin/care-homes/${careHomeId}/featured`,
+      {
+        isFeatured,
+      }
+    );
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as CareHome,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  // Configuration Management
+  const getCareTypes = async () => {
+    const response = await client.get("/admin/config/care-types");
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as CareType[],
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const createCareType = async (careTypeData: {
     name: string;
     description: string;
-    type: "percentage" | "fixed_amount";
-    value: number;
-    minimumAmount?: number;
-    maximumDiscount?: number;
-    maxUses?: number;
-    validFrom: string;
-    validUntil?: string;
-    isSingleUse?: boolean;
+    icon?: string;
+    isActive: boolean;
   }) => {
-    const response = await client.post("/admin/promo-codes", promoData);
+    const response = await client.post(
+      "/admin/config/care-types",
+      careTypeData
+    );
 
     if (response.data) {
       return {
         success: true,
-        data: response.data as PromoCode,
+        data: response.data as CareType,
       };
     } else {
       return {
@@ -521,13 +566,24 @@ export const useAdminActions = () => {
     }
   };
 
-  const getPromoCodes = async () => {
-    const response = await client.get("/admin/promo-codes");
+  const updateCareType = async (
+    careTypeId: number,
+    careTypeData: Partial<{
+      name: string;
+      description: string;
+      icon: string;
+      isActive: boolean;
+    }>
+  ) => {
+    const response = await client.put(
+      `/admin/config/care-types/${careTypeId}`,
+      careTypeData
+    );
 
     if (response.data) {
       return {
         success: true,
-        data: response.data as PromoCodesResponse,
+        data: response.data as CareType,
       };
     } else {
       return {
@@ -537,24 +593,10 @@ export const useAdminActions = () => {
     }
   };
 
-  const getPromoCodeById = async (id: string) => {
-    const response = await client.get(`/admin/promo-codes/${id}`);
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data as PromoCode,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const getPromoCodeDetails = async (id: string) => {
-    const response = await client.get(`/admin/promo-codes/${id}`);
+  const deleteCareType = async (careTypeId: number) => {
+    const response = await client.delete(
+      `/admin/config/care-types/${careTypeId}`
+    );
 
     if (response.data) {
       return {
@@ -569,15 +611,13 @@ export const useAdminActions = () => {
     }
   };
 
-  const updatePromoCodeStatus = async (id: string, isActive: boolean) => {
-    const response = await client.put(`/admin/promo-codes/${id}/status`, {
-      status: isActive ? "active" : "inactive",
-    });
+  const getSpecializations = async () => {
+    const response = await client.get("/admin/config/specializations");
 
     if (response.data) {
       return {
         success: true,
-        data: response.data as PromoCode,
+        data: response.data as Specialization[],
       };
     } else {
       return {
@@ -587,345 +627,143 @@ export const useAdminActions = () => {
     }
   };
 
-  const deletePromoCode = async (id: string) => {
-    const response = await client.delete(`/admin/promo-codes/${id}`);
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  // User Assignment Management
-  const assignUserToPromoCode = async (promoCodeId: string, email: string) => {
-    const response = await client.post(
-      `/admin/promo-codes/${promoCodeId}/assign-user`,
-      {
-        email,
-      }
-    );
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data as PromoCode,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const assignMultipleUsersToPromoCode = async (
-    promoCodeId: string,
-    emails: string[]
-  ) => {
-    const response = await client.post(
-      `/admin/promo-codes/${promoCodeId}/assign-multiple-users`,
-      {
-        emails,
-      }
-    );
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data as PromoCode,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const removeUserFromPromoCode = async (
-    promoCodeId: string,
-    email: string
-  ) => {
-    const response = await client.delete(
-      `/admin/promo-codes/${promoCodeId}/remove-user`,
-      {
-        data: { email },
-      }
-    );
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data as PromoCode,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const clearAssignedUser = async (promoCodeId: string) => {
-    const response = await client.delete(
-      `/admin/promo-codes/${promoCodeId}/clear-assigned-user`
-    );
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data as PromoCode,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  // Pricing Management
-  const createPricing = async (pricingData: {
-    propertyType: string;
-    baseFee: number;
+  const createSpecialization = async (specializationData: {
+    name: string;
     description?: string;
-  }) => {
-    const response = await client.post("/admin/pricing", pricingData);
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data as PricingConfig,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const getPricingConfigs = async () => {
-    const response = await client.get("/admin/pricing");
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data as PricingConfig[],
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const getActivePricing = async () => {
-    const response = await client.get("/admin/pricing/active");
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data as PricingConfig[],
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const updatePricingStatus = async (id: string, isActive: boolean) => {
-    const response = await client.put(`/admin/pricing/${id}/status`, {
-      isActive,
-    });
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data as PricingConfig,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const deletePricing = async (id: string) => {
-    const response = await client.delete(`/admin/pricing/${id}`);
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const calculateFees = async (data: {
-    propertyType: string;
-    promoCode?: string;
-  }) => {
-    const response = await client.post("/admin/pricing/calculate", data);
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data as FeeCalculation,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  // Transaction Management
-  const getTransactions = async (params: TransactionsQueryParams = {}) => {
-    const queryParams = new URLSearchParams();
-
-    if (params.page) queryParams.append("page", params.page.toString());
-    if (params.limit) queryParams.append("limit", params.limit.toString());
-    if (params.status) queryParams.append("status", params.status);
-    if (params.transactionType)
-      queryParams.append("transactionType", params.transactionType);
-    if (params.userId) queryParams.append("userId", params.userId);
-    if (params.search) queryParams.append("search", params.search);
-    if (params.startDate) queryParams.append("startDate", params.startDate);
-    if (params.endDate) queryParams.append("endDate", params.endDate);
-    if (params.sortBy) queryParams.append("sortBy", params.sortBy);
-    if (params.sortOrder) queryParams.append("sortOrder", params.sortOrder);
-
-    const response = await client.get(
-      `/admin/transactions?${queryParams.toString()}`
-    );
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data as TransactionsResponse,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const getTransactionById = async (transactionId: string) => {
-    const response = await client.get(`/admin/transactions/${transactionId}`);
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data as Transaction,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  // Sales Agents Management
-  const getSalesAgents = async (
-    params: {
-      page?: number;
-      limit?: number;
-      search?: string;
-      period?: string;
-      sortBy?: string;
-      sortOrder?: string;
-    } = {}
-  ) => {
-    const queryParams = new URLSearchParams();
-
-    if (params.page) queryParams.append("page", params.page.toString());
-    if (params.limit) queryParams.append("limit", params.limit.toString());
-    if (params.search) queryParams.append("search", params.search);
-    if (params.period && params.period !== "all")
-      queryParams.append("period", params.period);
-    if (params.sortBy) queryParams.append("sortBy", params.sortBy);
-    if (params.sortOrder) queryParams.append("sortOrder", params.sortOrder);
-
-    const response = await client.get(
-      `/admin/sales-agents?${queryParams.toString()}`
-    );
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const getSalesAgentsStats = async () => {
-    const response = await client.get("/admin/sales-agents/stats");
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const getSalesAgentById = async (agentId: string) => {
-    const response = await client.get(`/admin/sales-agents/${agentId}`);
-
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data,
-      };
-    } else {
-      return {
-        success: false,
-        error: response.error,
-      };
-    }
-  };
-
-  const inviteSalesAgent = async (inviteData: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    agentCode: string;
-    phoneNumber?: string;
+    isActive: boolean;
   }) => {
     const response = await client.post(
-      "/admin/sales-agents/invite",
-      inviteData
+      "/admin/config/specializations",
+      specializationData
+    );
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as Specialization,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const updateSpecialization = async (
+    specializationId: number,
+    specializationData: Partial<{
+      name: string;
+      description: string;
+      isActive: boolean;
+    }>
+  ) => {
+    const response = await client.put(
+      `/admin/config/specializations/${specializationId}`,
+      specializationData
+    );
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as Specialization,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const deleteSpecialization = async (specializationId: number) => {
+    const response = await client.delete(
+      `/admin/config/specializations/${specializationId}`
+    );
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const getFacilities = async () => {
+    const response = await client.get("/admin/config/facilities");
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as Facility[],
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const createFacility = async (facilityData: {
+    name: string;
+    description?: string;
+    icon?: string;
+    isActive: boolean;
+  }) => {
+    const response = await client.post(
+      "/admin/config/facilities",
+      facilityData
+    );
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as Facility,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const updateFacility = async (
+    facilityId: string,
+    facilityData: Partial<{
+      name: string;
+      description: string;
+      icon: string;
+      isActive: boolean;
+    }>
+  ) => {
+    const response = await client.put(
+      `/admin/config/facilities/${facilityId}`,
+      facilityData
+    );
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as Facility,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const deleteFacility = async (facilityId: string) => {
+    const response = await client.delete(
+      `/admin/config/facilities/${facilityId}`
     );
 
     if (response.data) {
@@ -944,39 +782,27 @@ export const useAdminActions = () => {
   return {
     getUsers,
     getUserById,
-    updateUser,
-    deleteUser,
-    bulkUpdateUsers,
-    bulkDeleteUsers,
-    bulkActivateUsers,
-    bulkDeactivateUsers,
-    activateUser,
-    deactivateUser,
-    sendBulkEmail,
-    getDashboardOverview,
-    getRecentActivity,
-    getVerificationStats,
-    createPromoCode,
-    getPromoCodes,
-    getPromoCodeById,
-    getPromoCodeDetails,
-    updatePromoCodeStatus,
-    deletePromoCode,
-    assignUserToPromoCode,
-    assignMultipleUsersToPromoCode,
-    removeUserFromPromoCode,
-    clearAssignedUser,
-    createPricing,
-    getPricingConfigs,
-    getActivePricing,
-    updatePricingStatus,
-    deletePricing,
-    calculateFees,
-    getTransactions,
-    getTransactionById,
-    getSalesAgents,
-    getSalesAgentsStats,
-    getSalesAgentById,
-    inviteSalesAgent,
+    // Care Home Management
+    getCareHomes,
+    getCareHomeById,
+    createCareHome,
+    updateCareHome,
+    deleteCareHome,
+    toggleCareHomeStatus,
+    toggleCareHomeVerification,
+    toggleCareHomeFeatured,
+    // Configuration Management
+    getCareTypes,
+    createCareType,
+    updateCareType,
+    deleteCareType,
+    getSpecializations,
+    createSpecialization,
+    updateSpecialization,
+    deleteSpecialization,
+    getFacilities,
+    createFacility,
+    updateFacility,
+    deleteFacility,
   };
 };

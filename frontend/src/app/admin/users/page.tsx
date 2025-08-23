@@ -24,11 +24,28 @@ export default function UsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        openDropdown &&
+        !(event.target as Element).closest(`.${styles.actionsDropdown}`)
+      ) {
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openDropdown]);
 
   const fetchUsers = async () => {
     try {
@@ -70,7 +87,7 @@ export default function UsersPage() {
       ];
 
       setUsers(mockUsers);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load users");
     } finally {
       setIsLoading(false);
@@ -99,23 +116,14 @@ export default function UsersPage() {
       toast.success(
         `User ${currentStatus ? "deactivated" : "activated"} successfully`
       );
-    } catch (error) {
+      setOpenDropdown(null); // Close dropdown after action
+    } catch {
       toast.error("Failed to update user status");
     }
   };
 
-  const handleRoleChange = async (userId: string, newRole: string) => {
-    try {
-      // TODO: Replace with actual API call
-      setUsers((prev) =>
-        prev.map((user) =>
-          user.id === userId ? { ...user, role: newRole } : user
-        )
-      );
-      toast.success("User role updated successfully");
-    } catch (error) {
-      toast.error("Failed to update user role");
-    }
+  const toggleDropdown = (userId: string) => {
+    setOpenDropdown(openDropdown === userId ? null : userId);
   };
 
   if (isLoading) {
@@ -198,15 +206,9 @@ export default function UsersPage() {
               </div>
 
               <div className={styles.cell}>
-                <select
-                  value={user.role}
-                  onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                  className={styles.roleSelect}
-                >
-                  <option value="user">User</option>
-                  <option value="provider">Provider</option>
-                  <option value="admin">Admin</option>
-                </select>
+                <span className={`${styles.roleBadge} ${styles[user.role]}`}>
+                  {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                </span>
               </div>
 
               <div className={styles.cell}>
@@ -238,16 +240,37 @@ export default function UsersPage() {
               </div>
 
               <div className={styles.cell}>
-                <div className={styles.actions}>
+                <div className={styles.actionsDropdown}>
                   <button
-                    onClick={() => handleStatusToggle(user.id, user.isActive)}
-                    className={`${styles.actionButton} ${
-                      user.isActive ? styles.deactivate : styles.activate
-                    }`}
+                    className={styles.dropdownToggle}
+                    onClick={() => toggleDropdown(user.id)}
                   >
-                    {user.isActive ? "Deactivate" : "Activate"}
+                    Actions {openDropdown === user.id ? "▲" : "▼"}
                   </button>
-                  <button className={styles.actionButton}>Edit</button>
+                  {openDropdown === user.id && (
+                    <div className={styles.dropdownMenu}>
+                      <button
+                        onClick={() =>
+                          handleStatusToggle(user.id, user.isActive)
+                        }
+                        className={`${styles.dropdownItem} ${
+                          user.isActive ? styles.deactivate : styles.activate
+                        }`}
+                      >
+                        {user.isActive ? "Deactivate" : "Activate"}
+                      </button>
+                      <button className={styles.dropdownItem}>Edit User</button>
+                      <button className={styles.dropdownItem}>
+                        View Details
+                      </button>
+                      <button className={styles.dropdownItem}>
+                        Send Message
+                      </button>
+                      <button className={styles.dropdownItem}>
+                        Reset Password
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

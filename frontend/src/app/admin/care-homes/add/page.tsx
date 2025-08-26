@@ -1,11 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 import AdminLayout from "@/components/layout/admin-layout";
-import { CreateCareHomeData, useAdminActions } from "@/actions-client/admin";
+import {
+  CreateCareHomeData,
+  useAdminActions,
+  CareType,
+  Specialization,
+  Facility,
+} from "@/actions-client/admin";
 import styles from "./add-care-home.module.scss";
 
 interface CareHomeFormData {
@@ -86,25 +92,7 @@ const initialFormData: CareHomeFormData = {
   imageUrls: [],
 };
 
-const specializationOptions = [
-  "Dementia Care",
-  "Respite Care",
-  "End of Life Care",
-  "Residential Care",
-  "Nursing Care",
-  "Learning Disability Care",
-  "Mental Health Care",
-  "Physical Disability Care",
-  "Sensory Impairment Care",
-  "Young Adult Care",
-];
-
-const careTypeOptions = [
-  { id: 1, name: "Residential Care" },
-  { id: 2, name: "Nursing Care" },
-  { id: 3, name: "Dementia Care" },
-  { id: 4, name: "Respite Care" },
-];
+// Configuration data will be loaded from API
 
 // UK Countries and their regions/states
 const ukCountries = [
@@ -755,18 +743,7 @@ const ukCities = {
   },
 };
 
-const facilityOptions = [
-  { id: "1", name: "Garden" },
-  { id: "2", name: "Lounge" },
-  { id: "3", name: "Dining Room" },
-  { id: "4", name: "Activity Room" },
-  { id: "5", name: "Hair Salon" },
-  { id: "6", name: "Library" },
-  { id: "7", name: "Cinema Room" },
-  { id: "8", name: "Gym" },
-  { id: "9", name: "Spa" },
-  { id: "10", name: "Chapel" },
-];
+// Facility options will be loaded from API
 
 // Time picker component for opening hours
 const TimePicker = ({
@@ -840,8 +817,50 @@ export default function AddCareHomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [isAddButtonClicked, setIsAddButtonClicked] = useState(false);
+
+  // Configuration data state
+  const [careTypes, setCareTypes] = useState<CareType[]>([]);
+  const [specializations, setSpecializations] = useState<Specialization[]>([]);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [isLoadingConfig, setIsLoadingConfig] = useState(true);
+
   const router = useRouter();
-  const { createCareHome } = useAdminActions();
+  const { createCareHome, getCareTypes, getSpecializations, getFacilities } =
+    useAdminActions();
+
+  // Fetch configuration data on component mount
+  useEffect(() => {
+    const loadConfigurationData = async () => {
+      setIsLoadingConfig(true);
+      try {
+        // Load care types
+        const careTypesResult = await getCareTypes();
+        if (careTypesResult.success && careTypesResult.data) {
+          setCareTypes(careTypesResult.data);
+        }
+
+        // Load specializations
+        const specializationsResult = await getSpecializations();
+        if (specializationsResult.success && specializationsResult.data) {
+          setSpecializations(specializationsResult.data);
+        }
+
+        // Load facilities
+        const facilitiesResult = await getFacilities();
+        if (facilitiesResult.success && facilitiesResult.data) {
+          setFacilities(facilitiesResult.data);
+        }
+      } catch (error) {
+        console.error("Error loading configuration data:", error);
+        toast.error("Failed to load configuration data");
+      } finally {
+        setIsLoadingConfig(false);
+      }
+    };
+
+    loadConfigurationData();
+  }, [getCareTypes, getSpecializations, getFacilities]);
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -858,7 +877,7 @@ export default function AddCareHomePage() {
     if (type === "number") {
       setFormData((prev) => ({
         ...prev,
-        [name]: value === "" ? undefined : parseFloat(value) || 0,
+        [name]: value === "" ? 0 : parseFloat(value) || 0,
       }));
     } else if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
@@ -1078,7 +1097,10 @@ export default function AddCareHomePage() {
         (fieldName === "careTypeId" &&
           error.toLowerCase().includes("care type")) ||
         (fieldName === "addressLine1" &&
-          error.toLowerCase().includes("address line 1"))
+          error.toLowerCase().includes("address line 1")) ||
+        (fieldName === "latitude" &&
+          error.toLowerCase().includes("latitude")) ||
+        (fieldName === "longitude" && error.toLowerCase().includes("longitude"))
     );
   };
 
@@ -1115,6 +1137,20 @@ export default function AddCareHomePage() {
     if (!formData.city?.trim()) errors.push("City is required");
     if (!formData.region?.trim()) errors.push("Region is required");
     if (!formData.postcode?.trim()) errors.push("Postcode is required");
+
+    // Coordinate validation - only validate if coordinates are provided (not 0)
+    if (
+      formData.latitude !== 0 &&
+      (formData.latitude < -90 || formData.latitude > 90)
+    ) {
+      errors.push("Latitude must be between -90 and 90 degrees");
+    }
+    if (
+      formData.longitude !== 0 &&
+      (formData.longitude < -180 || formData.longitude > 180)
+    ) {
+      errors.push("Longitude must be between -180 and 180 degrees");
+    }
 
     // Pricing validation - optional fields
     if (
@@ -1157,8 +1193,12 @@ export default function AddCareHomePage() {
     return { isValid: errors.length === 0, errors };
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    // Check if the "Add Care Home" button was clicked
+    // if (!isAddButtonClicked) {
+    //   toast.error("Please click the 'Add Care Home' button to submit the form");
+    //   return;
+    // }
 
     // Validate form before submission
     const validation = validateForm();
@@ -1178,6 +1218,15 @@ export default function AddCareHomePage() {
         // Ensure all required fields are present
         description: formData.description.filter((line) => line.trim() !== ""),
         imageUrls: formData.imageUrls.filter((url) => url.trim() !== ""),
+        // Handle coordinates - only send if they are valid
+        latitude:
+          formData.latitude >= -90 && formData.latitude <= 90
+            ? formData.latitude
+            : undefined,
+        longitude:
+          formData.longitude >= -180 && formData.longitude <= 180
+            ? formData.longitude
+            : undefined,
       };
 
       const result = await createCareHome(
@@ -1186,13 +1235,16 @@ export default function AddCareHomePage() {
 
       if (result.success) {
         toast.success("Care home added successfully!");
+        setIsAddButtonClicked(false); // Reset the flag on success
         router.push("/admin/care-homes");
       } else {
         toast.error(result.error || "Failed to add care home");
+        setIsAddButtonClicked(false); // Reset the flag on error
       }
     } catch (error) {
       console.error("Error creating care home:", error);
       toast.error("Failed to add care home. Please try again.");
+      setIsAddButtonClicked(false); // Reset the flag on error
     } finally {
       setIsSubmitting(false);
     }
@@ -1266,7 +1318,7 @@ export default function AddCareHomePage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form className={styles.form}>
           {/* Basic Information Step */}
           {currentStep === 0 && (
             <div className={styles.tabContent}>
@@ -1317,11 +1369,15 @@ export default function AddCareHomePage() {
                       required
                     >
                       <option value="">Select care type</option>
-                      {careTypeOptions.map((type) => (
-                        <option key={type.id} value={type.id}>
-                          {type.name}
-                        </option>
-                      ))}
+                      {isLoadingConfig ? (
+                        <option value="">Loading care types...</option>
+                      ) : (
+                        careTypes.map((type) => (
+                          <option key={type.id} value={type.id}>
+                            {type.name}
+                          </option>
+                        ))
+                      )}
                     </select>
                   </div>
 
@@ -1457,30 +1513,54 @@ export default function AddCareHomePage() {
                     />
                   </div>
 
-                  <div className={styles.formGroup}>
-                    <label htmlFor="latitude">Latitude</label>
+                  <div className={getFormGroupClass("latitude")}>
+                    <label htmlFor="latitude">Latitude (optional)</label>
                     <input
                       type="number"
                       id="latitude"
                       name="latitude"
-                      value={formData.latitude}
+                      value={formData.latitude || ""}
                       onChange={handleInputChange}
                       step="0.000001"
-                      placeholder="53.4808"
+                      min="-90"
+                      max="90"
+                      placeholder="57.6869 (Fraserburgh)"
                     />
+                    <small className={styles.helpText}>
+                      Must be between -90 and 90 degrees. Leave as 0 if unknown.
+                    </small>
+                    {formData.latitude !== 0 &&
+                      (formData.latitude < -90 || formData.latitude > 90) && (
+                        <div className={styles.errorMessage}>
+                          Latitude must be between -90 and 90 degrees
+                        </div>
+                      )}
                   </div>
 
-                  <div className={styles.formGroup}>
-                    <label htmlFor="longitude">Longitude</label>
+                  <div className={getFormGroupClass("longitude")}>
+                    <label htmlFor="longitude">Longitude (optional)</label>
                     <input
                       type="number"
                       id="longitude"
                       name="longitude"
-                      value={formData.longitude}
+                      value={formData.longitude || ""}
                       onChange={handleInputChange}
                       step="0.000001"
-                      placeholder="-2.2426"
+                      min="-180"
+                      max="180"
+                      placeholder="-2.0054 (Fraserburgh)"
                     />
+                    <small className={styles.helpText}>
+                      Must be between -180 and 180 degrees. Leave as 0 if
+                      unknown.
+                    </small>
+                    {formData.longitude !== 0 &&
+                      (formData.longitude < -180 ||
+                        formData.longitude > 180) && (
+                        <div className={styles.errorMessage}>
+                          Longitude must be between -180 and 180 degrees
+                        </div>
+                      )}
                   </div>
                 </div>
               </div>
@@ -1635,40 +1715,55 @@ export default function AddCareHomePage() {
               <div className={getFormGroupClass("specializations")}>
                 <h3>Specializations</h3>
                 <div className={styles.checkboxGrid}>
-                  {specializationOptions.map((specialization) => (
-                    <div key={specialization} className={styles.checkboxItem}>
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={formData.specializations.includes(
-                            specialization
-                          )}
-                          onChange={() =>
-                            handleSpecializationChange(specialization)
-                          }
-                        />
-                        {specialization}
-                      </label>
+                  {isLoadingConfig ? (
+                    <div className={styles.loadingMessage}>
+                      Loading specializations...
                     </div>
-                  ))}
+                  ) : (
+                    specializations.map((specialization) => (
+                      <div
+                        key={specialization.id}
+                        className={styles.checkboxItem}
+                      >
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={formData.specializations.includes(
+                              specialization.name
+                            )}
+                            onChange={() =>
+                              handleSpecializationChange(specialization.name)
+                            }
+                          />
+                          {specialization.name}
+                        </label>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
               <div className={styles.formSection}>
                 <h3>Facilities</h3>
                 <div className={styles.checkboxGrid}>
-                  {facilityOptions.map((facility) => (
-                    <div key={facility.id} className={styles.checkboxItem}>
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={formData.facilityIds.includes(facility.id)}
-                          onChange={() => handleFacilityChange(facility.id)}
-                        />
-                        {facility.name}
-                      </label>
+                  {isLoadingConfig ? (
+                    <div className={styles.loadingMessage}>
+                      Loading facilities...
                     </div>
-                  ))}
+                  ) : (
+                    facilities.map((facility) => (
+                      <div key={facility.id} className={styles.checkboxItem}>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={formData.facilityIds.includes(facility.id)}
+                            onChange={() => handleFacilityChange(facility.id)}
+                          />
+                          {facility.name}
+                        </label>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
@@ -1768,18 +1863,6 @@ export default function AddCareHomePage() {
             </div>
           )}
 
-          {/* Validation Errors Display */}
-          {/* {validationErrors.length > 0 && (
-            <div className={styles.validationErrors}>
-              <h4>Please fix the following errors:</h4>
-              <ul>
-                {validationErrors.map((error, index) => (
-                  <li key={index}>{error}</li>
-                ))}
-              </ul>
-            </div>
-          )} */}
-
           <div className={styles.formActions}>
             <button
               type="button"
@@ -1811,6 +1894,7 @@ export default function AddCareHomePage() {
                 type="submit"
                 disabled={isSubmitting}
                 className={styles.primaryButton}
+                onClick={() => handleSubmit()}
               >
                 {isSubmitting ? "Adding Care Home..." : "Add Care Home"}
               </button>

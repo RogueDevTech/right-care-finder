@@ -5,23 +5,12 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 import AdminLayout from "@/components/layout/admin-layout";
+import {
+  useAdminActions,
+  CareHome,
+  CareHomesQueryParams,
+} from "@/actions-client/admin";
 import styles from "./care-homes.module.scss";
-
-interface CareHome {
-  id: string;
-  name: string;
-  addressLine1: string;
-  city: string;
-  region: string;
-  postcode: string;
-  phoneNumber: string;
-  email: string;
-  status: "active" | "pending" | "inactive";
-  cqcRating?: string;
-  careTypes: string[];
-  createdAt: string;
-  isVerified: boolean;
-}
 
 export default function CareHomesPage() {
   const [careHomes, setCareHomes] = useState<CareHome[]>([]);
@@ -29,119 +18,135 @@ export default function CareHomesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [regionFilter, setRegionFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCareHomes, setTotalCareHomes] = useState(0);
   const router = useRouter();
+  const { getCareHomes } = useAdminActions();
 
   useEffect(() => {
     fetchCareHomes();
-  }, []);
+  }, [currentPage, searchTerm, statusFilter, regionFilter]);
 
   const fetchCareHomes = async () => {
     try {
-      // TODO: Replace with actual API call
-      const mockCareHomes: CareHome[] = [
-        {
-          id: "1",
-          name: "Sunset Care Home",
-          addressLine1: "123 Sunset Boulevard",
-          city: "London",
-          region: "Greater London",
-          postcode: "SW1A 1AA",
-          phoneNumber: "+44 20 7123 4567",
-          email: "info@sunsetcare.co.uk",
-          status: "active",
-          cqcRating: "Good",
-          careTypes: ["Residential", "Dementia"],
-          createdAt: "2024-01-15T10:30:00Z",
-          isVerified: true,
-        },
-        {
-          id: "2",
-          name: "Golden Years Residence",
-          addressLine1: "456 Golden Lane",
-          city: "Manchester",
-          region: "Greater Manchester",
-          postcode: "M1 1AA",
-          phoneNumber: "+44 161 123 4567",
-          email: "contact@goldenyears.co.uk",
-          status: "pending",
-          cqcRating: "Requires Improvement",
-          careTypes: ["Nursing", "Residential"],
-          createdAt: "2024-01-14T09:15:00Z",
-          isVerified: false,
-        },
-        {
-          id: "3",
-          name: "Comfort Care Center",
-          addressLine1: "789 Comfort Street",
-          city: "Birmingham",
-          region: "West Midlands",
-          postcode: "B1 1AA",
-          phoneNumber: "+44 121 123 4567",
-          email: "hello@comfortcare.co.uk",
-          status: "active",
-          cqcRating: "Outstanding",
-          careTypes: ["Residential", "Nursing", "Dementia"],
-          createdAt: "2024-01-13T08:00:00Z",
-          isVerified: true,
-        },
-      ];
+      setIsLoading(true);
 
-      setCareHomes(mockCareHomes);
-    } catch {
+      const queryParams: CareHomesQueryParams = {
+        page: currentPage,
+        limit: 10,
+        search: searchTerm || undefined,
+        isActive:
+          statusFilter === "all" ? undefined : statusFilter === "active",
+        region: regionFilter === "all" ? undefined : regionFilter,
+      };
+
+      const result = await getCareHomes(queryParams);
+
+      if (result.success && result.data) {
+        setCareHomes(result.data.data || []);
+        setTotalPages(Math.ceil((result.data.total || 0) / 10));
+        setTotalCareHomes(result.data.total || 0);
+      } else {
+        toast.error(result.error || "Failed to load care homes");
+      }
+    } catch (error) {
+      console.error("Error fetching care homes:", error);
       toast.error("Failed to load care homes");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const filteredCareHomes = careHomes.filter((careHome) => {
-    const matchesSearch =
-      careHome.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      careHome.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      careHome.postcode.toLowerCase().includes(searchTerm.toLowerCase());
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter, regionFilter]);
 
-    const matchesStatus =
-      statusFilter === "all" || careHome.status === statusFilter;
-    const matchesRegion =
-      regionFilter === "all" || careHome.region === regionFilter;
-
-    return matchesSearch && matchesStatus && matchesRegion;
-  });
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return styles.active;
-      case "pending":
-        return styles.pending;
-      case "inactive":
-        return styles.inactive;
-      default:
-        return styles.inactive;
-    }
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
-  const getCqcRatingColor = (rating?: string) => {
-    switch (rating) {
-      case "Outstanding":
-        return styles.outstanding;
-      case "Good":
-        return styles.good;
-      case "Requires Improvement":
-        return styles.requiresImprovement;
-      case "Inadequate":
-        return styles.inadequate;
-      default:
-        return styles.noRating;
-    }
+  const getStatusColor = (isActive: boolean) => {
+    return isActive ? styles.active : styles.inactive;
   };
 
   if (isLoading) {
     return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.spinner}></div>
-        <p>Loading care homes...</p>
-      </div>
+      <AdminLayout>
+        <div className={styles.careHomesContainer}>
+          {/* Header Skeleton */}
+          <div className={styles.header}>
+            <div className={styles.headerLeft}>
+              <div className={styles.skeletonBackButton}></div>
+              <div className={styles.skeletonTitle}></div>
+            </div>
+            <div className={styles.skeletonAddButton}></div>
+          </div>
+
+          {/* Filters Skeleton */}
+          <div className={styles.filters}>
+            <div className={styles.searchBox}>
+              <div className={styles.skeletonSearchInput}></div>
+            </div>
+            <div className={styles.filterGroup}>
+              <div className={styles.skeletonFilterSelect}></div>
+            </div>
+            <div className={styles.filterGroup}>
+              <div className={styles.skeletonFilterSelect}></div>
+            </div>
+          </div>
+
+          {/* Care Homes Grid Skeleton */}
+          <div className={styles.careHomesGrid}>
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className={styles.skeletonCareHomeCard}>
+                <div className={styles.skeletonCardHeader}>
+                  <div className={styles.skeletonCardInfo}>
+                    <div className={styles.skeletonCardTitle}></div>
+                    <div className={styles.skeletonCardLocation}>
+                      <div className={styles.skeletonLocationLine}></div>
+                      <div className={styles.skeletonLocationLine}></div>
+                    </div>
+                  </div>
+                  <div className={styles.skeletonStatusBadge}>
+                    <div className={styles.skeletonStatus}></div>
+                    <div className={styles.skeletonVerifiedBadge}></div>
+                  </div>
+                </div>
+                <div className={styles.skeletonCardBody}>
+                  <div className={styles.skeletonContactInfo}>
+                    <div className={styles.skeletonContactItem}>
+                      <div className={styles.skeletonContactLabel}></div>
+                      <div className={styles.skeletonContactValue}></div>
+                    </div>
+                    <div className={styles.skeletonContactItem}>
+                      <div className={styles.skeletonContactLabel}></div>
+                      <div className={styles.skeletonContactValue}></div>
+                    </div>
+                  </div>
+                  <div className={styles.skeletonDetails}>
+                    <div className={styles.skeletonRating}>
+                      <div className={styles.skeletonRatingLabel}></div>
+                      <div className={styles.skeletonRatingValue}></div>
+                    </div>
+                    <div className={styles.skeletonSpecializations}>
+                      <div
+                        className={styles.skeletonSpecializationsLabel}
+                      ></div>
+                      <div className={styles.skeletonSpecializationsTags}>
+                        <div className={styles.skeletonTag}></div>
+                        <div className={styles.skeletonTag}></div>
+                        <div className={styles.skeletonTag}></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </AdminLayout>
     );
   }
 
@@ -202,7 +207,7 @@ export default function CareHomesPage() {
         </div>
 
         <div className={styles.careHomesGrid}>
-          {filteredCareHomes.map((careHome) => (
+          {careHomes.map((careHome) => (
             <div
               key={careHome.id}
               className={styles.careHomeCard}
@@ -222,10 +227,10 @@ export default function CareHomesPage() {
                 <div className={styles.statusBadge}>
                   <span
                     className={`${styles.status} ${getStatusColor(
-                      careHome.status
+                      careHome.isActive
                     )}`}
                   >
-                    {careHome.status}
+                    {careHome.isActive ? "Active" : "Inactive"}
                   </span>
                   {careHome.isVerified && (
                     <span className={styles.verifiedBadge}>✓ Verified</span>
@@ -237,32 +242,30 @@ export default function CareHomesPage() {
                 <div className={styles.contactInfo}>
                   <div className={styles.contactItem}>
                     <span className={styles.label}>📞 Phone:</span>
-                    <span>{careHome.phoneNumber}</span>
+                    <span>{careHome.phone}</span>
                   </div>
                   <div className={styles.contactItem}>
                     <span className={styles.label}>✉️ Email:</span>
-                    <span>{careHome.email}</span>
+                    <span>{careHome.email || "Not provided"}</span>
                   </div>
                 </div>
 
                 <div className={styles.details}>
                   <div className={styles.cqcRating}>
-                    <span className={styles.label}>CQC Rating:</span>
-                    <span
-                      className={`${styles.rating} ${getCqcRatingColor(
-                        careHome.cqcRating
-                      )}`}
-                    >
-                      {careHome.cqcRating || "Not Rated"}
+                    <span className={styles.label}>Rating:</span>
+                    <span className={styles.rating}>
+                      {careHome.rating
+                        ? `${careHome.rating}/5 (${careHome.reviewCount} reviews)`
+                        : "No reviews yet"}
                     </span>
                   </div>
 
                   <div className={styles.careTypes}>
-                    <span className={styles.label}>Care Types:</span>
+                    <span className={styles.label}>Specializations:</span>
                     <div className={styles.typeTags}>
-                      {careHome.careTypes.map((type, index) => (
+                      {careHome.specializations.map((specialization, index) => (
                         <span key={index} className={styles.typeTag}>
-                          {type}
+                          {specialization}
                         </span>
                       ))}
                     </div>
@@ -273,9 +276,39 @@ export default function CareHomesPage() {
           ))}
         </div>
 
-        {filteredCareHomes.length === 0 && (
+        {careHomes.length === 0 && !isLoading && (
           <div className={styles.emptyState}>
             <p>No care homes found matching your criteria.</p>
+          </div>
+        )}
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className={styles.pagination}>
+            <div className={styles.paginationInfo}>
+              Showing {(currentPage - 1) * 10 + 1} to{" "}
+              {Math.min(currentPage * 10, totalCareHomes)} of {totalCareHomes}{" "}
+              care homes
+            </div>
+            <div className={styles.paginationControls}>
+              <button
+                className={styles.paginationButton}
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <span className={styles.pageInfo}>
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                className={styles.paginationButton}
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
           </div>
         )}
       </div>

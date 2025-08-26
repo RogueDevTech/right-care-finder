@@ -229,15 +229,10 @@ export interface CreateCareHomeData {
 }
 
 export interface CareHomesResponse {
-  careHomes: CareHome[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
-  };
+  data: CareHome[];
+  total: number;
+  page: string;
+  limit: string;
 }
 
 export interface CareHomesQueryParams {

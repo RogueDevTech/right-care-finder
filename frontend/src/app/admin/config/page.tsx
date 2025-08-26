@@ -396,7 +396,74 @@ export default function ConfigPage() {
     return (
       <AdminLayout>
         <div className={styles.configContainer}>
-          <div className={styles.loading}>Loading configuration...</div>
+          {/* Header Skeleton */}
+          <div className={styles.header}>
+            <div className={styles.headerLeft}>
+              <div className={styles.skeletonBackButton}></div>
+              <div className={styles.skeletonTitle}></div>
+            </div>
+          </div>
+
+          {/* Tabs Skeleton */}
+          <div className={styles.tabs}>
+            {[1, 2, 3].map((i) => (
+              <div key={i} className={styles.skeletonTab}></div>
+            ))}
+          </div>
+
+          {/* Content Skeleton */}
+          <div className={styles.content}>
+            <div className={styles.tabContent}>
+              {/* Section Header Skeleton */}
+              <div className={styles.sectionHeader}>
+                <div className={styles.skeletonSectionTitle}></div>
+                <div className={styles.skeletonAddButton}></div>
+              </div>
+
+              {/* Table Skeleton */}
+              <div className={styles.table}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>
+                        <div className={styles.skeletonHeaderCell}></div>
+                      </th>
+                      <th>
+                        <div className={styles.skeletonHeaderCell}></div>
+                      </th>
+                      <th>
+                        <div className={styles.skeletonHeaderCell}></div>
+                      </th>
+                      <th>
+                        <div className={styles.skeletonHeaderCell}></div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <tr key={i}>
+                        <td>
+                          <div className={styles.skeletonCell}></div>
+                        </td>
+                        <td>
+                          <div className={styles.skeletonCell}></div>
+                        </td>
+                        <td>
+                          <div className={styles.skeletonStatus}></div>
+                        </td>
+                        <td>
+                          <div className={styles.skeletonActions}>
+                            <div className={styles.skeletonActionButton}></div>
+                            <div className={styles.skeletonActionButton}></div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       </AdminLayout>
     );
@@ -550,6 +617,7 @@ export default function ConfigPage() {
                           }`}
                           disabled={isSubmittingCareType}
                         >
+                          here --
                           {isSubmittingCareType
                             ? "Creating..."
                             : editingCareType
@@ -562,57 +630,76 @@ export default function ConfigPage() {
                 </div>
               )}
 
-              <div className={styles.table}>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Description</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {careTypes.map((careType) => (
-                      <tr key={careType.id}>
-                        <td>{careType.name}</td>
-                        <td>{careType.description}</td>
-                        <td>
-                          <span
-                            className={`${styles.status} ${
-                              careType.isActive
-                                ? styles.active
-                                : styles.inactive
-                            }`}
-                          >
-                            {careType.isActive ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td>
-                          <div className={styles.actions}>
-                            <button
-                              className={styles.editButton}
-                              onClick={() => handleEditCareType(careType)}
-                              disabled={isDeletingCareType === careType.id}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className={styles.deleteButton}
-                              onClick={() => handleDeleteCareType(careType.id)}
-                              disabled={isDeletingCareType === careType.id}
-                            >
-                              {isDeletingCareType === careType.id
-                                ? "Deleting..."
-                                : "Delete"}
-                            </button>
-                          </div>
-                        </td>
+              {careTypes.length > 0 ? (
+                <div className={styles.table}>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {careTypes.map((careType) => (
+                        <tr key={careType.id}>
+                          <td>{careType.name}</td>
+                          <td>{careType.description}</td>
+                          <td>
+                            <span
+                              className={`${styles.status} ${
+                                careType.isActive
+                                  ? styles.active
+                                  : styles.inactive
+                              }`}
+                            >
+                              {careType.isActive ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                          <td>
+                            <div className={styles.actions}>
+                              <button
+                                className={styles.editButton}
+                                onClick={() => handleEditCareType(careType)}
+                                disabled={isDeletingCareType === careType.id}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                className={styles.deleteButton}
+                                onClick={() =>
+                                  handleDeleteCareType(careType.id)
+                                }
+                                disabled={isDeletingCareType === careType.id}
+                              >
+                                {isDeletingCareType === careType.id
+                                  ? "Deleting..."
+                                  : "Delete"}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className={styles.emptyState}>
+                  <div className={styles.emptyStateIcon}>🏠</div>
+                  <h3>No Care Types Found</h3>
+                  <p>
+                    Get started by adding your first care type to help
+                    categorize care homes.
+                  </p>
+                  <button
+                    className={styles.emptyStateButton}
+                    onClick={() => setShowCareTypeForm(true)}
+                  >
+                    + Add Your First Care Type
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -732,65 +819,82 @@ export default function ConfigPage() {
                 </div>
               )}
 
-              <div className={styles.table}>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Description</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {specializations.map((specialization) => (
-                      <tr key={specialization.id}>
-                        <td>{specialization.name}</td>
-                        <td>{specialization.description}</td>
-                        <td>
-                          <span
-                            className={`${styles.status} ${
-                              specialization.isActive
-                                ? styles.active
-                                : styles.inactive
-                            }`}
-                          >
-                            {specialization.isActive ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td>
-                          <div className={styles.actions}>
-                            <button
-                              className={styles.editButton}
-                              onClick={() =>
-                                handleEditSpecialization(specialization)
-                              }
-                              disabled={
-                                isDeletingSpecialization === specialization.id
-                              }
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className={styles.deleteButton}
-                              onClick={() =>
-                                handleDeleteSpecialization(specialization.id)
-                              }
-                              disabled={
-                                isDeletingSpecialization === specialization.id
-                              }
-                            >
-                              {isDeletingSpecialization === specialization.id
-                                ? "Deleting..."
-                                : "Delete"}
-                            </button>
-                          </div>
-                        </td>
+              {specializations.length > 0 ? (
+                <div className={styles.table}>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {specializations.map((specialization) => (
+                        <tr key={specialization.id}>
+                          <td>{specialization.name}</td>
+                          <td>{specialization.description}</td>
+                          <td>
+                            <span
+                              className={`${styles.status} ${
+                                specialization.isActive
+                                  ? styles.active
+                                  : styles.inactive
+                              }`}
+                            >
+                              {specialization.isActive ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                          <td>
+                            <div className={styles.actions}>
+                              <button
+                                className={styles.editButton}
+                                onClick={() =>
+                                  handleEditSpecialization(specialization)
+                                }
+                                disabled={
+                                  isDeletingSpecialization === specialization.id
+                                }
+                              >
+                                Edit
+                              </button>
+                              <button
+                                className={styles.deleteButton}
+                                onClick={() =>
+                                  handleDeleteSpecialization(specialization.id)
+                                }
+                                disabled={
+                                  isDeletingSpecialization === specialization.id
+                                }
+                              >
+                                {isDeletingSpecialization === specialization.id
+                                  ? "Deleting..."
+                                  : "Delete"}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className={styles.emptyState}>
+                  <div className={styles.emptyStateIcon}>🎯</div>
+                  <h3>No Specializations Found</h3>
+                  <p>
+                    Create specializations to help care homes highlight their
+                    unique services and expertise.
+                  </p>
+                  <button
+                    className={styles.emptyStateButton}
+                    onClick={() => setShowSpecializationForm(true)}
+                  >
+                    + Add Your First Specialization
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -924,57 +1028,76 @@ export default function ConfigPage() {
                 </div>
               )}
 
-              <div className={styles.table}>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Description</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {facilities.map((facility) => (
-                      <tr key={facility.id}>
-                        <td>{facility.name}</td>
-                        <td>{facility.description}</td>
-                        <td>
-                          <span
-                            className={`${styles.status} ${
-                              facility.isActive
-                                ? styles.active
-                                : styles.inactive
-                            }`}
-                          >
-                            {facility.isActive ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td>
-                          <div className={styles.actions}>
-                            <button
-                              className={styles.editButton}
-                              onClick={() => handleEditFacility(facility)}
-                              disabled={isDeletingFacility === facility.id}
-                            >
-                              Edit
-                            </button>
-                            <button
-                              className={styles.deleteButton}
-                              onClick={() => handleDeleteFacility(facility.id)}
-                              disabled={isDeletingFacility === facility.id}
-                            >
-                              {isDeletingFacility === facility.id
-                                ? "Deleting..."
-                                : "Delete"}
-                            </button>
-                          </div>
-                        </td>
+              {facilities.length > 0 ? (
+                <div className={styles.table}>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {facilities.map((facility) => (
+                        <tr key={facility.id}>
+                          <td>{facility.name}</td>
+                          <td>{facility.description}</td>
+                          <td>
+                            <span
+                              className={`${styles.status} ${
+                                facility.isActive
+                                  ? styles.active
+                                  : styles.inactive
+                              }`}
+                            >
+                              {facility.isActive ? "Active" : "Inactive"}
+                            </span>
+                          </td>
+                          <td>
+                            <div className={styles.actions}>
+                              <button
+                                className={styles.editButton}
+                                onClick={() => handleEditFacility(facility)}
+                                disabled={isDeletingFacility === facility.id}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                className={styles.deleteButton}
+                                onClick={() =>
+                                  handleDeleteFacility(facility.id)
+                                }
+                                disabled={isDeletingFacility === facility.id}
+                              >
+                                {isDeletingFacility === facility.id
+                                  ? "Deleting..."
+                                  : "Delete"}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className={styles.emptyState}>
+                  <div className={styles.emptyStateIcon}>🏢</div>
+                  <h3>No Facilities Found</h3>
+                  <p>
+                    Add facilities to help care homes showcase their amenities
+                    and services.
+                  </p>
+                  <button
+                    className={styles.emptyStateButton}
+                    onClick={() => setShowFacilityForm(true)}
+                  >
+                    + Add Your First Facility
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

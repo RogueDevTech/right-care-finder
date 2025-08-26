@@ -104,11 +104,6 @@ export default function NavBar({ session }: { session: ISession }) {
         </div>
       </div>
       <div className={styles.rightNav}>
-        {session.isLoggedIn && session.user?.role === "admin" && (
-          <Link href="/admin">
-            <div className={styles.adminLink}>Admin</div>
-          </Link>
-        )}
         {session.isLoggedIn ? (
           <div className={styles.profileSection}>
             <div className={styles.profileAvatar}>
@@ -124,9 +119,14 @@ export default function NavBar({ session }: { session: ISession }) {
                 </span>
               </div>
               <div className={styles.profileActions}>
-                <Link href="/profile" className={styles.profileLink}>
+                <Link href="/" className={styles.profileLink}>
                   Profile
                 </Link>
+                {session.user?.role === "admin" && (
+                  <Link href="/admin" className={styles.profileLink}>
+                    Admin
+                  </Link>
+                )}
                 <button onClick={handleLogout} className={styles.logoutButton}>
                   Logout
                 </button>

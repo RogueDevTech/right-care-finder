@@ -170,42 +170,7 @@ export default function AdminPage() {
               </Button>
             </div>
           </Card>
-
-          <Card className={styles.sectionCard}>
-            <div className={styles.sectionContent}>
-              <h2>Analytics & Reports</h2>
-              <p>View detailed analytics and generate reports</p>
-              <Button
-                variant="primary"
-                onClick={() => router.push("/admin/analytics")}
-              >
-                View Analytics
-              </Button>
-            </div>
-          </Card>
         </div>
-
-        {stats?.recentCareHomes && (
-          <Card title="Recent Care Homes" className={styles.recentSection}>
-            <div className={styles.recentList}>
-              {stats.recentCareHomes.map((careHome) => (
-                <div key={careHome.id} className={styles.recentItem}>
-                  <div className={styles.recentInfo}>
-                    <h4>{careHome.name}</h4>
-                    <p>Added: {careHome.createdAt}</p>
-                  </div>
-                  <span
-                    className={`${styles.status} ${
-                      styles[careHome.status.toLowerCase()]
-                    }`}
-                  >
-                    {careHome.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </Card>
-        )}
       </div>
     </AdminLayout>
   );

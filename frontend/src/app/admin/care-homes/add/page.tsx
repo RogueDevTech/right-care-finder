@@ -1,11 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 import AdminLayout from "@/components/layout/admin-layout";
-import { CreateCareHomeData, useAdminActions } from "@/actions-client/admin";
+import {
+  CreateCareHomeData,
+  useAdminActions,
+  CareType,
+  Specialization,
+  Facility,
+} from "@/actions-client/admin";
 import styles from "./add-care-home.module.scss";
 
 interface CareHomeFormData {
@@ -86,25 +92,7 @@ const initialFormData: CareHomeFormData = {
   imageUrls: [],
 };
 
-const specializationOptions = [
-  "Dementia Care",
-  "Respite Care",
-  "End of Life Care",
-  "Residential Care",
-  "Nursing Care",
-  "Learning Disability Care",
-  "Mental Health Care",
-  "Physical Disability Care",
-  "Sensory Impairment Care",
-  "Young Adult Care",
-];
-
-const careTypeOptions = [
-  { id: 1, name: "Residential Care" },
-  { id: 2, name: "Nursing Care" },
-  { id: 3, name: "Dementia Care" },
-  { id: 4, name: "Respite Care" },
-];
+// Configuration data will be loaded from API
 
 // UK Countries and their regions/states
 const ukCountries = [
@@ -755,18 +743,7 @@ const ukCities = {
   },
 };
 
-const facilityOptions = [
-  { id: "1", name: "Garden" },
-  { id: "2", name: "Lounge" },
-  { id: "3", name: "Dining Room" },
-  { id: "4", name: "Activity Room" },
-  { id: "5", name: "Hair Salon" },
-  { id: "6", name: "Library" },
-  { id: "7", name: "Cinema Room" },
-  { id: "8", name: "Gym" },
-  { id: "9", name: "Spa" },
-  { id: "10", name: "Chapel" },
-];
+// Facility options will be loaded from API
 
 // Time picker component for opening hours
 const TimePicker = ({
@@ -840,8 +817,49 @@ export default function AddCareHomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  // Configuration data state
+  const [careTypes, setCareTypes] = useState<CareType[]>([]);
+  const [specializations, setSpecializations] = useState<Specialization[]>([]);
+  const [facilities, setFacilities] = useState<Facility[]>([]);
+  const [isLoadingConfig, setIsLoadingConfig] = useState(true);
+
   const router = useRouter();
-  const { createCareHome } = useAdminActions();
+  const { createCareHome, getCareTypes, getSpecializations, getFacilities } =
+    useAdminActions();
+
+  // Fetch configuration data on component mount
+  useEffect(() => {
+    const loadConfigurationData = async () => {
+      setIsLoadingConfig(true);
+      try {
+        // Load care types
+        const careTypesResult = await getCareTypes();
+        if (careTypesResult.success && careTypesResult.data) {
+          setCareTypes(careTypesResult.data);
+        }
+
+        // Load specializations
+        const specializationsResult = await getSpecializations();
+        if (specializationsResult.success && specializationsResult.data) {
+          setSpecializations(specializationsResult.data);
+        }
+
+        // Load facilities
+        const facilitiesResult = await getFacilities();
+        if (facilitiesResult.success && facilitiesResult.data) {
+          setFacilities(facilitiesResult.data);
+        }
+      } catch (error) {
+        console.error("Error loading configuration data:", error);
+        toast.error("Failed to load configuration data");
+      } finally {
+        setIsLoadingConfig(false);
+      }
+    };
+
+    loadConfigurationData();
+  }, []);
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -1317,11 +1335,15 @@ export default function AddCareHomePage() {
                       required
                     >
                       <option value="">Select care type</option>
-                      {careTypeOptions.map((type) => (
-                        <option key={type.id} value={type.id}>
-                          {type.name}
-                        </option>
-                      ))}
+                      {isLoadingConfig ? (
+                        <option value="">Loading care types...</option>
+                      ) : (
+                        careTypes.map((type) => (
+                          <option key={type.id} value={type.id}>
+                            {type.name}
+                          </option>
+                        ))
+                      )}
                     </select>
                   </div>
 
@@ -1635,40 +1657,55 @@ export default function AddCareHomePage() {
               <div className={getFormGroupClass("specializations")}>
                 <h3>Specializations</h3>
                 <div className={styles.checkboxGrid}>
-                  {specializationOptions.map((specialization) => (
-                    <div key={specialization} className={styles.checkboxItem}>
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={formData.specializations.includes(
-                            specialization
-                          )}
-                          onChange={() =>
-                            handleSpecializationChange(specialization)
-                          }
-                        />
-                        {specialization}
-                      </label>
+                  {isLoadingConfig ? (
+                    <div className={styles.loadingMessage}>
+                      Loading specializations...
                     </div>
-                  ))}
+                  ) : (
+                    specializations.map((specialization) => (
+                      <div
+                        key={specialization.id}
+                        className={styles.checkboxItem}
+                      >
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={formData.specializations.includes(
+                              specialization.name
+                            )}
+                            onChange={() =>
+                              handleSpecializationChange(specialization.name)
+                            }
+                          />
+                          {specialization.name}
+                        </label>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
               <div className={styles.formSection}>
                 <h3>Facilities</h3>
                 <div className={styles.checkboxGrid}>
-                  {facilityOptions.map((facility) => (
-                    <div key={facility.id} className={styles.checkboxItem}>
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={formData.facilityIds.includes(facility.id)}
-                          onChange={() => handleFacilityChange(facility.id)}
-                        />
-                        {facility.name}
-                      </label>
+                  {isLoadingConfig ? (
+                    <div className={styles.loadingMessage}>
+                      Loading facilities...
                     </div>
-                  ))}
+                  ) : (
+                    facilities.map((facility) => (
+                      <div key={facility.id} className={styles.checkboxItem}>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={formData.facilityIds.includes(facility.id)}
+                            onChange={() => handleFacilityChange(facility.id)}
+                          />
+                          {facility.name}
+                        </label>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>

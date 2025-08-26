@@ -44,9 +44,209 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 200px;
+  // height: 200px;
   font-size: 1.125rem;
   color: #6b7280;
+}
+
+// Skeleton Loader Styles
+.skeletonBackButton {
+  width: 120px;
+  height: 20px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.skeletonTitle {
+  width: 300px;
+  height: 32px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+.skeletonTab {
+  width: 140px;
+  height: 44px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+  margin-right: 8px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 4px;
+  }
+}
+
+.skeletonSectionTitle {
+  width: 200px;
+  height: 24px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeletonAddButton {
+  width: 140px;
+  height: 40px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+.skeletonHeaderCell {
+  width: 80px;
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 3px;
+}
+
+.skeletonCell {
+  width: 100%;
+  height: 16px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 3px;
+}
+
+.skeletonStatus {
+  width: 60px;
+  height: 20px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 10px;
+}
+
+.skeletonActions {
+  display: flex;
+  gap: 8px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+.skeletonActionButton {
+  width: 60px;
+  height: 32px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+// Empty State Styles
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: white;
+  border-radius: 0.5rem;
+  border: 2px dashed #e5e7eb;
+  margin: 1rem 0;
+  min-height: 300px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #1c7c8a;
+    background: #f8fafc;
+  }
+}
+
+.emptyStateIcon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  opacity: 0.7;
+  animation: float 3s ease-in-out infinite;
+}
+
+.emptyState h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 1rem 0;
+}
+
+.emptyState p {
+  font-size: 1rem;
+  color: #6b7280;
+  margin: 0 0 2rem 0;
+  max-width: 400px;
+  line-height: 1.6;
+}
+
+.emptyStateButton {
+  padding: 0.875rem 2rem;
+  background: linear-gradient(135deg, #1c7c8a, #145e6a);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 12px rgba(28, 124, 138, 0.2);
+
+  &:hover {
+    background: linear-gradient(135deg, #145e6a, #0f4a54);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(28, 124, 138, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .tabs {
@@ -504,7 +704,6 @@
     cursor: wait;
     position: relative;
     color: transparent !important;
-    min-height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -521,6 +720,7 @@
       border-top: 1.5px solid white;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
+      color: #1c7c8a;
     }
 
     &:hover {

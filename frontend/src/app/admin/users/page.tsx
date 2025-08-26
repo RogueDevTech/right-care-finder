@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
 import AdminLayout from "@/components/layout/admin-layout";
@@ -25,7 +24,7 @@ export default function UsersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const router = useRouter();
+  // const router = useRouter(); // Will be used for navigation
 
   useEffect(() => {
     fetchUsers();

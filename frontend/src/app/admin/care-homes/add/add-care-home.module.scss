@@ -344,6 +344,19 @@
   }
 }
 
+.loadingMessage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+  font-style: italic;
+  background: #f9fafb;
+  border-radius: 0.5rem;
+  border: 1px dashed #d1d5db;
+}
+
 .imageUrlsContainer {
   display: flex;
   flex-direction: column;

@@ -229,15 +229,12 @@ export interface CreateCareHomeData {
 }
 
 export interface CareHomesResponse {
-  careHomes: CareHome[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
-  };
+  data: CareHome[];
+  total: number;
+  page: string;
+  limit: string;
+  status?: number;
+  error?: unknown;
 }
 
 export interface CareHomesQueryParams {
@@ -370,10 +367,10 @@ export const useAdminActions = () => {
       `/admin/care-homes?${queryParams.toString()}`
     );
 
-    if (response.data) {
+    if (response && response.data) {
       return {
         success: true,
-        data: response.data as CareHomesResponse,
+        data: response as CareHomesResponse,
       };
     } else {
       return {

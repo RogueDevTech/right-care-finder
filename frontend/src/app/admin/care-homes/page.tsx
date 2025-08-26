@@ -26,7 +26,7 @@ export default function CareHomesPage() {
 
   useEffect(() => {
     fetchCareHomes();
-  }, [currentPage, searchTerm, statusFilter, regionFilter]);
+  }, [currentPage, searchTerm, statusFilter, regionFilter, getCareHomes]);
 
   const fetchCareHomes = async () => {
     try {
@@ -42,7 +42,6 @@ export default function CareHomesPage() {
       };
 
       const result = await getCareHomes(queryParams);
-
       if (result.success && result.data) {
         setCareHomes(result.data.data || []);
         setTotalPages(Math.ceil((result.data.total || 0) / 10));
@@ -70,85 +69,6 @@ export default function CareHomesPage() {
   const getStatusColor = (isActive: boolean) => {
     return isActive ? styles.active : styles.inactive;
   };
-
-  if (isLoading) {
-    return (
-      <AdminLayout>
-        <div className={styles.careHomesContainer}>
-          {/* Header Skeleton */}
-          <div className={styles.header}>
-            <div className={styles.headerLeft}>
-              <div className={styles.skeletonBackButton}></div>
-              <div className={styles.skeletonTitle}></div>
-            </div>
-            <div className={styles.skeletonAddButton}></div>
-          </div>
-
-          {/* Filters Skeleton */}
-          <div className={styles.filters}>
-            <div className={styles.searchBox}>
-              <div className={styles.skeletonSearchInput}></div>
-            </div>
-            <div className={styles.filterGroup}>
-              <div className={styles.skeletonFilterSelect}></div>
-            </div>
-            <div className={styles.filterGroup}>
-              <div className={styles.skeletonFilterSelect}></div>
-            </div>
-          </div>
-
-          {/* Care Homes Grid Skeleton */}
-          <div className={styles.careHomesGrid}>
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className={styles.skeletonCareHomeCard}>
-                <div className={styles.skeletonCardHeader}>
-                  <div className={styles.skeletonCardInfo}>
-                    <div className={styles.skeletonCardTitle}></div>
-                    <div className={styles.skeletonCardLocation}>
-                      <div className={styles.skeletonLocationLine}></div>
-                      <div className={styles.skeletonLocationLine}></div>
-                    </div>
-                  </div>
-                  <div className={styles.skeletonStatusBadge}>
-                    <div className={styles.skeletonStatus}></div>
-                    <div className={styles.skeletonVerifiedBadge}></div>
-                  </div>
-                </div>
-                <div className={styles.skeletonCardBody}>
-                  <div className={styles.skeletonContactInfo}>
-                    <div className={styles.skeletonContactItem}>
-                      <div className={styles.skeletonContactLabel}></div>
-                      <div className={styles.skeletonContactValue}></div>
-                    </div>
-                    <div className={styles.skeletonContactItem}>
-                      <div className={styles.skeletonContactLabel}></div>
-                      <div className={styles.skeletonContactValue}></div>
-                    </div>
-                  </div>
-                  <div className={styles.skeletonDetails}>
-                    <div className={styles.skeletonRating}>
-                      <div className={styles.skeletonRatingLabel}></div>
-                      <div className={styles.skeletonRatingValue}></div>
-                    </div>
-                    <div className={styles.skeletonSpecializations}>
-                      <div
-                        className={styles.skeletonSpecializationsLabel}
-                      ></div>
-                      <div className={styles.skeletonSpecializationsTags}>
-                        <div className={styles.skeletonTag}></div>
-                        <div className={styles.skeletonTag}></div>
-                        <div className={styles.skeletonTag}></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </AdminLayout>
-    );
-  }
 
   return (
     <AdminLayout>
@@ -206,79 +126,194 @@ export default function CareHomesPage() {
           </div>
         </div>
 
-        <div className={styles.careHomesGrid}>
-          {careHomes.map((careHome) => (
-            <div
-              key={careHome.id}
-              className={styles.careHomeCard}
-              onClick={() => router.push(`/admin/care-homes/${careHome.id}`)}
-              style={{ cursor: "pointer" }}
-            >
-              <div className={styles.cardHeader}>
-                <div className={styles.careHomeInfo}>
-                  <h3>{careHome.name}</h3>
-                  <div className={styles.location}>
-                    <span>
-                      📍 {careHome.city}, {careHome.region}
-                    </span>
-                    <span>📮 {careHome.postcode}</span>
+        {isLoading ? (
+          <div className={styles.careHomesGrid}>
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className={styles.skeletonCareHomeCard}>
+                <div className={styles.skeletonCardHeader}>
+                  <div className={styles.skeletonCardInfo}>
+                    <div className={styles.skeletonCardTitle}></div>
+                    <div className={styles.skeletonCardLocation}>
+                      <div className={styles.skeletonLocationLine}></div>
+                      <div className={styles.skeletonLocationLine}></div>
+                    </div>
+                  </div>
+                  <div className={styles.skeletonStatusBadge}>
+                    <div className={styles.skeletonStatus}></div>
+                    <div className={styles.skeletonVerifiedBadge}></div>
                   </div>
                 </div>
-                <div className={styles.statusBadge}>
-                  <span
-                    className={`${styles.status} ${getStatusColor(
-                      careHome.isActive
-                    )}`}
-                  >
-                    {careHome.isActive ? "Active" : "Inactive"}
-                  </span>
-                  {careHome.isVerified && (
-                    <span className={styles.verifiedBadge}>✓ Verified</span>
-                  )}
-                </div>
-              </div>
-
-              <div className={styles.cardBody}>
-                <div className={styles.contactInfo}>
-                  <div className={styles.contactItem}>
-                    <span className={styles.label}>📞 Phone:</span>
-                    <span>{careHome.phone}</span>
+                <div className={styles.skeletonCardBody}>
+                  <div className={styles.skeletonContactInfo}>
+                    <div className={styles.skeletonContactItem}>
+                      <div className={styles.skeletonContactLabel}></div>
+                      <div className={styles.skeletonContactValue}></div>
+                    </div>
+                    <div className={styles.skeletonContactItem}>
+                      <div className={styles.skeletonContactLabel}></div>
+                      <div className={styles.skeletonContactValue}></div>
+                    </div>
                   </div>
-                  <div className={styles.contactItem}>
-                    <span className={styles.label}>✉️ Email:</span>
-                    <span>{careHome.email || "Not provided"}</span>
-                  </div>
-                </div>
-
-                <div className={styles.details}>
-                  <div className={styles.cqcRating}>
-                    <span className={styles.label}>Rating:</span>
-                    <span className={styles.rating}>
-                      {careHome.rating
-                        ? `${careHome.rating}/5 (${careHome.reviewCount} reviews)`
-                        : "No reviews yet"}
-                    </span>
-                  </div>
-
-                  <div className={styles.careTypes}>
-                    <span className={styles.label}>Specializations:</span>
-                    <div className={styles.typeTags}>
-                      {careHome.specializations.map((specialization, index) => (
-                        <span key={index} className={styles.typeTag}>
-                          {specialization}
-                        </span>
-                      ))}
+                  <div className={styles.skeletonDetails}>
+                    <div className={styles.skeletonRating}>
+                      <div className={styles.skeletonRatingLabel}></div>
+                      <div className={styles.skeletonRatingValue}></div>
+                    </div>
+                    <div className={styles.skeletonSpecializations}>
+                      <div
+                        className={styles.skeletonSpecializationsLabel}
+                      ></div>
+                      <div className={styles.skeletonSpecializationsTags}>
+                        <div className={styles.skeletonTag}></div>
+                        <div className={styles.skeletonTag}></div>
+                        <div className={styles.skeletonTag}></div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className={styles.careHomesGrid}>
+            {careHomes.map((careHome) => (
+              <div
+                key={careHome.id}
+                className={styles.careHomeCard}
+                onClick={() => router.push(`/admin/care-homes/${careHome.id}`)}
+                style={{ cursor: "pointer" }}
+              >
+                <div className={styles.cardHeader}>
+                  <div className={styles.careHomeInfo}>
+                    <h3>{careHome.name}</h3>
+                    <div className={styles.location}>
+                      <span>
+                        📍 {careHome.city}, {careHome.region}
+                      </span>
+                      <span>📮 {careHome.postcode}</span>
+                    </div>
+                  </div>
+                  <div className={styles.statusBadge}>
+                    <span
+                      className={`${styles.status} ${getStatusColor(
+                        careHome.isActive
+                      )}`}
+                    >
+                      {careHome.isActive ? "Active" : "Inactive"}
+                    </span>
+                    {careHome.isVerified && (
+                      <span className={styles.verifiedBadge}>✓ Verified</span>
+                    )}
+                  </div>
+                </div>
 
-        {careHomes.length === 0 && !isLoading && (
+                <div className={styles.cardBody}>
+                  <div className={styles.contactInfo}>
+                    <div className={styles.contactItem}>
+                      <span className={styles.label}>📞 Phone:</span>
+                      <span>{careHome.phone}</span>
+                    </div>
+                    <div className={styles.contactItem}>
+                      <span className={styles.label}>✉️ Email:</span>
+                      <span>{careHome.email || "Not provided"}</span>
+                    </div>
+                  </div>
+
+                  <div className={styles.details}>
+                    <div className={styles.cqcRating}>
+                      <span className={styles.label}>Rating:</span>
+                      <span className={styles.rating}>
+                        {careHome.rating
+                          ? `${careHome.rating}/5 (${careHome.reviewCount} reviews)`
+                          : "No reviews yet"}
+                      </span>
+                    </div>
+
+                    <div className={styles.careTypes}>
+                      <span className={styles.label}>Specializations:</span>
+                      <div className={styles.typeTags}>
+                        {careHome.specializations.map(
+                          (specialization, index) => (
+                            <span key={index} className={styles.typeTag}>
+                              {specialization}
+                            </span>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!isLoading && careHomes.length === 0 && (
           <div className={styles.emptyState}>
-            <p>No care homes found matching your criteria.</p>
+            <div className={styles.emptyStateIcon}>🏠</div>
+            <h3>No Care Homes Found</h3>
+            <p>
+              {searchTerm || statusFilter !== "all" || regionFilter !== "all"
+                ? "No care homes match your current search criteria. Try adjusting your filters or search terms."
+                : "Get started by adding your first care home to help families find the right care."}
+            </p>
+            <div className={styles.emptyStateActions}>
+              {searchTerm ||
+              statusFilter !== "all" ||
+              regionFilter !== "all" ? (
+                <button
+                  className={styles.emptyStateButton}
+                  onClick={() => {
+                    setSearchTerm("");
+                    setStatusFilter("all");
+                    setRegionFilter("all");
+                  }}
+                >
+                  Clear All Filters
+                </button>
+              ) : (
+                <Link href="/admin/care-homes/add">
+                  <button className={styles.emptyStateButton}>
+                    + Add Your First Care Home
+                  </button>
+                </Link>
+              )}
+            </div>
+            {searchTerm || statusFilter !== "all" || regionFilter !== "all" ? (
+              <div className={styles.emptyStateFilters}>
+                <span className={styles.filterLabel}>Active filters:</span>
+                {searchTerm && (
+                  <span className={styles.filterTag}>
+                    Search: &quot;{searchTerm}&quot;
+                  </span>
+                )}
+                {statusFilter !== "all" && (
+                  <span className={styles.filterTag}>
+                    Status: {statusFilter === "active" ? "Active" : "Inactive"}
+                  </span>
+                )}
+                {regionFilter !== "all" && (
+                  <span className={styles.filterTag}>
+                    Region: {regionFilter}
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div className={styles.emptyStateStats}>
+                <div className={styles.statItem}>
+                  <span className={styles.statNumber}>0</span>
+                  <span className={styles.statLabel}>Total Care Homes</span>
+                </div>
+                <div className={styles.statItem}>
+                  <span className={styles.statNumber}>0</span>
+                  <span className={styles.statLabel}>Active Homes</span>
+                </div>
+                <div className={styles.statItem}>
+                  <span className={styles.statNumber}>0</span>
+                  <span className={styles.statLabel}>Verified Homes</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

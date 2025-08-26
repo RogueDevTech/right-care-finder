@@ -7,7 +7,7 @@ import Link from "next/link";
 import { DropIcon, MenuIcon } from "../icon";
 import { ISession } from "@/interfaces";
 
-export default function NavBar({ session }: { session: ISession }) {
+export default function NavBar({ session }: { session?: ISession }) {
   const handleLogout = () => {};
 
   return (
@@ -104,7 +104,7 @@ export default function NavBar({ session }: { session: ISession }) {
         </div>
       </div>
       <div className={styles.rightNav}>
-        {session.isLoggedIn ? (
+        {session?.isLoggedIn ? (
           <div className={styles.profileSection}>
             <div className={styles.profileAvatar}>
               <span className={styles.avatarText}>

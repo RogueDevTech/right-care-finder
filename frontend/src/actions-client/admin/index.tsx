@@ -233,6 +233,8 @@ export interface CareHomesResponse {
   total: number;
   page: string;
   limit: string;
+  status?: number;
+  error?: unknown;
 }
 
 export interface CareHomesQueryParams {
@@ -365,10 +367,10 @@ export const useAdminActions = () => {
       `/admin/care-homes?${queryParams.toString()}`
     );
 
-    if (response.data) {
+    if (response && response.data) {
       return {
         success: true,
-        data: response.data as CareHomesResponse,
+        data: response as CareHomesResponse,
       };
     } else {
       return {

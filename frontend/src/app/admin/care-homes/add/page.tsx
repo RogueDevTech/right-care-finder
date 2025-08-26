@@ -817,6 +817,7 @@ export default function AddCareHomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [isAddButtonClicked, setIsAddButtonClicked] = useState(false);
 
   // Configuration data state
   const [careTypes, setCareTypes] = useState<CareType[]>([]);
@@ -859,7 +860,7 @@ export default function AddCareHomePage() {
     };
 
     loadConfigurationData();
-  }, []);
+  }, [getCareTypes, getSpecializations, getFacilities]);
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -876,7 +877,7 @@ export default function AddCareHomePage() {
     if (type === "number") {
       setFormData((prev) => ({
         ...prev,
-        [name]: value === "" ? undefined : parseFloat(value) || 0,
+        [name]: value === "" ? 0 : parseFloat(value) || 0,
       }));
     } else if (type === "checkbox") {
       const checked = (e.target as HTMLInputElement).checked;
@@ -1096,7 +1097,10 @@ export default function AddCareHomePage() {
         (fieldName === "careTypeId" &&
           error.toLowerCase().includes("care type")) ||
         (fieldName === "addressLine1" &&
-          error.toLowerCase().includes("address line 1"))
+          error.toLowerCase().includes("address line 1")) ||
+        (fieldName === "latitude" &&
+          error.toLowerCase().includes("latitude")) ||
+        (fieldName === "longitude" && error.toLowerCase().includes("longitude"))
     );
   };
 
@@ -1133,6 +1137,20 @@ export default function AddCareHomePage() {
     if (!formData.city?.trim()) errors.push("City is required");
     if (!formData.region?.trim()) errors.push("Region is required");
     if (!formData.postcode?.trim()) errors.push("Postcode is required");
+
+    // Coordinate validation - only validate if coordinates are provided (not 0)
+    if (
+      formData.latitude !== 0 &&
+      (formData.latitude < -90 || formData.latitude > 90)
+    ) {
+      errors.push("Latitude must be between -90 and 90 degrees");
+    }
+    if (
+      formData.longitude !== 0 &&
+      (formData.longitude < -180 || formData.longitude > 180)
+    ) {
+      errors.push("Longitude must be between -180 and 180 degrees");
+    }
 
     // Pricing validation - optional fields
     if (
@@ -1175,8 +1193,12 @@ export default function AddCareHomePage() {
     return { isValid: errors.length === 0, errors };
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
+    // Check if the "Add Care Home" button was clicked
+    // if (!isAddButtonClicked) {
+    //   toast.error("Please click the 'Add Care Home' button to submit the form");
+    //   return;
+    // }
 
     // Validate form before submission
     const validation = validateForm();
@@ -1196,6 +1218,15 @@ export default function AddCareHomePage() {
         // Ensure all required fields are present
         description: formData.description.filter((line) => line.trim() !== ""),
         imageUrls: formData.imageUrls.filter((url) => url.trim() !== ""),
+        // Handle coordinates - only send if they are valid
+        latitude:
+          formData.latitude >= -90 && formData.latitude <= 90
+            ? formData.latitude
+            : undefined,
+        longitude:
+          formData.longitude >= -180 && formData.longitude <= 180
+            ? formData.longitude
+            : undefined,
       };
 
       const result = await createCareHome(
@@ -1204,13 +1235,16 @@ export default function AddCareHomePage() {
 
       if (result.success) {
         toast.success("Care home added successfully!");
+        setIsAddButtonClicked(false); // Reset the flag on success
         router.push("/admin/care-homes");
       } else {
         toast.error(result.error || "Failed to add care home");
+        setIsAddButtonClicked(false); // Reset the flag on error
       }
     } catch (error) {
       console.error("Error creating care home:", error);
       toast.error("Failed to add care home. Please try again.");
+      setIsAddButtonClicked(false); // Reset the flag on error
     } finally {
       setIsSubmitting(false);
     }
@@ -1284,7 +1318,7 @@ export default function AddCareHomePage() {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form className={styles.form}>
           {/* Basic Information Step */}
           {currentStep === 0 && (
             <div className={styles.tabContent}>
@@ -1479,30 +1513,54 @@ export default function AddCareHomePage() {
                     />
                   </div>
 
-                  <div className={styles.formGroup}>
-                    <label htmlFor="latitude">Latitude</label>
+                  <div className={getFormGroupClass("latitude")}>
+                    <label htmlFor="latitude">Latitude (optional)</label>
                     <input
                       type="number"
                       id="latitude"
                       name="latitude"
-                      value={formData.latitude}
+                      value={formData.latitude || ""}
                       onChange={handleInputChange}
                       step="0.000001"
-                      placeholder="53.4808"
+                      min="-90"
+                      max="90"
+                      placeholder="57.6869 (Fraserburgh)"
                     />
+                    <small className={styles.helpText}>
+                      Must be between -90 and 90 degrees. Leave as 0 if unknown.
+                    </small>
+                    {formData.latitude !== 0 &&
+                      (formData.latitude < -90 || formData.latitude > 90) && (
+                        <div className={styles.errorMessage}>
+                          Latitude must be between -90 and 90 degrees
+                        </div>
+                      )}
                   </div>
 
-                  <div className={styles.formGroup}>
-                    <label htmlFor="longitude">Longitude</label>
+                  <div className={getFormGroupClass("longitude")}>
+                    <label htmlFor="longitude">Longitude (optional)</label>
                     <input
                       type="number"
                       id="longitude"
                       name="longitude"
-                      value={formData.longitude}
+                      value={formData.longitude || ""}
                       onChange={handleInputChange}
                       step="0.000001"
-                      placeholder="-2.2426"
+                      min="-180"
+                      max="180"
+                      placeholder="-2.0054 (Fraserburgh)"
                     />
+                    <small className={styles.helpText}>
+                      Must be between -180 and 180 degrees. Leave as 0 if
+                      unknown.
+                    </small>
+                    {formData.longitude !== 0 &&
+                      (formData.longitude < -180 ||
+                        formData.longitude > 180) && (
+                        <div className={styles.errorMessage}>
+                          Longitude must be between -180 and 180 degrees
+                        </div>
+                      )}
                   </div>
                 </div>
               </div>
@@ -1805,18 +1863,6 @@ export default function AddCareHomePage() {
             </div>
           )}
 
-          {/* Validation Errors Display */}
-          {/* {validationErrors.length > 0 && (
-            <div className={styles.validationErrors}>
-              <h4>Please fix the following errors:</h4>
-              <ul>
-                {validationErrors.map((error, index) => (
-                  <li key={index}>{error}</li>
-                ))}
-              </ul>
-            </div>
-          )} */}
-
           <div className={styles.formActions}>
             <button
               type="button"
@@ -1848,6 +1894,7 @@ export default function AddCareHomePage() {
                 type="submit"
                 disabled={isSubmitting}
                 className={styles.primaryButton}
+                onClick={() => handleSubmit()}
               >
                 {isSubmitting ? "Adding Care Home..." : "Add Care Home"}
               </button>

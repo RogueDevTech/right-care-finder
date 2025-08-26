@@ -11,6 +11,7 @@ import {
   Request,
   HttpCode,
   HttpStatus,
+  Version,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -22,7 +23,10 @@ import {
   ApiBearerAuth,
 } from "@nestjs/swagger";
 import { HealthcareHomesService } from "./healthcare-homes.service";
-import { CreateCareHomeDto, exampleCareHomeData } from "./dto/create-care-home.dto";
+import {
+  CreateCareHomeDto,
+  exampleCareHomeData,
+} from "./dto/create-care-home.dto";
 import { UpdateCareHomeDto } from "./dto/update-care-home.dto";
 import { CareHomeQueryDto } from "./dto/care-home-query.dto";
 import { CreateReviewDto } from "./dto/create-review.dto";
@@ -32,18 +36,15 @@ import { Roles } from "../auth/decorators/roles.decorator";
 import { Public } from "../auth/decorators/public.decorator";
 import { UserRole } from "../users/entities/user.entity";
 import { BaseResponseDto } from "../../common/dto/base-response.dto";
-import { CareHome } from "./entities/care-home.entity";
-import { CareType } from "./entities/care-type.entity";
-import { CareHomeFacility } from "./entities/care-home-facility.entity";
-import { CareHomeReview } from "./entities/care-home-review.entity";
 
 @ApiTags("Healthcare Homes")
-@Controller("healthcare-homes")
+@Controller("v1/healthcare-homes")
 export class HealthcareHomesController {
   constructor(
     private readonly healthcareHomesService: HealthcareHomesService
   ) {}
 
+  @Version("v1")
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -54,16 +55,16 @@ export class HealthcareHomesController {
     description:
       "Creates a new care home listing with comprehensive details including basic information, location, pricing, services, facilities, opening hours, and media. Requires ADMIN or PROVIDER role.",
   })
-  @ApiBody({ 
+  @ApiBody({
     type: CreateCareHomeDto,
     description: "Care home data with comprehensive details",
     examples: {
       complete: {
         summary: "Complete Care Home Example",
         description: "A complete example of care home data with all fields",
-        value: exampleCareHomeData
-      }
-    }
+        value: exampleCareHomeData,
+      },
+    },
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -84,15 +85,16 @@ export class HealthcareHomesController {
   })
   async create(
     @Body() createCareHomeDto: CreateCareHomeDto,
-    @Request() req: any
+    @Request() req: { user?: { id: string } }
   ) {
     const careHome = await this.healthcareHomesService.create(
       createCareHomeDto,
-      req.user?.id as string
+      req.user?.id
     );
     return BaseResponseDto.success("Care home created successfully", careHome);
   }
 
+  @Version("v1")
   @Get()
   @Public()
   @ApiOperation({
@@ -221,6 +223,7 @@ export class HealthcareHomesController {
     return BaseResponseDto.success("Care homes retrieved successfully", result);
   }
 
+  @Version("v1")
   @Get("featured")
   @Public()
   @ApiOperation({
@@ -247,6 +250,7 @@ export class HealthcareHomesController {
     );
   }
 
+  @Version("v1")
   @Get("nearby")
   @Public()
   @ApiOperation({
@@ -294,6 +298,7 @@ export class HealthcareHomesController {
     );
   }
 
+  @Version("v1")
   @Get("care-types")
   @Public()
   @ApiOperation({
@@ -313,6 +318,7 @@ export class HealthcareHomesController {
     );
   }
 
+  @Version("v1")
   @Get("facilities")
   @Public()
   @ApiOperation({
@@ -333,6 +339,7 @@ export class HealthcareHomesController {
     );
   }
 
+  @Version("v1")
   @Get(":id")
   @Public()
   @ApiOperation({
@@ -357,6 +364,7 @@ export class HealthcareHomesController {
     );
   }
 
+  @Version("v1")
   @Patch(":id")
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -397,6 +405,7 @@ export class HealthcareHomesController {
     return BaseResponseDto.success("Care home updated successfully", careHome);
   }
 
+  @Version("v1")
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -427,6 +436,7 @@ export class HealthcareHomesController {
     await this.healthcareHomesService.remove(id);
   }
 
+  @Version("v1")
   @Post(":id/reviews")
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtAuthGuard)
@@ -454,12 +464,12 @@ export class HealthcareHomesController {
   async addReview(
     @Param("id") id: string,
     @Body() createReviewDto: CreateReviewDto,
-    @Request() req: any
+    @Request() req: { user?: { id: string } }
   ) {
     const review = await this.healthcareHomesService.addReview(
       id,
       createReviewDto,
-      req.user?.id as string
+      req.user?.id
     );
     return BaseResponseDto.success("Review added successfully", review);
   }

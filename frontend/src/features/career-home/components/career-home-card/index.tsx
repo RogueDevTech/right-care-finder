@@ -42,7 +42,7 @@ const CareerHomeCard: React.FC = () => {
     };
 
     fetchCareHomes();
-  }, [getHomeCreListings]);
+  }, []);
 
   if (isLoading) {
     return (

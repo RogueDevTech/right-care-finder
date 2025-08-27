@@ -46,7 +46,7 @@ export default function CareHomeDetailsPage() {
     };
 
     fetchCareHome();
-  }, [careHomeId, getCareHomeById, router]);
+  }, [careHomeId, router]);
 
   if (isLoading) {
     return (

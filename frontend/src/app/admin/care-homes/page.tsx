@@ -26,7 +26,7 @@ export default function CareHomesPage() {
 
   useEffect(() => {
     fetchCareHomes();
-  }, [currentPage, searchTerm, statusFilter, regionFilter, getCareHomes]);
+  }, [currentPage, searchTerm, statusFilter, regionFilter]);
 
   const fetchCareHomes = async () => {
     try {

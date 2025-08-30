@@ -102,7 +102,7 @@ export default function ConfigPage() {
 
   useEffect(() => {
     loadData();
-  }, [getCareTypes, getSpecializations, getFacilities]);
+  }, []);
 
   const loadData = async () => {
     setIsLoading(true);

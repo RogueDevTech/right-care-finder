@@ -1,4 +1,6 @@
 import { Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
 import { UsersService } from "../users/users.service";
 import { HealthcareHomesService } from "../healthcare-homes/healthcare-homes.service";
 import { CreateCareHomeDto } from "../healthcare-homes/dto/create-care-home.dto";
@@ -10,7 +12,9 @@ import { CareHome } from "../healthcare-homes/entities/care-home.entity";
 export class AdminService {
   constructor(
     private readonly usersService: UsersService,
-    private readonly healthcareHomesService: HealthcareHomesService
+    private readonly healthcareHomesService: HealthcareHomesService,
+    @InjectRepository(CareHome)
+    private readonly careHomeRepository: Repository<CareHome>
   ) {}
 
   async getDashboardData() {
@@ -128,5 +132,24 @@ export class AdminService {
 
   async deleteUser(id: string) {
     return this.usersService.remove(id);
+  }
+
+  async getCareHomesAvailableForOwners() {
+    // Query care homes that don't have a createdBy user assigned
+    // This includes care homes where createdBy is null or doesn't exist
+    const availableCareHomes = await this.careHomeRepository
+      .createQueryBuilder("careHome")
+      .leftJoinAndSelect("careHome.createdBy", "createdBy")
+      .where("careHome.isActive = :isActive", { isActive: true })
+      .andWhere("createdBy.id IS NULL")
+      .getMany();
+
+    return availableCareHomes.map((careHome: CareHome) => ({
+      id: careHome.id,
+      name: careHome.name,
+      addressLine1: careHome.addressLine1,
+      city: careHome.city,
+      postcode: careHome.postcode,
+    }));
   }
 }

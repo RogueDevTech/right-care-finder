@@ -9,8 +9,10 @@ import {
   UseGuards,
   Query,
   Version,
+  Request,
 } from "@nestjs/common";
 import { AdminService } from "./admin.service";
+import { InvitationService } from "./invitation.service";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { AdminGuard } from "./guards/admin.guard";
 import {
@@ -29,6 +31,11 @@ import {
   CareHomeResponseDto,
   CareHomesListResponseDto,
 } from "./dto/care-home-response.dto";
+import {
+  CreateInvitationDto,
+  InvitationResponseDto,
+  InvitationsListResponseDto,
+} from "./dto/invitation.dto";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { UserRole } from "../users/entities/user.entity";
@@ -39,7 +46,10 @@ import { UserRole } from "../users/entities/user.entity";
 @Roles(UserRole.ADMIN)
 @Controller("v1/admin")
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly invitationService: InvitationService
+  ) {}
 
   @Version("v1")
   @Get("dashboard")
@@ -327,6 +337,33 @@ export class AdminController {
   }
 
   @Version("v1")
+  @Get("care-homes/available-for-owners")
+  @ApiOperation({
+    summary: "Get care homes available for owners",
+    description: "Retrieves care homes that don't have owners assigned yet",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Returns list of care homes without owners",
+    schema: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          id: { type: "string" },
+          name: { type: "string" },
+          addressLine1: { type: "string" },
+          city: { type: "string" },
+          postcode: { type: "string" },
+        },
+      },
+    },
+  })
+  async getCareHomesAvailableForOwners() {
+    return this.adminService.getCareHomesAvailableForOwners();
+  }
+
+  @Version("v1")
   @Get("care-homes/:id")
   @ApiOperation({
     summary: "Get care home details",
@@ -442,5 +479,102 @@ export class AdminController {
     @Query("endDate") endDate: Date
   ) {
     return this.adminService.getCareHomeAnalytics(startDate, endDate);
+  }
+
+  // Invitation Management
+  @Version("v1")
+  @Post("invitations")
+  @ApiOperation({
+    summary: "Invite care home owner",
+    description:
+      "Sends an invitation to a care home owner to join the platform",
+  })
+  @ApiBody({ type: CreateInvitationDto })
+  @ApiResponse({
+    status: 201,
+    description: "Invitation sent successfully",
+    type: InvitationResponseDto,
+  })
+  async inviteCareHomeOwner(
+    @Body() createInvitationDto: CreateInvitationDto,
+    @Request() req: any
+  ) {
+    return this.invitationService.createInvitation(
+      createInvitationDto,
+      req.user.id
+    );
+  }
+
+  @Version("v1")
+  @Get("invitations")
+  @ApiOperation({
+    summary: "Get all invitations",
+    description: "Retrieves a list of all invitations sent to care home owners",
+  })
+  @ApiQuery({ name: "page", required: false, type: Number })
+  @ApiQuery({ name: "limit", required: false, type: Number })
+  @ApiQuery({
+    name: "status",
+    required: false,
+    enum: ["pending", "accepted", "expired"],
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Returns list of invitations",
+    type: InvitationsListResponseDto,
+  })
+  async getInvitations(
+    @Query("page") page: number = 1,
+    @Query("limit") limit: number = 10,
+    @Query("status") status?: string
+  ) {
+    return this.invitationService.getInvitations(page, limit, status as any);
+  }
+
+  @Version("v1")
+  @Get("invitations/:id")
+  @ApiOperation({
+    summary: "Get invitation by ID",
+    description: "Retrieves a specific invitation by its ID",
+  })
+  @ApiParam({ name: "id", description: "Invitation ID" })
+  @ApiResponse({
+    status: 200,
+    description: "Returns invitation details",
+    type: InvitationResponseDto,
+  })
+  async getInvitationById(@Param("id") id: string) {
+    return this.invitationService.getInvitationById(id);
+  }
+
+  @Version("v1")
+  @Post("invitations/:id/resend")
+  @ApiOperation({
+    summary: "Resend invitation",
+    description: "Resends an invitation to a care home owner",
+  })
+  @ApiParam({ name: "id", description: "Invitation ID" })
+  @ApiResponse({
+    status: 200,
+    description: "Invitation resent successfully",
+    type: InvitationResponseDto,
+  })
+  async resendInvitation(@Param("id") id: string) {
+    return this.invitationService.resendInvitation(id);
+  }
+
+  @Version("v1")
+  @Delete("invitations/:id")
+  @ApiOperation({
+    summary: "Cancel invitation",
+    description: "Cancels an invitation to a care home owner",
+  })
+  @ApiParam({ name: "id", description: "Invitation ID" })
+  @ApiResponse({
+    status: 200,
+    description: "Invitation cancelled successfully",
+  })
+  async cancelInvitation(@Param("id") id: string) {
+    return this.invitationService.cancelInvitation(id);
   }
 }

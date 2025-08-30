@@ -21,7 +21,7 @@ export default function CareHomeDetailPage() {
     if (careHomeId) {
       fetchCareHomeDetails();
     }
-  }, [careHomeId, getCareHomeById]);
+  }, [careHomeId]);
 
   const fetchCareHomeDetails = async () => {
     try {

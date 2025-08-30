@@ -287,6 +287,38 @@ export interface Facility {
   updatedAt: string;
 }
 
+// Invitation Interfaces
+export interface CareHomeOption {
+  id: string;
+  name: string;
+  addressLine1: string;
+  city: string;
+  postcode: string;
+}
+
+export interface InviteCareHomeOwnerData {
+  email: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber?: string;
+  careHomeId?: string;
+  message?: string;
+}
+
+export interface InvitationResponse {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  status: "pending" | "accepted" | "expired";
+  invitedBy: string;
+  invitedAt: string;
+  expiresAt: string;
+  careHomeName?: string;
+  careHomeAddress?: string;
+  message?: string;
+}
+
 export const useAdminActions = () => {
   const client = useClient();
 
@@ -776,6 +808,111 @@ export const useAdminActions = () => {
     }
   };
 
+  // Invitation Management
+  const getAvailableCareHomes = async () => {
+    const response = await client.get("/admin/care-homes/available-for-owners");
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as CareHomeOption[],
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const inviteCareHomeOwner = async (inviteData: InviteCareHomeOwnerData) => {
+    const response = await client.post("/admin/invitations", inviteData);
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as InvitationResponse,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const getInvitations = async (
+    params: {
+      page?: number;
+      limit?: number;
+      status?: "pending" | "accepted" | "expired";
+    } = {}
+  ) => {
+    const queryParams = new URLSearchParams();
+
+    if (params.page) queryParams.append("page", params.page.toString());
+    if (params.limit) queryParams.append("limit", params.limit.toString());
+    if (params.status) queryParams.append("status", params.status);
+
+    const response = await client.get(
+      `/admin/invitations?${queryParams.toString()}`
+    );
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as {
+          invitations: InvitationResponse[];
+          pagination: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+          };
+        },
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const resendInvitation = async (invitationId: string) => {
+    const response = await client.post(
+      `/admin/invitations/${invitationId}/resend`
+    );
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as InvitationResponse,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const cancelInvitation = async (invitationId: string) => {
+    const response = await client.delete(`/admin/invitations/${invitationId}`);
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
   return {
     getUsers,
     getUserById,
@@ -801,5 +938,11 @@ export const useAdminActions = () => {
     createFacility,
     updateFacility,
     deleteFacility,
+    // Invitation Management
+    getAvailableCareHomes,
+    inviteCareHomeOwner,
+    getInvitations,
+    resendInvitation,
+    cancelInvitation,
   };
 };

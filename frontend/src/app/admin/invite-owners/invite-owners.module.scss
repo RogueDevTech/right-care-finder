@@ -1,0 +1,472 @@
+.inviteContainer {
+  background: white;
+  border-radius: 0.375rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e9ecef;
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #495057;
+  }
+
+  p {
+    font-size: 1.1rem;
+    color: #6c757d;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1fr 350px;
+  gap: 2rem;
+  align-items: start;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.inviteForm {
+  .formCard {
+    border-left: 4px solid #1c7c8a;
+    transition: all 0.3s ease;
+    padding: 2rem;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(28, 124, 138, 0.1);
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 1.5rem;
+    }
+  }
+
+  .form {
+    .formRow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .formGroup {
+      margin-bottom: 1rem;
+
+      label {
+        display: block;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+      }
+
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #e9ecef;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        transition: border-color 0.2s, box-shadow 0.2s;
+
+        &:focus {
+          outline: none;
+          border-color: #1c7c8a;
+          box-shadow: 0 0 0 3px rgba(28, 124, 138, 0.1);
+        }
+
+        &::placeholder {
+          color: #6c757d;
+        }
+      }
+
+      .selectInput {
+        background-color: white;
+        cursor: pointer;
+      }
+
+      .noCareHomes {
+        margin-top: 0.5rem;
+        font-size: 0.875rem;
+        color: #6b7280;
+        font-style: italic;
+      }
+
+      .searchableDropdown {
+        position: relative;
+        width: 100%;
+      }
+
+      .dropdownTrigger {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #e9ecef;
+        border-radius: 0.375rem;
+        background-color: white;
+        cursor: pointer;
+        transition: border-color 0.2s, box-shadow 0.2s;
+
+        &:hover {
+          border-color: #1c7c8a;
+        }
+
+        &:focus-within {
+          outline: none;
+          border-color: #1c7c8a;
+          box-shadow: 0 0 0 3px rgba(28, 124, 138, 0.1);
+        }
+      }
+
+      .selectedOptionContainer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        gap: 0.5rem;
+      }
+
+      .selectedOption {
+        color: #1a202c;
+        font-weight: 500;
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .clearButton {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        border: none;
+        background: none;
+        color: #6b7280;
+        cursor: pointer;
+        border-radius: 50%;
+        transition: all 0.2s;
+
+        &:hover {
+          background-color: #f3f4f6;
+          color: #ef4444;
+        }
+
+        &:focus {
+          outline: none;
+          box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+        }
+      }
+
+      .placeholder {
+        color: #9ca3af;
+      }
+
+      .dropdownArrow {
+        color: #6b7280;
+        transition: transform 0.2s;
+
+        &.rotated {
+          transform: rotate(180deg);
+        }
+      }
+
+      .dropdownContent {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #e9ecef;
+        border-top: none;
+        border-radius: 0 0 0.375rem 0.375rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 50;
+        max-height: 300px;
+        overflow: hidden;
+      }
+
+      .searchInput {
+        padding: 0.75rem;
+        border-bottom: 1px solid #e9ecef;
+
+        input {
+          width: 100%;
+          padding: 0.5rem;
+          border: 1px solid #d1d5db;
+          border-radius: 0.25rem;
+          font-size: 0.875rem;
+          background-color: #f9fafb;
+
+          &:focus {
+            outline: none;
+            border-color: #1c7c8a;
+            background-color: white;
+          }
+
+          &::placeholder {
+            color: #9ca3af;
+          }
+        }
+      }
+
+      .optionsList {
+        max-height: 250px;
+        overflow-y: auto;
+      }
+
+      .option {
+        padding: 0.75rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        border-bottom: 1px solid #f3f4f6;
+
+        &:hover {
+          background-color: #f8f9fa;
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        &.selected {
+          background-color: #e3f2fd;
+          color: #1c7c8a;
+        }
+      }
+
+      .optionName {
+        font-weight: 600;
+        color: inherit;
+        margin-bottom: 0.25rem;
+      }
+
+      .optionAddress {
+        font-size: 0.875rem;
+        color: #6b7280;
+      }
+
+      .noResults {
+        padding: 0.75rem;
+        text-align: center;
+        color: #6b7280;
+        font-style: italic;
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+    }
+
+    .formActions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+
+      @media (max-width: 768px) {
+        flex-direction: column;
+      }
+    }
+
+    .submitButton {
+      flex: 1;
+      background: #1c7c8a;
+      color: white;
+      border: none;
+      padding: 0.875rem 1.5rem;
+      border-radius: 0.375rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover:not(:disabled) {
+        background: #156d7a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(28, 124, 138, 0.3);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+
+    .bulkButton {
+      background: white;
+      color: #495057;
+      border: 1px solid #e9ecef;
+      padding: 0.875rem 1.5rem;
+      border-radius: 0.375rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        background: #f8f9fa;
+        border-color: #1c7c8a;
+        color: #1c7c8a;
+      }
+    }
+  }
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  .infoCard {
+    border-left: 4px solid #1c7c8a;
+    transition: all 0.3s ease;
+    padding: 1.5rem;
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(28, 124, 138, 0.1);
+    }
+
+    h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #495057;
+      margin-bottom: 1rem;
+    }
+
+    .benefitsList {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        padding: 0.5rem 0;
+        color: #6c757d;
+        font-size: 0.875rem;
+        border-bottom: 1px solid #f8f9fa;
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+    }
+
+    .recentInvitations {
+      .noInvitations {
+        color: #6c757d;
+        font-style: italic;
+        text-align: center;
+        padding: 1rem 0;
+      }
+
+      .invitationItem {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f8f9fa;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .invitationInfo {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+
+          .ownerName {
+            font-weight: 500;
+            color: #495057;
+            font-size: 0.875rem;
+          }
+
+          .ownerEmail {
+            color: #6c757d;
+            font-size: 0.75rem;
+          }
+        }
+
+        .invitationStatus {
+          font-size: 0.75rem;
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.375rem;
+          background: #f8f9fa;
+          color: #495057;
+        }
+      }
+    }
+
+    .tipsList {
+      .tip {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f8f9fa;
+        font-size: 0.875rem;
+        color: #6c757d;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        strong {
+          color: #495057;
+        }
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .inviteContainer {
+    padding: 1rem;
+  }
+
+  .header {
+    h1 {
+      font-size: 2rem;
+    }
+
+    p {
+      font-size: 1rem;
+    }
+  }
+
+  .contentGrid {
+    gap: 1.5rem;
+  }
+
+  .inviteForm .formCard {
+    padding: 1.5rem;
+  }
+
+  .sidebar .infoCard {
+    padding: 1.25rem;
+  }
+}

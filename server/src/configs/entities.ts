@@ -6,6 +6,7 @@ import { Specialization } from "../modules/healthcare-homes/entities/specializat
 import { CareHomeFacility } from "../modules/healthcare-homes/entities/care-home-facility.entity";
 import { CareHomeImage } from "../modules/healthcare-homes/entities/care-home-image.entity";
 import { CareHomeReview } from "../modules/healthcare-homes/entities/care-home-review.entity";
+import { Invitation } from "../modules/admin/entities/invitation.entity";
 
 export const entities = {
   User,
@@ -16,6 +17,7 @@ export const entities = {
   CareHomeFacility,
   CareHomeImage,
   CareHomeReview,
+  Invitation,
 };
 
 export {
@@ -27,4 +29,5 @@ export {
   CareHomeFacility,
   CareHomeImage,
   CareHomeReview,
+  Invitation,
 };

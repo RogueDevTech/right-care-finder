@@ -860,7 +860,7 @@ export default function AddCareHomePage() {
     };
 
     loadConfigurationData();
-  }, [getCareTypes, getSpecializations, getFacilities]);
+  }, []);
 
   const handleInputChange = (
     e: React.ChangeEvent<

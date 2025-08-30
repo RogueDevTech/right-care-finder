@@ -6,8 +6,11 @@ import * as sgMail from "@sendgrid/mail";
 export class EmailService {
   constructor(private readonly configService: ConfigService) {
     const sendGridApiKey = this.configService.get<string>("SENDGRID_API_KEY");
+    console.log("SendGrid API Key configured:", sendGridApiKey ? "Yes" : "No");
     if (sendGridApiKey) {
       sgMail.setApiKey(sendGridApiKey);
+    } else {
+      console.warn("SENDGRID_API_KEY not found in environment variables");
     }
   }
 
@@ -34,9 +37,17 @@ export class EmailService {
     };
 
     try {
+      console.log("Attempting to send email to:", to);
+      console.log("From email:", fromEmail);
       await sgMail.send(msg);
+      console.log("Email sent successfully to:", to);
     } catch (error: any) {
       console.error("SendGrid error:", error);
+      console.error("Error details:", {
+        code: error.code,
+        message: error.message,
+        response: error.response?.body,
+      });
       throw new BadRequestException("Failed to send email");
     }
   }

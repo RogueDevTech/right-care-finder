@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   useHealthcareHomesActions,
   CareHome,
@@ -215,7 +216,7 @@ function SearchPageContent() {
                     >
                       <div className={styles.cardImage}>
                         {careHome.images && careHome.images.length > 0 ? (
-                          <img
+                          <Image
                             src={careHome.images[0].url}
                             alt={careHome.images[0].altText || careHome.name}
                           />

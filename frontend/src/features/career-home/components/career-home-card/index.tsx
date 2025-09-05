@@ -25,7 +25,7 @@ const CareerHomeCard: React.FC = () => {
           sortBy: "createdAt",
           sortOrder: "DESC",
         });
-
+        console.log(response);
         if (response.success && response.data) {
           setCareHomes(response.data.data);
         } else {
@@ -66,75 +66,79 @@ const CareerHomeCard: React.FC = () => {
     <>
       {careHomes.map((careHome) => (
         <div className={styles.careHomeCard} key={careHome.id}>
-          <div className={styles.cardImage}>
-            {careHome.images && careHome.images.length > 0 ? (
-              <Image
-                src={careHome.images[0].url}
-                alt={careHome.images[0].altText || careHome.name}
-                width={400}
-                height={300}
-              />
-            ) : (
-              <div className={styles.placeholderImage}>
-                <span>No image available</span>
+          <div className={styles.cardContainer}>
+            <div className={styles.cardImage}>
+              {careHome.images && careHome.images.length > 0 ? (
+                <Image
+                  src={careHome.images[0].url}
+                  alt={careHome.images[0].altText || careHome.name}
+                  width={400}
+                  height={300}
+                />
+              ) : (
+                <div className={styles.placeholderImage}>
+                  <span>No image available</span>
+                </div>
+              )}
+              <div className={styles.phoneTag}>
+                <PhoneIcon />
+                {careHome.phone}
               </div>
-            )}
-            <div className={styles.phoneTag}>
-              <PhoneIcon />
-              {careHome.phone}
-            </div>
-            {careHome.isVerified && (
-              <div className={styles.verifiedBadge}>Verified</div>
-            )}
-          </div>
-
-          <div className={styles.cardContent}>
-            <div className={styles.header}>
-              <h2 className={styles.homeName}>{careHome.name}</h2>
-              <div className={styles.price}>
-                {careHome.weeklyPrice
-                  ? `£${careHome.weeklyPrice.toLocaleString()}/week`
-                  : "Price on request"}
-              </div>
+              {careHome.isVerified && (
+                <div className={styles.verifiedBadge}>Verified</div>
+              )}
             </div>
 
-            <div className={styles.location}>
-              <LocationIcon />
-              {careHome.city}, {careHome.region}
+            <div className={styles.cardContent}>
+              <div className={styles.header}>
+                <h2 className={styles.homeName}>{careHome.name}</h2>
+                <div className={styles.price}>
+                  {careHome.weeklyPrice
+                    ? `£${careHome.weeklyPrice.toLocaleString()}/week`
+                    : "Price on request"}
+                </div>
+              </div>
+
+              <div className={styles.location}>
+                <LocationIcon />
+                {careHome.city}, {careHome.region}
+              </div>
+
+              <p className={styles.description}>
+                {careHome.description && careHome.description.length > 0
+                  ? careHome.description[0]
+                  : "A modern care home offering comprehensive care services in a warm, family-like environment."}
+              </p>
+
+              {careHome.careType && (
+                <p className={styles.tagline}>{careHome.careType.name}</p>
+              )}
+
+              {careHome.averageRating && (
+                <div className={styles.rating}>
+                  <span className={styles.stars}>
+                    {"★".repeat(Math.round(careHome.averageRating))}
+                    {"☆".repeat(5 - Math.round(careHome.averageRating))}
+                  </span>
+                  <span className={styles.ratingText}>
+                    {careHome.averageRating.toFixed(1)} ({careHome.totalReviews}{" "}
+                    reviews)
+                  </span>
+                </div>
+              )}
+
+              {careHome.availableBeds !== undefined && (
+                <div className={styles.beds}>
+                  <span className={styles.bedsAvailable}>
+                    {careHome.availableBeds} beds available
+                  </span>
+                </div>
+              )}
             </div>
-
-            <p className={styles.description}>
-              {careHome.description && careHome.description.length > 0
-                ? careHome.description[0]
-                : "A modern care home offering comprehensive care services in a warm, family-like environment."}
-            </p>
-
-            {careHome.careType && (
-              <p className={styles.tagline}>{careHome.careType.name}</p>
-            )}
-
-            {careHome.averageRating && (
-              <div className={styles.rating}>
-                <span className={styles.stars}>
-                  {"★".repeat(Math.round(careHome.averageRating))}
-                  {"☆".repeat(5 - Math.round(careHome.averageRating))}
-                </span>
-                <span className={styles.ratingText}>
-                  {careHome.averageRating.toFixed(1)} ({careHome.totalReviews}{" "}
-                  reviews)
-                </span>
-              </div>
-            )}
-
-            {careHome.availableBeds !== undefined && (
-              <div className={styles.beds}>
-                <span className={styles.bedsAvailable}>
-                  {careHome.availableBeds} beds available
-                </span>
-              </div>
-            )}
-
-            <Link href={`/care-home/${careHome.id}`}>
+            {/* <Link href={`/care-home/${careHome.id}`}>
+              <button className={styles.viewButton}>View home</button>
+            </Link> */}
+            <Link href={`/care-homes/${careHome.id}`}>
               <button className={styles.viewButton}>View home</button>
             </Link>
           </div>

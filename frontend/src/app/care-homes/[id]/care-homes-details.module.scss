@@ -1,3 +1,107 @@
+// Skeleton Loading Styles
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  border-radius: 4px;
+  animation: skeleton-wave 1.5s ease-in-out infinite;
+
+  &.text {
+    height: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  &.title {
+    height: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  &.subtitle {
+    height: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  &.image {
+    height: 500px;
+    border-radius: 8px;
+  }
+
+  &.thumbnail {
+    height: 100%;
+    border-radius: 6px;
+  }
+
+  &.button {
+    height: 2.5rem;
+    border-radius: 8px;
+  }
+
+  &.card {
+    height: 200px;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  &.line {
+    height: 1rem;
+    margin-bottom: 0.5rem;
+
+    &.short {
+      width: 60%;
+    }
+
+    &.medium {
+      width: 80%;
+    }
+
+    &.long {
+      width: 100%;
+    }
+  }
+}
+
+@keyframes skeleton-wave {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  min-height: 50vh;
+
+  .loadingSpinner {
+    width: 3rem;
+    height: 3rem;
+    border: 3px solid #e5e7eb;
+    border-top: 3px solid #1c7c8a;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: #6b7280;
+    font-size: 1.125rem;
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 .gallery {
   display: flex;
   flex-direction: row;

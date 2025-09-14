@@ -103,10 +103,224 @@ export default function CareHomesDetailsPage() {
     return (
       <div className={styles.container}>
         <NavBar />
-        <div className={styles.loading}>
-          <div className={styles.loadingSpinner}></div>
-          <p>Loading care home details...</p>
-        </div>
+        <main>
+          {/* Gallery Skeleton */}
+          <div className={styles.gallery}>
+            <div className={styles.preview}>
+              <div className={`${styles.skeleton} ${styles.image}`}></div>
+            </div>
+            <div className={styles.thumbnails}>
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className={styles.thumb}>
+                  <div
+                    className={`${styles.skeleton} ${styles.thumbnail}`}
+                  ></div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Details Skeleton */}
+          <div className={styles.details}>
+            <div className={styles.nameAndReview}>
+              <div className={styles.nameSection}>
+                <div
+                  className={`${styles.skeleton} ${styles.title}`}
+                  style={{ width: "60%" }}
+                ></div>
+                <div
+                  className={`${styles.skeleton} ${styles.subtitle}`}
+                  style={{ width: "80%" }}
+                ></div>
+              </div>
+              <div className={styles.review}>
+                <div
+                  className={`${styles.skeleton} ${styles.text}`}
+                  style={{ width: "100px" }}
+                ></div>
+                <div
+                  className={`${styles.skeleton} ${styles.text}`}
+                  style={{ width: "80px" }}
+                ></div>
+              </div>
+            </div>
+            <div className={styles.getInTouch}>
+              <div className={styles.contactUs}>
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className={`${styles.skeleton} ${styles.button}`}
+                    style={{ width: "150px" }}
+                  ></div>
+                ))}
+              </div>
+              <div className={styles.price}>
+                <div
+                  className={`${styles.skeleton} ${styles.text}`}
+                  style={{ width: "120px" }}
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Cares Provided Skeleton */}
+          <div className={styles.CaresProvidedWrapper}>
+            <div
+              className={`${styles.skeleton} ${styles.title}`}
+              style={{ width: "200px", marginBottom: "2rem" }}
+            ></div>
+            <div className={styles.serviceProvided}>
+              {Array.from({ length: 5 }).map((_, index) => (
+                <div key={index} className={styles.careCard}>
+                  <div className={styles.image}>
+                    <div
+                      className={`${styles.skeleton} ${styles.image}`}
+                      style={{
+                        height: "80px",
+                        width: "80px",
+                        borderRadius: "8px",
+                      }}
+                    ></div>
+                  </div>
+                  <div className={styles.CareContent}>
+                    <div
+                      className={`${styles.skeleton} ${styles.title}`}
+                      style={{ width: "80%", marginBottom: "1rem" }}
+                    ></div>
+                    <div>
+                      {Array.from({ length: 4 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className={`${styles.skeleton} ${styles.line}`}
+                          style={{ width: "90%", marginBottom: "0.5rem" }}
+                        ></div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Facilities Skeleton */}
+          <div className={styles.facilitiesContainer}>
+            <div
+              className={`${styles.skeleton} ${styles.title}`}
+              style={{ width: "150px", marginBottom: "2rem" }}
+            ></div>
+            <div className={styles.facilitiesCardContainer}>
+              {Array.from({ length: 2 }).map((_, index) => (
+                <div key={index} className={styles.facilitiesCard}>
+                  <div className={styles.absoluteGradient}>
+                    <div
+                      className={`${styles.skeleton} ${styles.image}`}
+                      style={{ height: "100%", width: "100%" }}
+                    ></div>
+                  </div>
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i}>
+                      <div
+                        className={`${styles.skeleton} ${styles.text}`}
+                        style={{
+                          width: "30px",
+                          height: "30px",
+                          borderRadius: "50%",
+                          marginBottom: "0.5rem",
+                        }}
+                      ></div>
+                      <div
+                        className={`${styles.skeleton} ${styles.line}`}
+                        style={{ width: "80px" }}
+                      ></div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* About Care Home Skeleton */}
+          <div className={styles.aboutCareHome}>
+            <div className={styles.mobile}>
+              <div
+                className={`${styles.skeleton} ${styles.image}`}
+                style={{ height: "300px" }}
+              ></div>
+            </div>
+            <div className={styles.careHomeDetail}>
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div key={index} className={styles.info}>
+                  <div
+                    className={`${styles.skeleton} ${styles.subtitle}`}
+                    style={{ width: "120px", marginBottom: "0.5rem" }}
+                  ></div>
+                  <div
+                    className={`${styles.skeleton} ${styles.line}`}
+                    style={{ width: "80%" }}
+                  ></div>
+                </div>
+              ))}
+            </div>
+            <div className={styles.ownersSectionImage}>
+              <div
+                className={`${styles.skeleton} ${styles.image}`}
+                style={{ height: "300px" }}
+              ></div>
+            </div>
+          </div>
+
+          {/* Reviews Skeleton */}
+          <div className={styles.ratingsAndReviewWrapper}>
+            <div className={styles.header}>
+              <div
+                className={`${styles.skeleton} ${styles.title}`}
+                style={{ width: "250px" }}
+              ></div>
+              <div
+                className={`${styles.skeleton} ${styles.button}`}
+                style={{ width: "150px" }}
+              ></div>
+            </div>
+            <div className={styles.reviewsSection}>
+              {Array.from({ length: 2 }).map((_, index) => (
+                <div key={index} className={styles.reviewCard}>
+                  <div className={styles.rating}>
+                    <div
+                      className={`${styles.skeleton} ${styles.text}`}
+                      style={{ width: "100px", height: "20px" }}
+                    ></div>
+                  </div>
+                  <div className={styles.reviewContent}>
+                    <div className={styles.reviewer}>
+                      <div
+                        className={`${styles.skeleton} ${styles.subtitle}`}
+                        style={{ width: "100px", marginBottom: "1rem" }}
+                      ></div>
+                      <div>
+                        {Array.from({ length: 4 }).map((_, i) => (
+                          <div
+                            key={i}
+                            className={`${styles.skeleton} ${styles.line}`}
+                            style={{
+                              width: i === 3 ? "60%" : "100%",
+                              marginBottom: "0.5rem",
+                            }}
+                          ></div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className={styles.likes}>
+                      <div
+                        className={`${styles.skeleton} ${styles.text}`}
+                        style={{ width: "150px" }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </main>
         <Footer />
       </div>
     );

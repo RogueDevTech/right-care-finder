@@ -97,7 +97,7 @@ export default function CareHomeDetailsPage() {
             {careHome.images && careHome.images.length > 0 ? (
               <>
                 <div className={styles.mainImage}>
-                  <Image
+                  <img
                     src={careHome.images[activeImageIndex].url}
                     alt={
                       careHome.images[activeImageIndex].altText || careHome.name

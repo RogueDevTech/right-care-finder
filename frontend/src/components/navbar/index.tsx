@@ -4,11 +4,16 @@ import styles from "../navbar/styles.module.scss";
 import Image from "next/image";
 import AppLogo from "@/../public/right-care-logo.png";
 import Link from "next/link";
-import { DropIcon, MenuIcon } from "../icon";
+import { CloseBtn, DropIcon, MenuIcon } from "../icon";
 import { ISession } from "@/interfaces";
+import { useState } from "react";
 
 export default function NavBar({ session }: { session?: ISession }) {
   const handleLogout = () => {};
+  const [careTypeOpen, setCareTypeOpen] = useState(false);
+  const [regionOpen, setRegionOpen] = useState(false);
+  const [servicesOfferedOpen, setServicesOfferedOpen] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
 
   return (
     <div className={styles.container}>
@@ -140,7 +145,130 @@ export default function NavBar({ session }: { session?: ISession }) {
         )}
       </div>
       <div className={styles.menuIcon}>
-        <MenuIcon />
+        <div className="" onClick={() => setOpenModal(!openModal)}>
+          <MenuIcon />
+        </div>
+        {openModal && (
+          <div className={styles.menuDropdown}>
+            <div className={styles.menuHeader}>
+              <div className={styles.logo}>
+                <Image src={AppLogo} alt="Right care logo" />
+              </div>
+              <div className="" onClick={() => setOpenModal(!openModal)}>
+                <CloseBtn />
+              </div>
+            </div>
+            <div className={styles.menuContainer}>
+              <div className={styles.menuContent}>
+                <div className={styles.mobileNav}>
+                  <div
+                    className={styles.navName}
+                    onClick={() => setCareTypeOpen(!careTypeOpen)}
+                  >
+                    <p>Care type</p>
+                    <DropIcon />
+                  </div>
+                  {careTypeOpen && (
+                    <div className={styles.careTypeDropdown}>
+                      <Link href="" className={styles.profileLink}>
+                        Residential Care Homes
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Nursing Care Homes
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Dementia Care Homes
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Respite Care
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Palliative / End-of-life Care
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Assisted Living
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Day Care Services
+                      </Link>
+                    </div>
+                  )}
+                </div>
+                <div className={styles.mobileNav}>
+                  <div
+                    className={styles.navName}
+                    onClick={() => setRegionOpen(!regionOpen)}
+                  >
+                    <p>Region</p>
+                    <DropIcon />
+                  </div>
+                  {regionOpen && (
+                    <div className={styles.careTypeDropdown}>
+                      <Link href="" className={styles.profileLink}>
+                        Residential Care Homes
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Nursing Care Homes
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Dementia Care Homes
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Respite Care
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Palliative / End-of-life Care
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Assisted Living
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Day Care Services
+                      </Link>
+                    </div>
+                  )}
+                </div>
+                <Link href="/career" className={styles.profileLink}>
+                  Care homes
+                </Link>
+                <div className={styles.mobileNav}>
+                  <div
+                    className={styles.navName}
+                    onClick={() => setServicesOfferedOpen(!servicesOfferedOpen)}
+                  >
+                    <p>Services offered</p>
+                    <DropIcon />
+                  </div>
+                  {servicesOfferedOpen && (
+                    <div className={styles.careTypeDropdown}>
+                      <Link href="" className={styles.profileLink}>
+                        Residential Care Homes
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Nursing Care Homes
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Dementia Care Homes
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Respite Care
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Palliative / End-of-life Care
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Assisted Living
+                      </Link>
+                      <Link href="" className={styles.profileLink}>
+                        Day Care Services
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

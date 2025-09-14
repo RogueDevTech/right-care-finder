@@ -10,6 +10,8 @@ import { toast } from "react-hot-toast";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import styles from "./care-home-details.module.scss";
+import Image from "next/image";
+import { careHomes } from "@/components/data";
 
 export default function CareHomeDetailsPage() {
   const params = useParams();
@@ -35,6 +37,7 @@ export default function CareHomeDetailsPage() {
           router.push("/");
         } else {
           setCareHome(response.data || null);
+          console.log(response.data);
         }
       } catch (error) {
         console.error("Error fetching care home:", error);
@@ -114,7 +117,7 @@ export default function CareHomeDetailsPage() {
                         }`}
                         onClick={() => setActiveImageIndex(index)}
                       >
-                        <img
+                        <Image
                           src={image.url}
                           alt={
                             image.altText ||

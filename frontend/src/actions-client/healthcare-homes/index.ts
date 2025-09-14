@@ -47,6 +47,7 @@ export interface CareHome {
     id: string;
     name: string;
     description: string;
+    icon: string;
   }>;
   images: Array<{
     id: string;
@@ -65,6 +66,7 @@ export interface CareHome {
   }>;
   averageRating?: number;
   totalReviews?: number;
+  reviewCount?: number;
   createdAt: string;
   updatedAt: string;
 }

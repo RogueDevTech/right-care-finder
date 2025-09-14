@@ -817,7 +817,6 @@ export default function AddCareHomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
-  const [isAddButtonClicked, setIsAddButtonClicked] = useState(false);
 
   // Configuration data state
   const [careTypes, setCareTypes] = useState<CareType[]>([]);
@@ -1193,12 +1192,27 @@ export default function AddCareHomePage() {
     return { isValid: errors.length === 0, errors };
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Prevent Enter key from submitting form unless we're on the last step
+    if (e.key === "Enter" && currentStep !== steps.length - 1) {
+      e.preventDefault();
+    }
+  };
+
   const handleSubmit = async () => {
+    // Only submit if we're on the last step AND have at least one image URL
+    if (currentStep !== steps.length - 1) {
+      return;
+    }
+
+    // Check if at least one image URL is provided
+    const hasImageUrls = formData.imageUrls.some((url) => url.trim() !== "");
+    if (!hasImageUrls) {
+      toast.error("Please add at least one image URL before submitting");
+      return;
+    }
+
     // Check if the "Add Care Home" button was clicked
-    // if (!isAddButtonClicked) {
-    //   toast.error("Please click the 'Add Care Home' button to submit the form");
-    //   return;
-    // }
 
     // Validate form before submission
     const validation = validateForm();
@@ -1212,7 +1226,6 @@ export default function AddCareHomePage() {
     setIsSubmitting(true);
 
     try {
-      // Prepare the data for API submission
       const careHomeData = {
         ...formData,
         // Ensure all required fields are present
@@ -1235,16 +1248,13 @@ export default function AddCareHomePage() {
 
       if (result.success) {
         toast.success("Care home added successfully!");
-        setIsAddButtonClicked(false); // Reset the flag on success
         router.push("/admin/care-homes");
       } else {
         toast.error(result.error || "Failed to add care home");
-        setIsAddButtonClicked(false); // Reset the flag on error
       }
     } catch (error) {
       console.error("Error creating care home:", error);
       toast.error("Failed to add care home. Please try again.");
-      setIsAddButtonClicked(false); // Reset the flag on error
     } finally {
       setIsSubmitting(false);
     }
@@ -1318,7 +1328,7 @@ export default function AddCareHomePage() {
           </div>
         </div>
 
-        <form className={styles.form}>
+        <form className={styles.form} onKeyDown={handleKeyDown}>
           {/* Basic Information Step */}
           {currentStep === 0 && (
             <div className={styles.tabContent}>
@@ -1830,7 +1840,12 @@ export default function AddCareHomePage() {
           {currentStep === 5 && (
             <div className={styles.tabContent}>
               <div className={styles.formSection}>
-                <h3>Images</h3>
+                <h3>
+                  Images <span style={{ color: "red" }}>*</span>
+                </h3>
+                <p style={{ color: "#666", marginBottom: "1rem" }}>
+                  Please add at least one image URL to continue.
+                </p>
                 <div className={styles.imageUrlsContainer}>
                   {formData.imageUrls.map((url, index) => (
                     <div key={index} className={styles.imageUrlItem}>
@@ -1891,10 +1906,18 @@ export default function AddCareHomePage() {
               </button>
             ) : (
               <button
-                type="submit"
-                disabled={isSubmitting}
+                type="button"
+                disabled={
+                  isSubmitting ||
+                  !formData.imageUrls.some((url) => url.trim() !== "")
+                }
+                onClick={handleSubmit}
                 className={styles.primaryButton}
-                onClick={() => handleSubmit()}
+                title={
+                  !formData.imageUrls.some((url) => url.trim() !== "")
+                    ? "Please add at least one image URL"
+                    : ""
+                }
               >
                 {isSubmitting ? "Adding Care Home..." : "Add Care Home"}
               </button>

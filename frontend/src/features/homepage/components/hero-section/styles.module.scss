@@ -14,6 +14,9 @@
     display: flex;
     flex-direction: column;
     gap: 44px;
+    opacity: 0;
+    transform: translateY(40px);
+    animation: fadeSlideUp 1s ease-out forwards;
     .headerContent {
       h1 {
         font-weight: 600;
@@ -38,5 +41,28 @@
   .input {
     display: flex;
     justify-content: center;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeSlideUp 1s ease-out forwards;
+    animation-delay: 1s;
+  }
+}
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

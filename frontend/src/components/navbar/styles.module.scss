@@ -13,6 +13,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 20px;
   .logo {
     max-width: 194px;
     width: 100%;
@@ -27,6 +28,7 @@
 .nav {
   display: flex;
   align-items: center;
+  gap: 20px;
   @media (max-width: 500px) {
     display: none;
   }
@@ -239,5 +241,66 @@
   display: none;
   @media (max-width: 500px) {
     display: flex;
+    position: relative;
+  }
+  .menuDropdown {
+    // display: none;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 50;
+    right: 0;
+    bottom: 0;
+    background-color: #f6f6f6;
+    height: 100%;
+    overflow: auto;
+    .menuHeader {
+      padding: 16px 16px;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #d0cfcf;
+      .logo {
+        max-width: 194px;
+        width: 100%;
+        @media (max-width: 500px) {
+          max-width: 138px;
+        }
+        img {
+          width: 100%;
+        }
+      }
+    }
+    .menuContent {
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      height: 100%;
+      overflow: auto;
+      a {
+        padding: 8px;
+      }
+      .mobileNav {
+        display: flex;
+        flex-direction: column;
+        .navName {
+          padding: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .careTypeDropdown {
+          padding: 0 16px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          a {
+            padding: 8px 12px;
+            color: #8c8c8c;
+            font-size: 14px;
+          }
+        }
+      }
+    }
   }
 }

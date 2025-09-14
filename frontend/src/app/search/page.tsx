@@ -216,7 +216,7 @@ function SearchPageContent() {
                     >
                       <div className={styles.cardImage}>
                         {careHome.images && careHome.images.length > 0 ? (
-                          <Image
+                          <img
                             src={careHome.images[0].url}
                             alt={careHome.images[0].altText || careHome.name}
                           />

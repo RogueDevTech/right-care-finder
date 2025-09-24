@@ -9,3 +9,7 @@ body {
   position: relative;
   font-family: var(--font-manrope), sans-serif;
 }
+.leaflet-container {
+  width: 80%;
+  height: 500px;
+}

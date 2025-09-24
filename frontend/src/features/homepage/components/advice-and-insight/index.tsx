@@ -12,7 +12,7 @@ export default function AdviseAndInsight() {
       </div>
       <div className={styles.careGuides}>
         <div className={styles.careAdvise}>
-          <h2>Care address</h2>
+          <h2>Care advice</h2>
           <div className={styles.adviceCard}>
             <AdviceCard
               title="How to Choose the Right Care Home for Your Loved One"

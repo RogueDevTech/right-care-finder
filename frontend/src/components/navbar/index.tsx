@@ -26,7 +26,7 @@ export default function NavBar({ session }: { session?: ISession }) {
         <div className={styles.nav}>
           <div className={styles.dropdown}>
             <button className={styles.dropbtn}>
-              Care type <DropIcon />
+              Care type <DropIcon fillColor="#f6f6f6" />
             </button>
             <div className={styles.dropdownContent}>
               <a href="#">Residential Care Homes</a>
@@ -40,7 +40,7 @@ export default function NavBar({ session }: { session?: ISession }) {
           </div>
           <div className={styles.dropdown}>
             <button className={styles.dropbtn}>
-              Region <DropIcon />
+              Region <DropIcon fillColor="#f6f6f6" />
             </button>
             <div className={styles.dropdownContent}>
               <div className={styles.dropdownRegion}>
@@ -91,7 +91,7 @@ export default function NavBar({ session }: { session?: ISession }) {
           </Link>
           <div className={styles.dropdown}>
             <button className={styles.dropbtn}>
-              Services offered <DropIcon />
+              Services offered <DropIcon fillColor="#f6f6f6" />
             </button>
             <div className={styles.dropdownContent}>
               <a href="#">24/7 Nursing Support</a>
@@ -139,9 +139,12 @@ export default function NavBar({ session }: { session?: ISession }) {
             </div>
           </div>
         ) : (
-          <Link href="/login">
-            <div className={styles.contactUs}>Login</div>
+          <Link href="/">
+            <div className={styles.contactUs}>Contact Us</div>
           </Link>
+          // <Link href="/login">
+          //   <div className={styles.contactUs}>Login</div>
+          // </Link>
         )}
       </div>
       <div className={styles.menuIcon}>
@@ -166,7 +169,7 @@ export default function NavBar({ session }: { session?: ISession }) {
                     onClick={() => setCareTypeOpen(!careTypeOpen)}
                   >
                     <p>Care type</p>
-                    <DropIcon />
+                    <DropIcon fillColor="#f6f6f6" />
                   </div>
                   {careTypeOpen && (
                     <div className={styles.careTypeDropdown}>
@@ -200,7 +203,7 @@ export default function NavBar({ session }: { session?: ISession }) {
                     onClick={() => setRegionOpen(!regionOpen)}
                   >
                     <p>Region</p>
-                    <DropIcon />
+                    <DropIcon fillColor="#f6f6f6" />
                   </div>
                   {regionOpen && (
                     <div className={styles.careTypeDropdown}>
@@ -237,7 +240,7 @@ export default function NavBar({ session }: { session?: ISession }) {
                     onClick={() => setServicesOfferedOpen(!servicesOfferedOpen)}
                   >
                     <p>Services offered</p>
-                    <DropIcon />
+                    <DropIcon fillColor="#f6f6f6" />
                   </div>
                   {servicesOfferedOpen && (
                     <div className={styles.careTypeDropdown}>

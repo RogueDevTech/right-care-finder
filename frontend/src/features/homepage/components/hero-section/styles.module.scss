@@ -1,6 +1,14 @@
-.container {
+.section {
   background-color: #f6f6f6;
-  padding: 70px 0;
+  overflow: hidden;
+}
+.container {
+  padding: 120px 0 70px;
+  display: flex;
+  align-items: center;
+  max-width: 90%;
+  width: 100%;
+  margin: 0 auto;
   @media (max-width: 500px) {
     padding: 70px 16px;
     display: flex;
@@ -12,25 +20,23 @@
     width: 100%;
     margin: 0 auto;
     display: flex;
+    flex: 1;
     flex-direction: column;
     gap: 44px;
     opacity: 0;
-    transform: translateY(40px);
     animation: fadeSlideUp 1s ease-out forwards;
     .headerContent {
       h1 {
         font-weight: 600;
         font-size: 48px;
-        text-align: center;
+        line-height: 100%;
         @media (max-width: 500px) {
           font-size: 32px;
         }
       }
       p {
-        max-width: 450px;
-        margin: 0 auto;
+        margin-top: 32px;
         font-size: 20px;
-        text-align: center;
         color: #676767;
         @media (max-width: 500px) {
           font-size: 14px;
@@ -40,29 +46,41 @@
   }
   .input {
     display: flex;
-    justify-content: center;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeSlideUp 1s ease-out forwards;
-    animation-delay: 1s;
+  }
+  .heroImage {
+    display: flex;
+    flex: 1;
+    animation: fadeSlide 1s ease-out forwards;
+    img {
+      width: 100%;
+    }
+  }
+  .stalkImage {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    p {
+      font-weight: 600;
+    }
   }
 }
 @keyframes fadeSlideUp {
   from {
     opacity: 0;
-    transform: translateY(40px);
+    transform: translateX(-140px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
   }
 }
-
-@keyframes fadeIn {
+@keyframes fadeSlide {
   from {
     opacity: 0;
+    transform: translateX(140px);
   }
   to {
     opacity: 1;
+    transform: translateX(0);
   }
 }

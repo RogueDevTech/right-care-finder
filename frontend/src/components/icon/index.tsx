@@ -2,22 +2,23 @@ import React from "react";
 
 interface Props {
   className?: string;
+  fillColor?: string;
   onClick?: () => void;
 }
-export const DropIcon: React.FC<Props> = ({ className }) => (
+export const DropIcon: React.FC<Props> = ({ className, fillColor }) => (
   <svg
     className={className}
     width="10"
     height="6"
     viewBox="0 0 10 6"
-    fill="none"
+    fill={fillColor !== "" ? fillColor : "none"}
     xmlns="http://www.w3.org/2000/svg"
   >
     <path
       fillRule="evenodd"
       clipRule="evenodd"
       d="M0.701291 0.324402C0.560841 0.465028 0.481952 0.655651 0.481952 0.854402C0.481952 1.05315 0.560841 1.24378 0.701291 1.3844L5.23129 5.9144L9.76129 1.3844C9.83498 1.31574 9.89408 1.23294 9.93507 1.14094C9.97606 1.04894 9.99811 0.949627 9.99988 0.848924C10.0017 0.748221 9.98314 0.648192 9.94541 0.554804C9.90769 0.461416 9.85155 0.376583 9.78033 0.305364C9.70911 0.234145 9.62428 0.178 9.53089 0.140279C9.4375 0.102558 9.33747 0.0840333 9.23677 0.0858101C9.13607 0.0875869 9.03675 0.109629 8.94475 0.150621C8.85275 0.191613 8.76995 0.250715 8.70129 0.324402L5.23129 3.7944L1.76129 0.324402C1.62067 0.183952 1.43004 0.105062 1.23129 0.105062C1.03254 0.105062 0.841916 0.183952 0.701291 0.324402Z"
-      fill="black"
+      fill={fillColor !== "" ? fillColor : "black"}
     />
   </svg>
 );

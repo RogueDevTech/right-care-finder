@@ -1,0 +1,110 @@
+.stickySection {
+  position: relative;
+  min-height: 200vh; /* Ensure enough scroll space */
+  overflow: hidden;
+}
+
+.background {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 100%;
+  background-image: url("/images/hero-bg.jpg"); /* Replace with your image */
+  background-size: cover;
+  background-position: center;
+  z-index: 1;
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  color: white;
+  padding-top: 20vh; /* Offset to start below top */
+}
+
+.content h2 {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 5rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80%;
+  margin: 10vh auto; /* Vertical spacing between rows */
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  filter: blur(10px); /* Start blurred */
+  opacity: 0.5; /* Start semi-transparent */
+  transition: filter 0.5s ease, opacity 0.5s ease, transform 0.5s ease;
+}
+
+.row .text {
+  flex: 1;
+  padding-right: 2rem;
+}
+
+.row .text h3 {
+  font-size: 1.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.row .text p {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.row img {
+  flex: 1;
+  max-width: 50%;
+  height: auto;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Active state when row is half-visible */
+.row.active {
+  filter: blur(0);
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Previous row blurs as next becomes active */
+.row + .row.active ~ .row {
+  filter: blur(10px);
+  opacity: 0.5;
+  transform: translateY(50px); /* Move up slightly to indicate it's fading */
+}
+
+.next-section {
+  min-height: 100vh;
+  background-color: #333;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.next-section h2 {
+  font-size: 3rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .row {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .row .text {
+    padding-right: 0;
+    padding-bottom: 1rem;
+  }
+
+  .row img {
+    max-width: 100%;
+  }
+}

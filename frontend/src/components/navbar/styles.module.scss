@@ -3,8 +3,15 @@
   padding: 24px 60px;
   align-items: center;
   justify-content: space-between;
-  background-color: rgba(246, 246, 246, 1);
-  border-bottom: 1px solid #d0cfcf;
+  position: fixed;
+  top: 15px;
+  right: 30px;
+  left: 30px;
+  background-color: #151717;
+  color: #f6f6f6;
+  border-radius: 12px;
+  z-index: 999;
+  // border-bottom: 1px solid #d0cfcf;
   @media (max-width: 500px) {
     padding: 24px 16px;
   }
@@ -43,6 +50,7 @@
     font-size: 16px;
     font-weight: 400;
     color: rgba(41, 41, 41, 1);
+    color: #f6f6f6;
     cursor: pointer;
     padding: 8px 12px;
     outline: none;

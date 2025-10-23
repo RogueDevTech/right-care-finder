@@ -108,10 +108,99 @@
   gap: 1rem;
   align-items: stretch;
   height: 500px;
-  padding: 30px 60px;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 30px 0px;
   @media (max-width: 500px) {
     padding: 36px 16px;
   }
+}
+
+// No images container
+.noImageContainer {
+  width: 100%;
+  height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 12px;
+  border: 2px dashed #cbd5e1;
+  flex: 1;
+
+  @media (max-width: 768px) {
+    height: 300px;
+  }
+
+  .noImagePlaceholder {
+    background: transparent;
+    border: none;
+    padding: 1rem;
+
+    &::before {
+      content: "📷";
+      font-size: 64px;
+      margin-bottom: 1.5rem;
+      opacity: 0.7;
+    }
+
+    span {
+      font-size: 20px;
+      font-weight: 600;
+      color: #475569;
+    }
+  }
+}
+
+// Single image container
+.singleImageContainer {
+  width: 100%;
+  height: 500px;
+  position: relative;
+  flex: 1;
+
+  @media (max-width: 768px) {
+    height: 300px;
+  }
+}
+
+.singleImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+// Two images container
+.twoImageContainer {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  height: 500px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    height: auto;
+    gap: 0.5rem;
+  }
+}
+
+.imageHalf {
+  flex: 1;
+  position: relative;
+
+  @media (max-width: 768px) {
+    height: 300px;
+  }
+}
+
+.halfImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
 }
 
 .preview {
@@ -123,6 +212,43 @@
     height: 100%;
     object-fit: cover;
     border-radius: 8px;
+    display: block;
+  }
+
+  .noImagePlaceholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border: 2px dashed #cbd5e1;
+    color: #64748b;
+    font-size: 18px;
+    font-weight: 500;
+    text-align: center;
+    padding: 2rem;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: linear-gradient(135deg, #f1f5f9 0%, #d1d5db 100%);
+      border-color: #94a3b8;
+    }
+
+    &::before {
+      content: "📷";
+      font-size: 48px;
+      margin-bottom: 1rem;
+      opacity: 0.6;
+    }
+
+    span {
+      font-size: 16px;
+      color: #64748b;
+      margin-top: 0.5rem;
+    }
   }
 }
 
@@ -143,8 +269,11 @@
     transition: transform 0.2s ease;
 
     .thumbImage {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
       border-radius: 6px;
+      display: block;
     }
   }
 }
@@ -152,10 +281,11 @@
   background: linear-gradient(90deg, #ea9115 0%, #0b3d44 100%);
   opacity: 1;
   border-radius: 16px;
-  margin: 0 60px;
   display: flex;
   flex-direction: column;
   gap: 24px;
+  max-width: 1240px;
+  margin: 0 auto;
   padding: 25px 52px;
   @media (max-width: 500px) {
     padding: 25px 16px;
@@ -241,7 +371,9 @@
   display: flex;
   flex-direction: column;
   gap: 36px;
-  padding: 34px 60px;
+  padding: 34px 0px;
+  max-width: 1240px;
+  margin: 0 auto;
   @media (max-width: 500px) {
     padding: 34px 16px;
   }
@@ -302,6 +434,8 @@
   display: flex;
   flex-direction: column;
   gap: 34px;
+  max-width: 1240px;
+  margin: 0 auto;
   h3 {
     font-weight: 600;
     font-size: 32px;
@@ -352,7 +486,9 @@
 .aboutCareHome {
   display: flex;
   gap: 131px;
-  padding: 27px 60px;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 27px 0px;
   height: 100vh;
   overflow-y: auto;
   &::-webkit-scrollbar {
@@ -417,7 +553,9 @@
   display: flex;
   flex-direction: column;
   gap: 36px;
-  padding: 24px 60px;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 24px 0px;
   max-height: 1000px;
   overflow: auto;
   scrollbar-width: none;

@@ -83,23 +83,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             <ul className={styles.navList}>
               <li className={styles.navItem}>
                 <Link
-                  href="/admin/users"
-                  className={`${styles.navLink} ${
-                    isActiveLink("/admin/users") ? styles.active : ""
-                  }`}
-                >
-                  <svg
-                    className={styles.navIcon}
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.54 8H17c-.8 0-1.54.37-2.01 1l-1.7 2.26V15h-1.5v-3.5l-1.7-2.26A2.5 2.5 0 0 0 8.54 8H7.46c-.8 0-1.54.37-2.01 1L2.96 16.5H5.5V22h2v-6h1.5v6h2V16h1.5v6h2V16H16v6h2z" />
-                  </svg>
-                  <span className={styles.navText}>Users</span>
-                </Link>
-              </li>
-              <li className={styles.navItem}>
-                <Link
                   href="/admin/care-homes"
                   className={`${styles.navLink} ${
                     isActiveLink("/admin/care-homes") ? styles.active : ""
@@ -117,9 +100,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </li>
               <li className={styles.navItem}>
                 <Link
-                  href="/admin/invite-owners"
+                  href="/admin/care-home-owners"
                   className={`${styles.navLink} ${
-                    isActiveLink("/admin/invite-owners") ? styles.active : ""
+                    isActiveLink("/admin/care-home-owners") ? styles.active : ""
                   }`}
                 >
                   <svg
@@ -129,7 +112,24 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   >
                     <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A1.5 1.5 0 0 0 18.54 8H17c-.8 0-1.54.37-2.01 1l-1.7 2.26V15h-1.5v-3.5l-1.7-2.26A2.5 2.5 0 0 0 8.54 8H7.46c-.8 0-1.54.37-2.01 1L2.96 16.5H5.5V22h2v-6h1.5v6h2V16h1.5v6h2V16H16v6h2z" />
                   </svg>
-                  <span className={styles.navText}>Invite Owners</span>
+                  <span className={styles.navText}>Care Home Owners</span>
+                </Link>
+              </li>
+              <li className={styles.navItem}>
+                <Link
+                  href="/admin/blog"
+                  className={`${styles.navLink} ${
+                    isActiveLink("/admin/blog") ? styles.active : ""
+                  }`}
+                >
+                  <svg
+                    className={styles.navIcon}
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+                  </svg>
+                  <span className={styles.navText}>Blog Posts</span>
                 </Link>
               </li>
             </ul>
@@ -201,23 +201,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         {/* Top Navbar */}
         <header className={styles.topNavbar}>
           <div className={styles.navbarLeft}>
-            <button className={styles.menuToggle} onClick={toggleSidebar}>
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
-              </svg>
-            </button>
             <div className={styles.breadcrumb}>
               <span className={styles.breadcrumbText}>
                 {pathname === "/admin" && "Dashboard"}
-                {pathname === "/admin/users" && "User Management"}
                 {pathname === "/admin/care-homes" && "Care Home Management"}
-                {pathname === "/admin/invite-owners" &&
-                  "Invite Care Home Owners"}
+                {pathname === "/admin/care-home-owners" && "Care Home Owners"}
+                {pathname === "/admin/blog" && "Blog Management"}
                 {pathname === "/admin/config" && "Configuration Management"}
                 {pathname === "/admin/settings" && "Settings"}
               </span>

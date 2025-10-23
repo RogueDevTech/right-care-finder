@@ -1,10 +1,11 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { AdminController } from "./admin.controller";
 import { AdminService } from "./admin.service";
 import { InvitationService } from "./invitation.service";
 import { ConfigController } from "./config.controller";
 import { ConfigService } from "./config.service";
+import { InvitationsController } from "./invitations.controller";
 import { UsersModule } from "../users/users.module";
 import { HealthcareHomesModule } from "../healthcare-homes/healthcare-homes.module";
 import { CareType } from "../healthcare-homes/entities/care-type.entity";
@@ -13,10 +14,11 @@ import { CareHomeFacility } from "../healthcare-homes/entities/care-home-facilit
 import { CareHome } from "../healthcare-homes/entities/care-home.entity";
 import { Invitation } from "./entities/invitation.entity";
 import { User } from "../users/entities/user.entity";
+import { BcryptService } from "../core/services/bcrypt.service";
 
 @Module({
   imports: [
-    UsersModule,
+    forwardRef(() => UsersModule),
     HealthcareHomesModule,
     TypeOrmModule.forFeature([
       CareType,
@@ -27,8 +29,8 @@ import { User } from "../users/entities/user.entity";
       User,
     ]),
   ],
-  controllers: [AdminController, ConfigController],
-  providers: [AdminService, ConfigService, InvitationService],
+  controllers: [AdminController, ConfigController, InvitationsController],
+  providers: [AdminService, ConfigService, InvitationService, BcryptService],
   exports: [AdminService, ConfigService, InvitationService],
 })
 export class AdminModule {}

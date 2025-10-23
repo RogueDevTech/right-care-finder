@@ -1,34 +1,69 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { LocationIcon, PhoneIcon } from "@/components/icon";
 import styles from "./styles.module.scss";
 import {
   useHealthcareHomesActions,
   CareHome,
 } from "@/actions-client/healthcare-homes";
 import { toast } from "react-hot-toast";
-import Image from "next/image";
-import Link from "next/link";
+import SkeletonLoader from "./skeleton-card";
+import CareHomeCard from "@/components/ui/care-home-card";
 
-const CareerHomeCard: React.FC = () => {
+interface CareerHomeCardProps {
+  filters?: {
+    careTypeId?: string;
+    region?: string;
+    specializations?: string[];
+  };
+}
+
+const CareerHomeCard: React.FC<CareerHomeCardProps> = ({ filters = {} }) => {
+  console.log("CareerHomeCard re-rendering with filters:", filters);
   const [careHomes, setCareHomes] = useState<CareHome[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCareHomes, setTotalCareHomes] = useState(0);
   const { getHomeCreListings } = useHealthcareHomesActions();
+
+  // Clear care homes when filters change
+  useEffect(() => {
+    setCareHomes([]);
+    setCurrentPage(1);
+  }, [filters]);
 
   useEffect(() => {
     const fetchCareHomes = async () => {
       try {
         setIsLoading(true);
+        console.log("Fetching care homes with filters:", filters);
         const response = await getHomeCreListings({
+          page: currentPage,
           limit: 20,
           sortBy: "createdAt",
           sortOrder: "DESC",
+          ...filters,
         });
-        console.log(response);
+
+        console.log("API Response:", response);
+
         if (response.success && response.data) {
-          setCareHomes(response.data.data);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const careHomesData = Array.isArray((response.data as any).data.data)
+            ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (response.data as any).data.data
+            : [];
+          console.log("Care homes data:", careHomesData);
+          setCareHomes(careHomesData);
+          setTotalPages(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            Math.ceil(((response.data as any).data.total || 0) / 20)
+          );
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          setTotalCareHomes((response.data as any).data.total || 0);
         } else {
+          console.log("API call failed:", response);
           toast.error("Failed to load care homes");
           setCareHomes([]);
         }
@@ -42,109 +77,120 @@ const CareerHomeCard: React.FC = () => {
     };
 
     fetchCareHomes();
+  }, [currentPage, filters]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
   }, []);
 
   if (isLoading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.loadingSpinner}></div>
-        <p>Loading care homes...</p>
-      </div>
-    );
+    return <SkeletonLoader />;
   }
+
+  console.log(
+    "Current careHomes state:",
+    careHomes,
+    "Length:",
+    careHomes.length
+  );
 
   if (careHomes.length === 0) {
     return (
       <div className={styles.noResults}>
         <h3>No care homes found</h3>
-        <p>Try adjusting your search criteria.</p>
+        <p>
+          We couldn&apos;t find any care homes matching your current search
+          criteria. Try adjusting your filters or search terms.
+        </p>
       </div>
     );
   }
 
   return (
-    <>
+    <div className={styles.cardWrapper}>
       {careHomes.map((careHome) => (
-        <div className={styles.careHomeCard} key={careHome.id}>
-          <div className={styles.cardContainer}>
-            <div className={styles.cardImage}>
-              {careHome.images && careHome.images.length > 0 ? (
-                <img
-                  src={careHome.images[0].url}
-                  alt={careHome.images[0].altText || careHome.name}
-                  width={400}
-                  height={300}
-                />
-              ) : (
-                <div className={styles.placeholderImage}>
-                  <span>No image available</span>
-                </div>
-              )}
-              <div className={styles.phoneTag}>
-                <PhoneIcon />
-                {careHome.phone}
-              </div>
-              {careHome.isVerified && (
-                <div className={styles.verifiedBadge}>Verified</div>
-              )}
+        <CareHomeCard key={careHome.id} careHome={careHome} />
+      ))}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className={styles.pagination}>
+          <div className={styles.paginationInfo}>
+            Showing {(currentPage - 1) * 20 + 1} to{" "}
+            {Math.min(currentPage * 20, totalCareHomes)} of {totalCareHomes}{" "}
+            care homes
+          </div>
+          <div className={styles.paginationControls}>
+            <button
+              className={styles.paginationButton}
+              onClick={() => handlePageChange(1)}
+              disabled={currentPage === 1}
+              title="First Page"
+            >
+              ««
+            </button>
+            <button
+              className={styles.paginationButton}
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              title="Previous Page"
+            >
+              ‹
+            </button>
+
+            {/* Page Numbers */}
+            <div className={styles.pageNumbers}>
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (currentPage <= 3) {
+                  pageNum = i + 1;
+                } else if (currentPage >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = currentPage - 2 + i;
+                }
+
+                return (
+                  <button
+                    key={pageNum}
+                    className={`${styles.pageNumber} ${
+                      currentPage === pageNum ? styles.activePage : ""
+                    }`}
+                    onClick={() => handlePageChange(pageNum)}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
             </div>
 
-            <div className={styles.cardContent}>
-              <div className={styles.header}>
-                <h2 className={styles.homeName}>{careHome.name}</h2>
-                <div className={styles.price}>
-                  {careHome.weeklyPrice
-                    ? `£${careHome.weeklyPrice.toLocaleString()}/week`
-                    : "Price on request"}
-                </div>
-              </div>
-
-              <div className={styles.location}>
-                <LocationIcon />
-                {careHome.city}, {careHome.region}
-              </div>
-
-              <p className={styles.description}>
-                {careHome.description && careHome.description.length > 0
-                  ? careHome.description[0]
-                  : "A modern care home offering comprehensive care services in a warm, family-like environment."}
-              </p>
-
-              {careHome.careType && (
-                <p className={styles.tagline}>{careHome.careType.name}</p>
-              )}
-
-              {careHome.averageRating && (
-                <div className={styles.rating}>
-                  <span className={styles.stars}>
-                    {"★".repeat(Math.round(careHome.averageRating))}
-                    {"☆".repeat(5 - Math.round(careHome.averageRating))}
-                  </span>
-                  <span className={styles.ratingText}>
-                    {careHome.averageRating.toFixed(1)} ({careHome.totalReviews}{" "}
-                    reviews)
-                  </span>
-                </div>
-              )}
-
-              {careHome.availableBeds !== undefined && (
-                <div className={styles.beds}>
-                  <span className={styles.bedsAvailable}>
-                    {careHome.availableBeds} beds available
-                  </span>
-                </div>
-              )}
-            </div>
-            {/* <Link href={`/care-home/${careHome.id}`}>
-              <button className={styles.viewButton}>View home</button>
-            </Link> */}
-            <Link href={`/care-homes/${careHome.id}`}>
-              <button className={styles.viewButton}>View home</button>
-            </Link>
+            <button
+              className={styles.paginationButton}
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              title="Next Page"
+            >
+              ›
+            </button>
+            <button
+              className={styles.paginationButton}
+              onClick={() => handlePageChange(totalPages)}
+              disabled={currentPage === totalPages}
+              title="Last Page"
+            >
+              »»
+            </button>
           </div>
         </div>
-      ))}
-    </>
+      )}
+    </div>
   );
 };
 

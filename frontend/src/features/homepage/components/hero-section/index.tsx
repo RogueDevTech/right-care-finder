@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import SearchBar from "@/features/career-home/components/input";
 import styles from "./styles.module.scss";
 import Image from "next/image";
@@ -16,7 +17,9 @@ export default function HeroSection() {
             </p>
           </div>
           <div className={styles.input}>
-            <SearchBar />
+            <Suspense fallback={<div>Loading search...</div>}>
+              <SearchBar />
+            </Suspense>
           </div>
           <div className={styles.stalkImage}>
             <div className="">

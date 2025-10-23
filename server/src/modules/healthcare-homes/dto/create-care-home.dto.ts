@@ -281,12 +281,11 @@ export class CreateCareHomeDto {
 
   @ApiProperty({
     description: "ID of the care type",
-    example: 1,
+    example: "123e4567-e89b-12d3-a456-426614174000",
   })
-  @IsNumber()
-  @Type(() => Number)
+  @IsString()
   @IsNotEmpty({ message: "Care type ID is required" })
-  careTypeId: number;
+  careTypeId: string;
 
   @ApiProperty({
     description: "Array of facility IDs",

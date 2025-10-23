@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   useHealthcareHomesActions,
   CareHome,
@@ -8,7 +8,16 @@ import {
 import { toast } from "react-hot-toast";
 import styles from "./styles.module.scss";
 
-export default function SearchBar() {
+interface SearchBarProps {
+  onSearchChange?: (search: string) => void;
+  disableDropdown?: boolean;
+}
+
+export default function SearchBar({
+  onSearchChange,
+  disableDropdown = false,
+}: SearchBarProps) {
+  const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
   const [searchResults, setSearchResults] = useState<CareHome[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -16,6 +25,27 @@ export default function SearchBar() {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const router = useRouter();
   const { searchCareHomes } = useHealthcareHomesActions();
+
+  // Read search query parameter on mount
+  useEffect(() => {
+    const searchQuery = searchParams.get("search");
+    if (searchQuery) {
+      setQuery(decodeURIComponent(searchQuery));
+    }
+  }, [searchParams]);
+
+  // Track if this is the initial load from URL parameters
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Notify parent component when search query changes (but not on initial load from URL)
+  useEffect(() => {
+    if (onSearchChange && query && !isInitialLoad) {
+      onSearchChange(query);
+    }
+    if (isInitialLoad) {
+      setIsInitialLoad(false);
+    }
+  }, [query, onSearchChange, isInitialLoad]);
 
   // Debounce search
   const debouncedSearch = useCallback(
@@ -39,7 +69,8 @@ export default function SearchBar() {
           toast.error("Failed to search care homes");
           setSearchResults([]);
         } else {
-          setSearchResults(response.data?.data || []);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          setSearchResults((response.data as any).data.data || []);
         }
       } catch (error) {
         console.error("Search error:", error);
@@ -49,7 +80,7 @@ export default function SearchBar() {
         setIsLoading(false);
       }
     }, 300),
-    [searchCareHomes]
+    [] // Remove searchCareHomes from dependencies to prevent loop
   );
 
   useEffect(() => {
@@ -60,7 +91,9 @@ export default function SearchBar() {
     const value = event.target.value;
     setQuery(value);
     setSelectedIndex(-1);
-    setShowResults(true);
+    if (!disableDropdown) {
+      setShowResults(true);
+    }
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
@@ -91,7 +124,7 @@ export default function SearchBar() {
     setShowResults(false);
     setSelectedIndex(-1);
     // Navigate to care home details page
-    router.push(`/care-home/${careHome.id}`);
+    router.push(`/care-homes/${careHome.id}`);
   };
 
   const handleSearchClick = () => {
@@ -101,7 +134,7 @@ export default function SearchBar() {
   };
 
   const handleInputFocus = () => {
-    if (searchResults.length > 0) {
+    if (!disableDropdown && searchResults.length > 0) {
       setShowResults(true);
     }
   };
@@ -150,56 +183,58 @@ export default function SearchBar() {
       </button>
 
       {/* Search Results Dropdown */}
-      {showResults && (searchResults.length > 0 || isLoading) && (
-        <div className={styles.searchResults}>
-          {isLoading ? (
-            <div className={styles.loadingItem}>
-              <div className={styles.loadingSpinner}></div>
-              <span>Searching...</span>
-            </div>
-          ) : (
-            searchResults.map((careHome, index) => (
-              <div
-                key={careHome.id}
-                className={`${styles.resultItem} ${
-                  index === selectedIndex ? styles.selected : ""
-                }`}
-                onClick={() => handleResultClick(careHome)}
-              >
-                <div className={styles.resultContent}>
-                  <h4 className={styles.careHomeName}>{careHome.name}</h4>
-                  <p className={styles.careHomeLocation}>
-                    {careHome.city}, {careHome.region}
-                  </p>
-                  <p className={styles.careHomeType}>
-                    {careHome.careType?.name}
-                  </p>
-                </div>
-                {careHome.weeklyPrice && (
-                  <div className={styles.priceInfo}>
-                    <span className={styles.price}>
-                      £{careHome.weeklyPrice.toLocaleString()}/week
-                    </span>
-                  </div>
-                )}
+      {!disableDropdown &&
+        showResults &&
+        (searchResults.length > 0 || isLoading) && (
+          <div className={styles.searchResults}>
+            {isLoading ? (
+              <div className={styles.loadingItem}>
+                <div className={styles.loadingSpinner}></div>
+                <span>Searching...</span>
               </div>
-            ))
-          )}
+            ) : (
+              searchResults.map((careHome, index) => (
+                <div
+                  key={careHome.id}
+                  className={`${styles.resultItem} ${
+                    index === selectedIndex ? styles.selected : ""
+                  }`}
+                  onClick={() => handleResultClick(careHome)}
+                >
+                  <div className={styles.resultContent}>
+                    <h4 className={styles.careHomeName}>{careHome.name}</h4>
+                    <p className={styles.careHomeLocation}>
+                      {careHome.city}, {careHome.region}
+                    </p>
+                    <p className={styles.careHomeType}>
+                      {careHome.careType?.name}
+                    </p>
+                  </div>
+                  {careHome.weeklyPrice && (
+                    <div className={styles.priceInfo}>
+                      <span className={styles.price}>
+                        £{careHome.weeklyPrice.toLocaleString()}/week
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
 
-          {searchResults.length > 0 && (
-            <div className={styles.searchFooter}>
-              <button
-                className={styles.viewAllButton}
-                onClick={() =>
-                  router.push(`/search?q=${encodeURIComponent(query.trim())}`)
-                }
-              >
-                View all results
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+            {searchResults.length > 0 && (
+              <div className={styles.searchFooter}>
+                <button
+                  className={styles.viewAllButton}
+                  onClick={() =>
+                    router.push(`/search?q=${encodeURIComponent(query.trim())}`)
+                  }
+                >
+                  View all results
+                </button>
+              </div>
+            )}
+          </div>
+        )}
     </div>
   );
 }

@@ -66,7 +66,7 @@ export default function UsersPage() {
           email: "jane.smith@example.com",
           firstName: "Jane",
           lastName: "Smith",
-          role: "provider",
+          role: "owner",
           isEmailVerified: true,
           isActive: true,
           createdAt: "2024-01-14T09:15:00Z",
@@ -166,7 +166,7 @@ export default function UsersPage() {
             >
               <option value="all">All Roles</option>
               <option value="user">Users</option>
-              <option value="provider">Providers</option>
+              <option value="owner">Owners</option>
               <option value="admin">Admins</option>
             </select>
           </div>

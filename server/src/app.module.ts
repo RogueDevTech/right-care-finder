@@ -4,6 +4,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { UsersModule } from "./modules/users/users.module";
 import { AdminModule } from "./modules/admin/admin.module";
 import { HealthcareHomesModule } from "./modules/healthcare-homes/healthcare-homes.module";
+import { BlogModule } from "./modules/blog/blog.module";
 import { CoreModule } from "./modules/core/core.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { configuration } from "./configs/configuration";
@@ -22,6 +23,7 @@ import { dataSourceOptions } from "./configs/orm";
     UsersModule,
     AdminModule,
     HealthcareHomesModule,
+    BlogModule,
   ] as (Type<any> | DynamicModule | Promise<DynamicModule>)[],
 })
 export class AppModule {}

@@ -12,7 +12,7 @@ import { CareHomeReview } from "../../healthcare-homes/entities/care-home-review
 export enum UserRole {
   ADMIN = "admin",
   USER = "user",
-  PROVIDER = "provider", // Care home owners/operators
+  OWNER = "owner", // Care home owners/operators
 }
 
 @Entity("users")

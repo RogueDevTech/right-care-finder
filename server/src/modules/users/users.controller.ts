@@ -8,11 +8,14 @@ import {
   Delete,
   UseGuards,
   Req,
+  Query,
 } from "@nestjs/common";
 import { Request } from "express";
 import { UsersService } from "./users.service";
+import { InvitationService } from "../admin/invitation.service";
+import { InvitationResponseDto } from "../admin/dto/invitation.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
-import { RolesGuard } from "../auth/guards/roles.guard";
+import { Public } from "../auth/decorators/public.decorator";
 import { BaseResponseDto } from "../../common/dto/base-response.dto";
 import { User } from "./entities/user.entity";
 import { Address } from "./entities/address.entity";
@@ -28,6 +31,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiParam,
+  ApiQuery,
 } from "@nestjs/swagger";
 
 interface RequestWithUser extends Request {
@@ -39,7 +43,45 @@ interface RequestWithUser extends Request {
 @Controller("v1/users")
 @UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly invitationService: InvitationService
+  ) {}
+
+  @Get("invitations/validate")
+  @Public()
+  @ApiOperation({
+    summary: "Validate invitation token",
+    description: "Validates an invitation token and returns invitation details",
+  })
+  @ApiQuery({
+    name: "token",
+    required: true,
+    description: "The invitation token to validate",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Invitation is valid",
+    type: InvitationResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: "Invalid or expired invitation token",
+  })
+  async validateInvitation(@Query("token") token: string) {
+    try {
+      const invitation = await this.invitationService.validateInvitation(token);
+      return {
+        success: true,
+        invitation,
+      };
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "An error occurred",
+      };
+    }
+  }
 
   @Get("me")
   @ApiOperation({ summary: "Get current user profile" })
@@ -64,7 +106,7 @@ export class UsersController {
   @ApiResponse({ status: 401, description: "Unauthorized" })
   async updateMe(
     @Req() req: RequestWithUser,
-    @Body() updateUserDto: UpdateUserDto,
+    @Body() updateUserDto: UpdateUserDto
   ): Promise<BaseResponseDto<User>> {
     console.log("Updating user profile:", {
       userId: req.user.id,
@@ -92,7 +134,7 @@ export class UsersController {
   @ApiResponse({ status: 404, description: "User not found" })
   async update(
     @Param("id") id: string,
-    @Body() updateUserDto: UpdateUserDto,
+    @Body() updateUserDto: UpdateUserDto
   ): Promise<BaseResponseDto<User>> {
     const user = await this.usersService.update(id, updateUserDto);
     return BaseResponseDto.success("User updated successfully", user);
@@ -107,12 +149,12 @@ export class UsersController {
     type: [AddressResponseDto],
   })
   async getMyAddresses(
-    @Req() req: RequestWithUser,
+    @Req() req: RequestWithUser
   ): Promise<BaseResponseDto<Address[]>> {
     const addresses = await this.usersService.getUserAddresses(req.user.id);
     return BaseResponseDto.success(
       "Addresses retrieved successfully",
-      addresses,
+      addresses
     );
   }
 
@@ -125,11 +167,11 @@ export class UsersController {
   })
   async createMyAddress(
     @Req() req: RequestWithUser,
-    @Body() createAddressDto: CreateAddressDto,
+    @Body() createAddressDto: CreateAddressDto
   ): Promise<BaseResponseDto<Address>> {
     const address = await this.usersService.createAddress(
       req.user.id,
-      createAddressDto,
+      createAddressDto
     );
     return BaseResponseDto.success("Address created successfully", address);
   }
@@ -145,12 +187,12 @@ export class UsersController {
   async updateMyAddress(
     @Req() req: RequestWithUser,
     @Param("id") addressId: string,
-    @Body() updateAddressDto: UpdateAddressDto,
+    @Body() updateAddressDto: UpdateAddressDto
   ): Promise<BaseResponseDto<Address>> {
     const address = await this.usersService.updateAddress(
       req.user.id,
       addressId,
-      updateAddressDto,
+      updateAddressDto
     );
     return BaseResponseDto.success("Address updated successfully", address);
   }
@@ -164,7 +206,7 @@ export class UsersController {
   })
   async deleteMyAddress(
     @Req() req: RequestWithUser,
-    @Param("id") addressId: string,
+    @Param("id") addressId: string
   ): Promise<BaseResponseDto<void>> {
     await this.usersService.deleteAddress(req.user.id, addressId);
     return BaseResponseDto.success("Address deleted successfully");
@@ -180,15 +222,15 @@ export class UsersController {
   })
   async setDefaultAddress(
     @Req() req: RequestWithUser,
-    @Param("id") addressId: string,
+    @Param("id") addressId: string
   ): Promise<BaseResponseDto<Address>> {
     const address = await this.usersService.setDefaultAddress(
       req.user.id,
-      addressId,
+      addressId
     );
     return BaseResponseDto.success(
       "Address set as default successfully",
-      address,
+      address
     );
   }
 }

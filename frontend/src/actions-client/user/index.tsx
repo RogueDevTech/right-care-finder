@@ -22,17 +22,6 @@ export const useUserActions = () => {
     const response = await client.post("/auth/register", payload);
 
     if (response.data) {
-      // Store user data in localStorage for navbar (even though they need to verify email)
-      localStorage.setItem(
-        "userData",
-        JSON.stringify({
-          firstName: payload.firstName,
-          lastName: payload.lastName,
-          email: payload.email,
-          role: "user",
-        })
-      );
-
       toast.success(
         "Registration successful! Please check your email to verify your account."
       );
@@ -46,26 +35,18 @@ export const useUserActions = () => {
   const login = async (payload: ILoginData) => {
     const response = await client.post("/auth/login", payload);
     if (response.data) {
-      const sessionData = response.data as { token: string; user: IUser };
+      const sessionData = (
+        response.data as { data: { token: string; user: IUser } }
+      ).data as { token: string; user: IUser };
       const res = await createSession(sessionData);
 
       if (res.ok) {
-        // Store user data in localStorage for navbar
-        localStorage.setItem("authToken", sessionData.token);
-        localStorage.setItem(
-          "userData",
-          JSON.stringify({
-            firstName: sessionData.user.firstName,
-            lastName: sessionData.user.lastName,
-            email: sessionData.user.email,
-            role: sessionData.user.role,
-          })
-        );
-
         if (["user"].includes(sessionData.user.role)) {
           router.push("/");
         } else if (["admin"].includes(sessionData.user.role)) {
           router.push("/admin");
+        }else if (["owner"].includes(sessionData.user.role)) {
+          router.push("/owner");
         }
       }
       return response.data;

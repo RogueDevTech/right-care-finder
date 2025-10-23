@@ -2,14 +2,16 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ConflictException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { Invitation, InvitationStatus } from "./entities/invitation.entity";
-import { User } from "../users/entities/user.entity";
+import { User, UserRole } from "../users/entities/user.entity";
 import { CareHome } from "../healthcare-homes/entities/care-home.entity";
 import { CreateInvitationDto } from "./dto/invitation.dto";
 import { EmailService } from "../core/services/email.service";
+import { BcryptService } from "../core/services/bcrypt.service";
 import { randomBytes } from "crypto";
 
 @Injectable()
@@ -21,7 +23,8 @@ export class InvitationService {
     private userRepository: Repository<User>,
     @InjectRepository(CareHome)
     private careHomeRepository: Repository<CareHome>,
-    private emailService: EmailService
+    private emailService: EmailService,
+    private bcryptService: BcryptService
   ) {}
 
   async createInvitation(
@@ -131,6 +134,7 @@ export class InvitationService {
       .createQueryBuilder("invitation")
       .leftJoinAndSelect("invitation.invitedByUser", "invitedByUser")
       .leftJoinAndSelect("invitation.acceptedByUser", "acceptedByUser")
+      .leftJoinAndSelect("invitation.careHome", "careHome")
       .orderBy("invitation.createdAt", "DESC");
 
     if (status) {
@@ -160,7 +164,7 @@ export class InvitationService {
   async getInvitationById(id: string) {
     const invitation = await this.invitationRepository.findOne({
       where: { id },
-      relations: ["invitedByUser", "acceptedByUser"],
+      relations: ["invitedByUser", "acceptedByUser", "careHome"],
     });
 
     if (!invitation) {
@@ -220,7 +224,34 @@ export class InvitationService {
     return { message: "Invitation cancelled successfully" };
   }
 
-  async acceptInvitation(token: string, userId: string) {
+  async validateInvitation(token: string) {
+    const invitation = await this.invitationRepository.findOne({
+      where: { token },
+      relations: ["careHome", "invitedByUser"],
+    });
+
+    if (!invitation) {
+      throw new NotFoundException("Invalid invitation token");
+    }
+
+    if (invitation.status !== InvitationStatus.PENDING) {
+      throw new BadRequestException("Invitation is no longer valid");
+    }
+
+    if (invitation.expiresAt < new Date()) {
+      invitation.status = InvitationStatus.EXPIRED;
+      await this.invitationRepository.save(invitation);
+      throw new BadRequestException("Invitation has expired");
+    }
+
+    return this.mapToResponseDto(invitation);
+  }
+
+  async acceptInvitation(
+    token: string,
+    password: string,
+    phoneNumber?: string
+  ) {
     const invitation = await this.invitationRepository.findOne({
       where: { token },
     });
@@ -239,14 +270,55 @@ export class InvitationService {
       throw new BadRequestException("Invitation has expired");
     }
 
+    // Check if user already exists with this email
+    const existingUser = await this.userRepository.findOne({
+      where: { email: invitation.email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException(
+        "A user with this email address already exists"
+      );
+    }
+
+    // Create new user with OWNER role
+    const hashedPassword = await this.bcryptService.hash(password);
+
+    const newUser = this.userRepository.create({
+      email: invitation.email,
+      password: hashedPassword,
+      firstName: invitation.firstName,
+      lastName: invitation.lastName,
+      phoneNumber: phoneNumber || invitation.phoneNumber,
+      role: UserRole.OWNER,
+      isEmailVerified: true, // Since they're accepting an invitation, we can mark email as verified
+      isActive: true,
+    });
+
+    const savedUser = await this.userRepository.save(newUser);
+
     // Update invitation status
     invitation.status = InvitationStatus.ACCEPTED;
     invitation.acceptedAt = new Date();
-    invitation.acceptedByUserId = userId;
+    invitation.acceptedByUserId = savedUser.id;
 
     await this.invitationRepository.save(invitation);
 
-    return this.mapToResponseDto(invitation);
+    return {
+      user: {
+        id: savedUser.id,
+        email: savedUser.email,
+        firstName: savedUser.firstName,
+        lastName: savedUser.lastName,
+        role: savedUser.role,
+        isEmailVerified: savedUser.isEmailVerified,
+        isActive: savedUser.isActive,
+        createdAt: savedUser.createdAt,
+        updatedAt: savedUser.updatedAt,
+        phoneNumber: savedUser.phoneNumber,
+      },
+      invitation: this.mapToResponseDto(invitation),
+    };
   }
 
   async cleanupExpiredInvitations() {
@@ -331,7 +403,7 @@ export class InvitationService {
             <p>To accept this invitation and set up your account, please click the button below:</p>
             
             <div style="text-align: center;">
-              <a href="${invitationUrl}" class="button">Accept Invitation</a>
+              <a href="${invitationUrl}" class="button" style="color: white;">Accept Invitation</a>
             </div>
             
             <p><strong>Important:</strong> This invitation will expire on ${new Date(invitation.expiresAt).toLocaleDateString()}. If you don't accept it by then, you'll need to request a new invitation.</p>
@@ -384,6 +456,7 @@ export class InvitationService {
       invitedByUserName: invitation.invitedByUser
         ? `${invitation.invitedByUser.firstName} ${invitation.invitedByUser.lastName}`
         : "Unknown",
+      invitedAt: invitation.createdAt, // Map createdAt to invitedAt for frontend compatibility
       expiresAt: invitation.expiresAt,
       acceptedAt: invitation.acceptedAt,
       createdAt: invitation.createdAt,

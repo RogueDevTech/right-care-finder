@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -23,6 +24,7 @@ import {
   ApiQuery,
   ApiParam,
   ApiBody,
+  getSchemaPath,
 } from "@nestjs/swagger";
 import { CreateCareHomeDto } from "../healthcare-homes/dto/create-care-home.dto";
 import { UpdateCareHomeDto } from "../healthcare-homes/dto/update-care-home.dto";
@@ -317,9 +319,11 @@ export class AdminController {
     @Query("search") search?: string,
     @Query("city") city?: string,
     @Query("county") county?: string,
+    @Query("region") region?: string,
     @Query("careTypeId") careTypeId?: string,
     @Query("isVerified") isVerified?: boolean,
     @Query("isFeatured") isFeatured?: boolean,
+    @Query("isActive") isActive?: boolean,
     @Query("page") page?: number,
     @Query("limit") limit?: number
   ) {
@@ -327,9 +331,11 @@ export class AdminController {
       search,
       city,
       county,
+      region,
       careTypeId,
       isVerified,
       isFeatured,
+      isActive,
       page: page || 1,
       limit: limit || 20,
     };
@@ -341,6 +347,16 @@ export class AdminController {
   @ApiOperation({
     summary: "Get care homes available for owners",
     description: "Retrieves care homes that don't have owners assigned yet",
+  })
+  @ApiQuery({
+    name: "search",
+    required: false,
+    description: "Search term to filter care homes by name, address, or city",
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    description: "Number of care homes to return (default: 30)",
   })
   @ApiResponse({
     status: 200,
@@ -359,8 +375,11 @@ export class AdminController {
       },
     },
   })
-  async getCareHomesAvailableForOwners() {
-    return this.adminService.getCareHomesAvailableForOwners();
+  async getCareHomesAvailableForOwners(
+    @Query("search") search?: string,
+    @Query("limit") limit?: number
+  ) {
+    return this.adminService.getCareHomesAvailableForOwners(search, limit);
   }
 
   @Version("v1")
@@ -393,6 +412,45 @@ export class AdminController {
   })
   async createCareHome(@Body() createCareHomeDto: CreateCareHomeDto) {
     return this.adminService.createCareHome(createCareHomeDto);
+  }
+
+  @Version("v1")
+  @Post("care-homes/bulk-import")
+  @ApiOperation({
+    summary: "Bulk import care homes",
+    description:
+      "Imports multiple care homes in a single request. Returns counts of successes and failures.",
+  })
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        careHomes: {
+          type: "array",
+          items: { $ref: getSchemaPath(CreateCareHomeDto) },
+          description: "Array of care home data to import",
+        },
+      },
+      required: ["careHomes"],
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: "Bulk import completed",
+    schema: {
+      type: "object",
+      properties: {
+        success: { type: "number" },
+        failed: { type: "number" },
+        errors: { type: "array", items: { type: "object" } },
+      },
+    },
+  })
+  async bulkImportCareHomes(
+    @Body("careHomes") careHomes: CreateCareHomeDto[],
+    @Request() req: { user?: { id: string } }
+  ) {
+    return this.adminService.bulkImportCareHomes(careHomes, req.user?.id);
   }
 
   @Version("v1")
@@ -429,6 +487,114 @@ export class AdminController {
   })
   async deleteCareHome(@Param("id") id: string) {
     return this.adminService.deleteCareHome(id);
+  }
+
+  @Version("v1")
+  @Patch("care-homes/:id/status")
+  @ApiOperation({
+    summary: "Update care home status",
+    description: "Updates the active status of a care home",
+  })
+  @ApiParam({ name: "id", description: "Care home ID" })
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        isActive: { type: "boolean", description: "New active status" },
+      },
+      required: ["isActive"],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Care home status updated successfully",
+  })
+  async updateCareHomeStatus(
+    @Param("id") id: string,
+    @Body("isActive") isActive: boolean
+  ) {
+    return this.adminService.toggleCareHomeStatus(id, isActive);
+  }
+
+  @Version("v1")
+  @Patch("care-homes/:id/verification")
+  @ApiOperation({
+    summary: "Update care home verification status",
+    description: "Updates the verification status of a care home",
+  })
+  @ApiParam({ name: "id", description: "Care home ID" })
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        isVerified: { type: "boolean", description: "New verification status" },
+      },
+      required: ["isVerified"],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Care home verification status updated successfully",
+  })
+  async updateCareHomeVerification(
+    @Param("id") id: string,
+    @Body("isVerified") isVerified: boolean
+  ) {
+    return this.adminService.toggleCareHomeVerification(id, isVerified);
+  }
+
+  @Version("v1")
+  @Patch("care-homes/:id/featured")
+  @ApiOperation({
+    summary: "Update care home featured status",
+    description: "Updates the featured status of a care home",
+  })
+  @ApiParam({ name: "id", description: "Care home ID" })
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        isFeatured: { type: "boolean", description: "New featured status" },
+      },
+      required: ["isFeatured"],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Care home featured status updated successfully",
+  })
+  async updateCareHomeFeatured(
+    @Param("id") id: string,
+    @Body("isFeatured") isFeatured: boolean
+  ) {
+    return this.adminService.toggleCareHomeFeatured(id, isFeatured);
+  }
+
+  @Version("v1")
+  @Put("care-homes/:id/toggle-status")
+  @ApiOperation({
+    summary: "Toggle care home active status",
+    description: "Activates or deactivates a care home",
+  })
+  @ApiParam({ name: "id", description: "Care home ID" })
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        isActive: { type: "boolean", description: "New active status" },
+      },
+      required: ["isActive"],
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Care home status updated successfully",
+  })
+  async toggleCareHomeStatus(
+    @Param("id") id: string,
+    @Body("isActive") isActive: boolean
+  ) {
+    return this.adminService.toggleCareHomeStatus(id, isActive);
   }
 
   // Analytics

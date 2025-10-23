@@ -1,5 +1,9 @@
 .wrapper {
   background-color: #151818;
+  background-image: url("/Right-care-founder.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
   .footer {
     display: flex;
     justify-content: space-between;
@@ -7,6 +11,9 @@
     width: 90%;
     margin: auto;
     padding: 40px 0;
+    max-width: 1240px;
+
+    // background-image: url(/frontend/public/Right-care-founder.png);
     @media (max-width: 500px) {
       flex-direction: column;
       gap: 30px;

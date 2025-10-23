@@ -10,8 +10,8 @@ import { CareHome } from "./care-home.entity";
 
 @Entity("care_types")
 export class CareType {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
   @Column({ unique: true })
   name: string;

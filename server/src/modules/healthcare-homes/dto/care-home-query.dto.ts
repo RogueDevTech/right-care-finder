@@ -6,7 +6,7 @@ import {
   IsArray,
   IsUUID,
 } from "class-validator";
-import { Type } from "class-transformer";
+import { Type, Transform } from "class-transformer";
 
 export class CareHomeQueryDto {
   @IsOptional()
@@ -69,6 +69,11 @@ export class CareHomeQueryDto {
   isFeatured?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  isActive?: boolean;
+
+  @IsOptional()
   @IsString()
   cqcRating?: string;
 
@@ -84,6 +89,12 @@ export class CareHomeQueryDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
+  @Transform(({ value }) => {
+    if (typeof value === "string") {
+      return [value];
+    }
+    return value;
+  })
   specializations?: string[];
 
   @IsOptional()

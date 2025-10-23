@@ -176,6 +176,7 @@ export interface CareHome {
   region: string;
   postcode: string;
   country: string;
+  countryCode?: string;
   latitude?: number;
   longitude?: number;
   phone: string;
@@ -189,8 +190,19 @@ export interface CareHome {
   isVerified: boolean;
   isFeatured: boolean;
   specializations: string[];
-  openingHours: Record<string, string>;
-  contactInfo: Record<string, string>;
+  openingHours: {
+    Monday: string;
+    Tuesday: string;
+    Wednesday: string;
+    Thursday: string;
+    Friday: string;
+    Saturday: string;
+    Sunday: string;
+  };
+  contactInfo: {
+    emergency: string;
+    manager: string;
+  };
   careTypeId: string;
   facilityIds: string[];
   imageUrls: string[];
@@ -221,8 +233,19 @@ export interface CreateCareHomeData {
   availableBeds?: number;
   isActive: boolean;
   specializations: string[];
-  openingHours: Record<string, string>;
-  contactInfo: Record<string, string>;
+  openingHours: {
+    Monday: string;
+    Tuesday: string;
+    Wednesday: string;
+    Thursday: string;
+    Friday: string;
+    Saturday: string;
+    Sunday: string;
+  };
+  contactInfo: {
+    emergency: string;
+    manager: string;
+  };
   careTypeId: string;
   facilityIds: string[];
   imageUrls: string[];
@@ -319,6 +342,61 @@ export interface InvitationResponse {
   message?: string;
 }
 
+// Blog Post Interfaces
+export interface BlogPost {
+  id: number;
+  title: string;
+  content: string;
+  excerpt?: string;
+  featuredImage?: string;
+  slug?: string;
+  status: "draft" | "published" | "archived";
+  isActive: boolean;
+  tags?: string[];
+  category?: string;
+  viewCount: number;
+  publishedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  author: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+}
+
+export interface CreateBlogPostData {
+  title: string;
+  content: string;
+  excerpt?: string;
+  featuredImage?: string;
+  slug?: string;
+  status?: "draft" | "published" | "archived";
+  isActive?: boolean;
+  tags?: string[];
+  category?: string;
+}
+
+export interface BlogPostsResponse {
+  data: BlogPost[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface BlogPostQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  status?: "draft" | "published" | "archived";
+  category?: string;
+  tag?: string;
+  sortBy?: string;
+  sortOrder?: "ASC" | "DESC";
+}
+
 export const useAdminActions = () => {
   const client = useClient();
 
@@ -402,7 +480,7 @@ export const useAdminActions = () => {
     if (response && response.data) {
       return {
         success: true,
-        data: response as CareHomesResponse,
+        data: response.data as CareHomesResponse,
       };
     } else {
       return {
@@ -435,6 +513,28 @@ export const useAdminActions = () => {
       return {
         success: true,
         data: response.data as CareHome,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const bulkImportCareHomes = async (careHomes: CreateCareHomeData[]) => {
+    const response = await client.post("/admin/care-homes/bulk-import", {
+      careHomes,
+    });
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as {
+          success: number;
+          failed: number;
+          errors: string[];
+        },
       };
     } else {
       return {
@@ -809,8 +909,14 @@ export const useAdminActions = () => {
   };
 
   // Invitation Management
-  const getAvailableCareHomes = async () => {
-    const response = await client.get("/admin/care-homes/available-for-owners");
+  const getAvailableCareHomes = async (search?: string, limit: number = 30) => {
+    const queryParams = new URLSearchParams();
+    if (search) queryParams.append("search", search);
+    if (limit) queryParams.append("limit", limit.toString());
+
+    const response = await client.get(
+      `/admin/care-homes/available-for-owners?${queryParams.toString()}`
+    );
 
     if (response.data) {
       return {
@@ -898,12 +1004,179 @@ export const useAdminActions = () => {
   };
 
   const cancelInvitation = async (invitationId: string) => {
-    const response = await client.delete(`/admin/invitations/${invitationId}`);
+    const response = await client.delete(
+      `/v1/admin/invitations/${invitationId}`
+    );
 
     if (response.data) {
       return {
         success: true,
         data: response.data,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  // Invitation Validation (for accept invitation page)
+  const validateInvitation = async (token: string) => {
+    const response = await client.get(
+      `/users/invitations/validate?token=${token}`
+    );
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const acceptInvitation = async (data: {
+    token: string;
+    password: string;
+  }) => {
+    const response = await client.post("/invitations/accept", data);
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  // Blog Management
+  const getBlogPosts = async (params: BlogPostQueryParams = {}) => {
+    const queryParams = new URLSearchParams();
+
+    if (params.page) queryParams.append("page", params.page.toString());
+    if (params.limit) queryParams.append("limit", params.limit.toString());
+    if (params.search) queryParams.append("search", params.search);
+    if (params.status) queryParams.append("status", params.status);
+    if (params.category) queryParams.append("category", params.category);
+    if (params.tag) queryParams.append("tag", params.tag);
+    if (params.sortBy) queryParams.append("sortBy", params.sortBy);
+    if (params.sortOrder) queryParams.append("sortOrder", params.sortOrder);
+
+    const response = await client.get(`/blog?${queryParams.toString()}`);
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as BlogPostsResponse,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const getBlogPostById = async (blogPostId: number) => {
+    const response = await client.get(`/blog/${blogPostId}`);
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as BlogPost,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const createBlogPost = async (blogPostData: CreateBlogPostData) => {
+    const response = await client.post("/blog", blogPostData);
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as BlogPost,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const updateBlogPost = async (
+    blogPostId: number,
+    blogPostData: Partial<CreateBlogPostData>
+  ) => {
+    const response = await client.patch(`/blog/${blogPostId}`, blogPostData);
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as BlogPost,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const deleteBlogPost = async (blogPostId: number) => {
+    const response = await client.delete(`/blog/${blogPostId}`);
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const getBlogCategories = async () => {
+    const response = await client.get("/blog/categories");
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as string[],
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  };
+
+  const getBlogTags = async () => {
+    const response = await client.get("/blog/tags");
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as string[],
       };
     } else {
       return {
@@ -920,6 +1193,7 @@ export const useAdminActions = () => {
     getCareHomes,
     getCareHomeById,
     createCareHome,
+    bulkImportCareHomes,
     updateCareHome,
     deleteCareHome,
     toggleCareHomeStatus,
@@ -944,5 +1218,15 @@ export const useAdminActions = () => {
     getInvitations,
     resendInvitation,
     cancelInvitation,
+    validateInvitation,
+    acceptInvitation,
+    // Blog Management
+    getBlogPosts,
+    getBlogPostById,
+    createBlogPost,
+    updateBlogPost,
+    deleteBlogPost,
+    getBlogCategories,
+    getBlogTags,
   };
 };

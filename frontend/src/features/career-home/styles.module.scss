@@ -2,9 +2,11 @@
   display: flex;
   flex-direction: column;
   background-color: #f6f6f6;
+
   .filterSection {
-    width: 90%;
+    width: 95%;
     margin: 40px auto 0;
+    max-width: 1240px;
     display: flex;
     justify-content: space-between;
     @media (max-width: 500px) {
@@ -19,14 +21,155 @@
       }
     }
   }
-  .cardWrapper {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 24px;
-    width: 90%;
-    margin: 40px auto;
-    @media (max-width: 500px) {
-      grid-template-columns: 1fr;
+
+  // Professional Pagination Styles
+  .pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 40px auto 0;
+    background: white;
+    padding: 20px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e5e7eb;
+    width: 95%;
+    max-width: 1240px;
+    position: relative;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #1c7c8a 0%, #0891b2 100%);
+      border-radius: 12px 12px 0 0;
+    }
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 16px;
+      text-align: center;
+      padding: 16px 20px;
+    }
+
+    @media (max-width: 480px) {
+      padding: 16px;
+      margin-top: 32px;
+    }
+  }
+
+  .paginationInfo {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    @media (max-width: 768px) {
+      justify-content: center;
+    }
+  }
+
+  .paginationControls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    @media (max-width: 768px) {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+  }
+
+  .pageNumbers {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    background: #f8fafc;
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+  }
+
+  .pageNumber {
+    min-width: 36px;
+    height: 36px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: #374151;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover:not(.activePage) {
+      background: #e5e7eb;
+      color: #1c7c8a;
+    }
+
+    &.activePage {
+      background: #1c7c8a;
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 2px 4px rgba(28, 124, 138, 0.2);
+
+      &:hover {
+        background: #145e6a;
+      }
+    }
+
+    @media (max-width: 480px) {
+      min-width: 32px;
+      height: 32px;
+      font-size: 0.8rem;
+    }
+  }
+
+  .paginationButton {
+    padding: 8px 12px;
+    border: 1px solid #d1d5db;
+    background: white;
+    color: #374151;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+
+    &:hover:not(:disabled) {
+      border-color: #1c7c8a;
+      color: #1c7c8a;
+      background: #f0f9ff;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: #f9fafb;
+      border-color: #e5e7eb;
+      color: #9ca3af;
+    }
+
+    @media (max-width: 480px) {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      min-width: 32px;
+      height: 32px;
     }
   }
 }

@@ -6,7 +6,13 @@ import AppLogo from "@/../public/right-care-logo.png";
 import Link from "next/link";
 import { CloseBtn, DropIcon, MenuIcon } from "../icon";
 import { ISession } from "@/interfaces";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import {
+  useHealthcareHomesActions,
+  CareType,
+  Specialization,
+  RegionStatistics,
+} from "@/actions-client/healthcare-homes";
 
 export default function NavBar({ session }: { session?: ISession }) {
   const handleLogout = () => {};
@@ -14,6 +20,71 @@ export default function NavBar({ session }: { session?: ISession }) {
   const [regionOpen, setRegionOpen] = useState(false);
   const [servicesOfferedOpen, setServicesOfferedOpen] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [careTypes, setCareTypes] = useState<CareType[]>([]);
+  const [isLoadingCareTypes, setIsLoadingCareTypes] = useState(true);
+  const [specializations, setSpecializations] = useState<Specialization[]>([]);
+  const [isLoadingSpecializations, setIsLoadingSpecializations] =
+    useState(true);
+  const [regionStats, setRegionStats] = useState<RegionStatistics[]>([]);
+  const [isLoadingRegionStats, setIsLoadingRegionStats] = useState(true);
+
+  const { getCareTypes, getSpecializations, getRegionStatistics } =
+    useHealthcareHomesActions();
+
+  useEffect(() => {
+    const fetchCareTypes = async () => {
+      try {
+        setIsLoadingCareTypes(true);
+        const result = await getCareTypes();
+
+        if (result.success && result.data) {
+          setCareTypes(result.data);
+        } else {
+          console.error("Failed to fetch care types:", result.error);
+        }
+      } catch (error) {
+        console.error("Error fetching care types:", error);
+      } finally {
+        setIsLoadingCareTypes(false);
+      }
+    };
+
+    const fetchSpecializations = async () => {
+      try {
+        setIsLoadingSpecializations(true);
+        const result = await getSpecializations();
+        if (result.success && result.data) {
+          setSpecializations(result.data);
+        } else {
+          console.error("Failed to fetch specializations:", result.error);
+        }
+      } catch (error) {
+        console.error("Error fetching specializations:", error);
+      } finally {
+        setIsLoadingSpecializations(false);
+      }
+    };
+
+    const fetchRegionStats = async () => {
+      try {
+        setIsLoadingRegionStats(true);
+        const result = await getRegionStatistics();
+        if (result.success && result.data) {
+          setRegionStats(result.data);
+        } else {
+          console.error("Failed to fetch region statistics:", result.error);
+        }
+      } catch (error) {
+        console.error("Error fetching region statistics:", error);
+      } finally {
+        setIsLoadingRegionStats(false);
+      }
+    };
+
+    fetchCareTypes();
+    fetchSpecializations();
+    fetchRegionStats();
+  }, []);
 
   return (
     <div className={styles.container}>
@@ -26,84 +97,66 @@ export default function NavBar({ session }: { session?: ISession }) {
         <div className={styles.nav}>
           <div className={styles.dropdown}>
             <button className={styles.dropbtn}>
-              Care type <DropIcon />
+              Care type <DropIcon fillColor="#f6f6f6" />
             </button>
             <div className={styles.dropdownContent}>
-              <a href="#">Residential Care Homes</a>
-              <a href="#">Nursing Care Homes</a>
-              <a href="#">Dementia Care Homes</a>
-              <a href="#">Respite Care</a>
-              <a href="#">Palliative / End-of-life Care</a>
-              <a href="#">Assisted Living</a>
-              <a href="#">Day Care Services</a>
+              {isLoadingCareTypes ? (
+                <div>Loading...</div>
+              ) : (
+                careTypes.map((careType) => (
+                  <a
+                    key={careType.id}
+                    href={`/care-homes?careTypeId=${careType.id}`}
+                  >
+                    {careType.name}
+                  </a>
+                ))
+              )}
             </div>
           </div>
           <div className={styles.dropdown}>
             <button className={styles.dropbtn}>
-              Region <DropIcon />
+              Region <DropIcon fillColor="#f6f6f6" />
             </button>
             <div className={styles.dropdownContent}>
-              <div className={styles.dropdownRegion}>
-                <div className={styles.region}>
-                  <h3>England</h3>
-                  <div className="">
-                    <a href="#">London</a>
-                    <a href="#">South East</a>
-                    <a href="#">South West</a>
-                    <a href="#">East of England</a>
-                    <a href="#">West Midlands</a>
-                    <a href="#">Yorkshire & Humber</a>
-                    <a href="#">North West</a>
-                  </div>
-                </div>
-                <div className={styles.region}>
-                  <h3>Scotland</h3>
-                  <div className="">
-                    <a href="#">Edinburgh</a>
-                    <a href="#">Glasgow</a>
-                    <a href="#">Aberdeen</a>
-                    <a href="#">Highlands & Islands</a>
-                  </div>
-                </div>
-                <div className={styles.region}>
-                  <h3>Wales</h3>
-                  <div className="">
-                    <a href="#">Cardiff</a>
-                    <a href="#">Swansea</a>
-                    <a href="#">North Wales</a>
-                    <a href="#">South Wales</a>
-                  </div>
-                </div>
-                <div className={styles.region}>
-                  <h3>Northern Ireland</h3>
-                  <div className="">
-                    <a href="#">Belfast</a>
-                    <a href="#">Derry / Londonderry</a>
-                    <a href="#">Antrim</a>
-                    <a href="#">Armagh</a>
-                  </div>
-                </div>
-              </div>
+              {isLoadingRegionStats ? (
+                <div>Loading...</div>
+              ) : (
+                regionStats.map((region) => (
+                  <a
+                    key={region.region}
+                    href={`/care-homes?region=${encodeURIComponent(
+                      region.region
+                    )}`}
+                  >
+                    {region.region} ({region.count})
+                  </a>
+                ))
+              )}
             </div>
           </div>
-          <Link href="career">
+          <Link href="/care-homes">
             <div className="">Care homes</div>
           </Link>
           <div className={styles.dropdown}>
             <button className={styles.dropbtn}>
-              Services offered <DropIcon />
+              Specialization <DropIcon fillColor="#f6f6f6" />
             </button>
             <div className={styles.dropdownContent}>
-              <a href="#">24/7 Nursing Support</a>
-              <a href="#">Personal Care Assistance</a>
-              <a href="#">Dementia & Alzheimer’s Support</a>
-              <a href="#">Palliative Care Services</a>
-              <a href="#">Meals & Nutrition Plans</a>
-              <a href="#">Physiotherapy & Rehabilitation</a>
-              <a href="#">Social & Recreational Activities</a>
-              <a href="#">Housekeeping & Laundry Services</a>
-              <a href="#">Transportation & Mobility Support</a>
-              <a href="#">Visiting Doctors / Medical Professionals</a>
+              {isLoadingSpecializations ? (
+                <div>Loading...</div>
+              ) : (
+                specializations.map((specialization) => (
+                  <a
+                    key={specialization.id}
+                    href={`/care-homes?specializations=${encodeURIComponent(
+                      specialization.name
+                    )}`}
+                  >
+                    {specialization.name}
+                  </a>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -166,31 +219,23 @@ export default function NavBar({ session }: { session?: ISession }) {
                     onClick={() => setCareTypeOpen(!careTypeOpen)}
                   >
                     <p>Care type</p>
-                    <DropIcon />
+                    <DropIcon fillColor="#f6f6f6" />
                   </div>
                   {careTypeOpen && (
                     <div className={styles.careTypeDropdown}>
-                      <Link href="" className={styles.profileLink}>
-                        Residential Care Homes
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Nursing Care Homes
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Dementia Care Homes
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Respite Care
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Palliative / End-of-life Care
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Assisted Living
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Day Care Services
-                      </Link>
+                      {isLoadingCareTypes ? (
+                        <div>Loading...</div>
+                      ) : (
+                        careTypes.map((careType) => (
+                          <Link
+                            key={careType.id}
+                            href={`/search?careTypeId=${careType.id}`}
+                            className={styles.profileLink}
+                          >
+                            {careType.name}
+                          </Link>
+                        ))
+                      )}
                     </div>
                   )}
                 </div>
@@ -200,35 +245,29 @@ export default function NavBar({ session }: { session?: ISession }) {
                     onClick={() => setRegionOpen(!regionOpen)}
                   >
                     <p>Region</p>
-                    <DropIcon />
+                    <DropIcon fillColor="#f6f6f6" />
                   </div>
                   {regionOpen && (
                     <div className={styles.careTypeDropdown}>
-                      <Link href="" className={styles.profileLink}>
-                        Residential Care Homes
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Nursing Care Homes
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Dementia Care Homes
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Respite Care
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Palliative / End-of-life Care
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Assisted Living
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Day Care Services
-                      </Link>
+                      {isLoadingRegionStats ? (
+                        <div>Loading...</div>
+                      ) : (
+                        regionStats.map((region) => (
+                          <Link
+                            key={region.region}
+                            href={`/search?region=${encodeURIComponent(
+                              region.region
+                            )}`}
+                            className={styles.profileLink}
+                          >
+                            {region.region} ({region.count})
+                          </Link>
+                        ))
+                      )}
                     </div>
                   )}
                 </div>
-                <Link href="/career" className={styles.profileLink}>
+                <Link href="/care-homes" className={styles.profileLink}>
                   Care homes
                 </Link>
                 <div className={styles.mobileNav}>
@@ -236,32 +275,26 @@ export default function NavBar({ session }: { session?: ISession }) {
                     className={styles.navName}
                     onClick={() => setServicesOfferedOpen(!servicesOfferedOpen)}
                   >
-                    <p>Services offered</p>
-                    <DropIcon />
+                    <p>Specialization</p>
+                    <DropIcon fillColor="#f6f6f6" />
                   </div>
                   {servicesOfferedOpen && (
                     <div className={styles.careTypeDropdown}>
-                      <Link href="" className={styles.profileLink}>
-                        Residential Care Homes
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Nursing Care Homes
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Dementia Care Homes
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Respite Care
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Palliative / End-of-life Care
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Assisted Living
-                      </Link>
-                      <Link href="" className={styles.profileLink}>
-                        Day Care Services
-                      </Link>
+                      {isLoadingSpecializations ? (
+                        <div>Loading...</div>
+                      ) : (
+                        specializations.map((specialization) => (
+                          <Link
+                            key={specialization.id}
+                            href={`/care-homes?specializations=${encodeURIComponent(
+                              specialization.name
+                            )}`}
+                            className={styles.profileLink}
+                          >
+                            {specialization.name}
+                          </Link>
+                        ))
+                      )}
                     </div>
                   )}
                 </div>

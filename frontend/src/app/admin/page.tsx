@@ -90,42 +90,30 @@ export default function AdminPage() {
         {stats && (
           <div className={styles.statsGrid}>
             <Card className={styles.statCard}>
-              <div className={styles.statContent}>
-                <div className={styles.statIcon}>👥</div>
-                <div className={styles.statInfo}>
-                  <h3>{stats.totalUsers.toLocaleString()}</h3>
-                  <p>Total Users</p>
-                </div>
+              <div className={styles.statInfo}>
+                <h3>{stats.totalUsers.toLocaleString()}</h3>
+                <p>Total Users</p>
               </div>
             </Card>
 
             <Card className={styles.statCard}>
-              <div className={styles.statContent}>
-                <div className={styles.statIcon}>🏠</div>
-                <div className={styles.statInfo}>
-                  <h3>{stats.totalCareHomes}</h3>
-                  <p>Total Care Homes</p>
-                </div>
+              <div className={styles.statInfo}>
+                <h3>{stats.totalCareHomes}</h3>
+                <p>Total Care Homes</p>
               </div>
             </Card>
 
             <Card className={styles.statCard}>
-              <div className={styles.statContent}>
-                <div className={styles.statIcon}>✅</div>
-                <div className={styles.statInfo}>
-                  <h3>{stats.verifiedCareHomes}</h3>
-                  <p>Verified Care Homes</p>
-                </div>
+              <div className={styles.statInfo}>
+                <h3>{stats.verifiedCareHomes}</h3>
+                <p>Verified Care Homes</p>
               </div>
             </Card>
 
             <Card className={styles.statCard}>
-              <div className={styles.statContent}>
-                <div className={styles.statIcon}>⭐</div>
-                <div className={styles.statInfo}>
-                  <h3>{stats.totalReviews.toLocaleString()}</h3>
-                  <p>Total Reviews</p>
-                </div>
+              <div className={styles.statInfo}>
+                <h3>{stats.totalReviews.toLocaleString()}</h3>
+                <p>Total Reviews</p>
               </div>
             </Card>
           </div>

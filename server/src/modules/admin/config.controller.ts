@@ -70,13 +70,13 @@ export class ConfigController {
     summary: "Get care type by ID",
     description: "Retrieves a specific care type by its ID",
   })
-  @ApiParam({ name: "id", description: "Care type ID", type: "number" })
+  @ApiParam({ name: "id", description: "Care type ID", type: "string" })
   @ApiResponse({
     status: 200,
     description: "Returns care type details",
     type: CareTypeResponseDto,
   })
-  async getCareTypeById(@Param("id", ParseIntPipe) id: number) {
+  async getCareTypeById(@Param("id") id: string) {
     return this.configService.getCareTypeById(id);
   }
 
@@ -102,7 +102,7 @@ export class ConfigController {
     summary: "Update care type",
     description: "Updates an existing care type with new information",
   })
-  @ApiParam({ name: "id", description: "Care type ID", type: "number" })
+  @ApiParam({ name: "id", description: "Care type ID", type: "string" })
   @ApiBody({ type: UpdateCareTypeDto })
   @ApiResponse({
     status: 200,
@@ -110,7 +110,7 @@ export class ConfigController {
     type: CareTypeResponseDto,
   })
   async updateCareType(
-    @Param("id", ParseIntPipe) id: number,
+    @Param("id") id: string,
     @Body() updateCareTypeDto: UpdateCareTypeDto
   ) {
     return this.configService.updateCareType(id, updateCareTypeDto);
@@ -122,12 +122,12 @@ export class ConfigController {
     summary: "Delete care type",
     description: "Permanently removes a care type from the system",
   })
-  @ApiParam({ name: "id", description: "Care type ID", type: "number" })
+  @ApiParam({ name: "id", description: "Care type ID", type: "string" })
   @ApiResponse({
     status: 200,
     description: "Care type deleted successfully",
   })
-  async deleteCareType(@Param("id", ParseIntPipe) id: number) {
+  async deleteCareType(@Param("id") id: string) {
     return this.configService.deleteCareType(id);
   }
 

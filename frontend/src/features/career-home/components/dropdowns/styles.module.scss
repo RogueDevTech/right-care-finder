@@ -1,44 +1,109 @@
 .container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  flex-wrap: wrap;
+  @media (max-width: 768px) {
+    gap: 8px;
+  }
   @media (max-width: 500px) {
     width: 100%;
+    gap: 8px;
   }
 }
+
 .sortCard {
   display: flex;
   align-items: center;
-  font-size: 16px;
-  border: 1px solid #ddd;
-  padding: 20px 20px;
-  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid #e1e5e9;
+  padding: 0;
+  border-radius: 8px;
   background: #fff;
   width: fit-content;
-  height: 100%;
+  min-width: 140px;
+  height: 48px;
   cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
+
+  &:hover {
+    border-color: #e1e5e9;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transform: none;
+  }
+
+  &:focus-within {
+    border-color: #e1e5e9;
+    box-shadow: none;
+  }
+
+  @media (max-width: 768px) {
+    min-width: 120px;
+    font-size: 13px;
+  }
+
   @media (max-width: 500px) {
     width: 100%;
-    padding: 16px;
+    min-width: unset;
+    font-size: 14px;
   }
 }
 
 .label {
-  margin-right: 6px;
-  color: #666;
+  margin-right: 8px;
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .dropdown {
   position: relative;
+  width: 100%;
 }
 
 .dropdownBtn {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 12px 16px;
+  width: 100%;
+  height: 100%;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  border-radius: 8px;
+
+  &::after {
+    content: "▼";
+    font-size: 10px;
+    color: #6b7280;
+    transition: transform 0.2s ease;
+    margin-left: 8px;
+  }
+
+  &:hover::after {
+    color: #6b7280;
+  }
+
+  @media (max-width: 768px) {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
   @media (max-width: 500px) {
-    font-size: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    min-height: 48px;
   }
 }
 
@@ -47,32 +112,202 @@
 }
 
 .dropdownContent {
-  display: none;
+  display: block;
   position: absolute;
-  top: 25px;
+  top: 100%;
   left: 0;
+  right: 0;
   background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  min-width: 120px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  min-width: 200px;
   width: max-content;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  z-index: 10;
+  max-width: 300px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+  z-index: 50;
+  margin-top: 4px;
+  overflow: hidden;
+  animation: slideDown 0.2s ease-out;
 }
 
-.dropdown:hover .dropdownContent {
-  display: block;
-  width: 100%;
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
+
+// Removed hover behavior - now using click
 
 .dropdownItem {
-  padding: 8px 12px;
-  width: max-content;
-  display: flex;
-  flex-wrap: nowrap;
+  padding: 14px 18px;
   cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+  transition: all 0.15s ease;
+  border-bottom: 1px solid #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  white-space: nowrap;
+  min-height: 44px;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: #f8fafc;
+    color: #1f2937;
+    transform: translateX(2px);
+  }
+
+  &:active {
+    background-color: #e5e7eb;
+  }
+
+  @media (max-width: 500px) {
+    padding: 16px 18px;
+    font-size: 14px;
+    min-height: 48px;
+  }
 }
 
-.dropdownItem:hover {
-  background-color: #f0f0f0;
+.dropdownItem:first-child {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.dropdownItem:last-child {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+// Loading state styling
+.dropdownItem[data-loading="true"] {
+  color: #9ca3af;
+  font-style: italic;
+  cursor: default;
+
+  &:hover {
+    background-color: transparent;
+    transform: none;
+  }
+}
+
+// Selected state styling
+.dropdownItem[data-selected="true"] {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 500;
+
+  &:hover {
+    background-color: #dbeafe;
+  }
+}
+
+// Count styling for regions
+.dropdownItem .count {
+  font-size: 12px;
+  color: #6b7280;
+  background-color: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+
+// Responsive improvements
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sortCard {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .dropdownContent {
+    min-width: 180px;
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 500px) {
+  .dropdownContent {
+    min-width: 160px;
+    max-width: 250px;
+  }
+}
+
+// Focus states for accessibility
+.dropdown:focus-within .dropdownBtn::after {
+  transform: none;
+  color: #6b7280;
+}
+
+.dropdownBtn:focus {
+  outline: none;
+  outline-offset: 0;
+}
+
+.dropdownHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clearBtn {
+  background: #ef4444;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.clearAllBtn {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 12px;
+  width: 100%;
+
+  &:hover {
+    background: #e5e7eb;
+    border-color: #9ca3af;
+    color: #374151;
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
 }

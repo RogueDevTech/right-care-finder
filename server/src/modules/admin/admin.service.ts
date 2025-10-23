@@ -63,9 +63,13 @@ export class AdminService {
     search?: string;
     city?: string;
     county?: string;
+    region?: string;
     careTypeId?: string;
     isVerified?: boolean;
     isFeatured?: boolean;
+    isActive?: boolean;
+    page?: number;
+    limit?: number;
   }) {
     return this.healthcareHomesService.findAll(filters);
   }
@@ -73,6 +77,13 @@ export class AdminService {
   // Care Home Management
   async createCareHome(createCareHomeDto: CreateCareHomeDto) {
     return this.healthcareHomesService.create(createCareHomeDto);
+  }
+
+  async bulkImportCareHomes(
+    careHomes: CreateCareHomeDto[],
+    userId?: string
+  ): Promise<{ success: number; failed: number; errors: any[] }> {
+    return this.healthcareHomesService.bulkImport(careHomes, userId);
   }
 
   async updateCareHome(id: string, updateCareHomeDto: UpdateCareHomeDto) {
@@ -85,6 +96,96 @@ export class AdminService {
 
   async getCareHomeDetails(id: string) {
     return this.healthcareHomesService.findOne(id);
+  }
+
+  async toggleCareHomeStatus(id: string, isActive: boolean) {
+    console.log(
+      `[toggleCareHomeStatus] Updating care home ${id} to isActive: ${isActive}`
+    );
+
+    const careHome = await this.careHomeRepository.findOne({
+      where: { id },
+    });
+
+    if (!careHome) {
+      throw new Error("Care home not found");
+    }
+
+    console.log(
+      `[toggleCareHomeStatus] Current isActive status: ${careHome.isActive}`
+    );
+
+    careHome.isActive = isActive;
+    const savedCareHome = await this.careHomeRepository.save(careHome);
+
+    console.log(
+      `[toggleCareHomeStatus] Saved care home with isActive: ${savedCareHome.isActive}`
+    );
+
+    return {
+      message: `Care home ${isActive ? "activated" : "deactivated"} successfully`,
+      careHome: savedCareHome,
+    };
+  }
+
+  async toggleCareHomeVerification(id: string, isVerified: boolean) {
+    console.log(
+      `[toggleCareHomeVerification] Updating care home ${id} to isVerified: ${isVerified}`
+    );
+
+    const careHome = await this.careHomeRepository.findOne({
+      where: { id },
+    });
+
+    if (!careHome) {
+      throw new Error("Care home not found");
+    }
+
+    console.log(
+      `[toggleCareHomeVerification] Current isVerified status: ${careHome.isVerified}`
+    );
+
+    careHome.isVerified = isVerified;
+    const savedCareHome = await this.careHomeRepository.save(careHome);
+
+    console.log(
+      `[toggleCareHomeVerification] Saved care home with isVerified: ${savedCareHome.isVerified}`
+    );
+
+    return {
+      message: `Care home ${isVerified ? "verified" : "unverified"} successfully`,
+      careHome: savedCareHome,
+    };
+  }
+
+  async toggleCareHomeFeatured(id: string, isFeatured: boolean) {
+    console.log(
+      `[toggleCareHomeFeatured] Updating care home ${id} to isFeatured: ${isFeatured}`
+    );
+
+    const careHome = await this.careHomeRepository.findOne({
+      where: { id },
+    });
+
+    if (!careHome) {
+      throw new Error("Care home not found");
+    }
+
+    console.log(
+      `[toggleCareHomeFeatured] Current isFeatured status: ${careHome.isFeatured}`
+    );
+
+    careHome.isFeatured = isFeatured;
+    const savedCareHome = await this.careHomeRepository.save(careHome);
+
+    console.log(
+      `[toggleCareHomeFeatured] Saved care home with isFeatured: ${savedCareHome.isFeatured}`
+    );
+
+    return {
+      message: `Care home ${isFeatured ? "featured" : "unfeatured"} successfully`,
+      careHome: savedCareHome,
+    };
   }
 
   async getCareHomeAnalytics(startDate: Date, endDate: Date) {
@@ -134,15 +235,31 @@ export class AdminService {
     return this.usersService.remove(id);
   }
 
-  async getCareHomesAvailableForOwners() {
-    // Query care homes that don't have a createdBy user assigned
-    // This includes care homes where createdBy is null or doesn't exist
-    const availableCareHomes = await this.careHomeRepository
+  async getCareHomesAvailableForOwners(search?: string, limit: number = 30) {
+    // Query care homes that don't have accepted invitations (no owners)
+    // This means care homes where there are no accepted invitations
+    const queryBuilder = this.careHomeRepository
       .createQueryBuilder("careHome")
-      .leftJoinAndSelect("careHome.createdBy", "createdBy")
+      .leftJoin(
+        "invitations",
+        "invitation",
+        "invitation.careHomeId = careHome.id AND invitation.status = 'accepted'"
+      )
       .where("careHome.isActive = :isActive", { isActive: true })
-      .andWhere("createdBy.id IS NULL")
-      .getMany();
+      .andWhere("invitation.id IS NULL");
+
+    // Add search functionality
+    if (search) {
+      queryBuilder.andWhere(
+        "(careHome.name ILIKE :search OR careHome.addressLine1 ILIKE :search OR careHome.city ILIKE :search OR careHome.postcode ILIKE :search)",
+        { search: `%${search}%` }
+      );
+    }
+
+    // Add limit and order by name
+    queryBuilder.orderBy("careHome.name", "ASC").limit(limit);
+
+    const availableCareHomes = await queryBuilder.getMany();
 
     return availableCareHomes.map((careHome: CareHome) => ({
       id: careHome.id,

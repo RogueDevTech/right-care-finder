@@ -82,9 +82,9 @@ export class UpdateCareTypeDto {
 export class CareTypeResponseDto {
   @ApiProperty({
     description: "Care type ID",
-    example: 1,
+    example: "123e4567-e89b-12d3-a456-426614174000",
   })
-  id: number;
+  id: string;
 
   @ApiProperty({
     description: "Name of the care type",

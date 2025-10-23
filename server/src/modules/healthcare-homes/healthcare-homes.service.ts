@@ -6,6 +6,7 @@ import { CareType } from "./entities/care-type.entity";
 import { CareHomeFacility } from "./entities/care-home-facility.entity";
 import { CareHomeImage } from "./entities/care-home-image.entity";
 import { CareHomeReview } from "./entities/care-home-review.entity";
+import { Specialization } from "./entities/specialization.entity";
 import { CreateCareHomeDto } from "./dto/create-care-home.dto";
 import { UpdateCareHomeDto } from "./dto/update-care-home.dto";
 import { CareHomeQueryDto } from "./dto/care-home-query.dto";
@@ -23,8 +24,34 @@ export class HealthcareHomesService {
     @InjectRepository(CareHomeImage)
     private imageRepository: Repository<CareHomeImage>,
     @InjectRepository(CareHomeReview)
-    private reviewRepository: Repository<CareHomeReview>
+    private reviewRepository: Repository<CareHomeReview>,
+    @InjectRepository(Specialization)
+    private specializationRepository: Repository<Specialization>
   ) {}
+
+  async bulkImport(
+    careHomes: CreateCareHomeDto[],
+    userId?: string
+  ): Promise<{ success: number; failed: number; errors: any[] }> {
+    let success = 0;
+    let failed = 0;
+    const errors: any[] = [];
+
+    for (const careHomeDto of careHomes) {
+      try {
+        await this.create(careHomeDto, userId);
+        success++;
+      } catch (error) {
+        failed++;
+        errors.push({
+          careHome: careHomeDto.name || "Unknown",
+          error: error.message,
+        });
+      }
+    }
+
+    return { success, failed, errors };
+  }
 
   async create(
     createCareHomeDto: CreateCareHomeDto,
@@ -85,6 +112,7 @@ export class HealthcareHomesService {
       hasAvailableBeds,
       isVerified,
       isFeatured,
+      isActive,
       page = 1,
       limit = 10,
       sortBy = "createdAt",
@@ -99,13 +127,17 @@ export class HealthcareHomesService {
       .leftJoinAndSelect("careHome.careType", "careType")
       .leftJoinAndSelect("careHome.images", "images")
       .leftJoinAndSelect("careHome.facilities", "facilities")
-      .leftJoinAndSelect("careHome.reviews", "reviews")
-      .where("careHome.isActive = :isActive", { isActive: true });
+      .leftJoinAndSelect("careHome.reviews", "reviews");
+
+    // Only filter by isActive if explicitly provided
+    if (isActive !== undefined) {
+      queryBuilder.where("careHome.isActive = :isActive", { isActive });
+    }
 
     // Search functionality
     if (search) {
       queryBuilder.andWhere(
-        "(careHome.name ILIKE :search OR careHome.description ILIKE :search OR careHome.city ILIKE :search OR careHome.addressLine1 ILIKE :search)",
+        "(careHome.name ILIKE :search OR careHome.city ILIKE :search OR careHome.addressLine1 ILIKE :search OR EXISTS (SELECT 1 FROM unnest(careHome.description) AS desc_item WHERE desc_item ILIKE :search))",
         { search: `%${search}%` }
       );
     }
@@ -202,9 +234,16 @@ export class HealthcareHomesService {
 
     // Specializations filter
     if (query.specializations?.length) {
-      queryBuilder.andWhere("careHome.specializations && :specializations", {
-        specializations: query.specializations,
-      });
+      // Use OR condition for each specialization to check if it exists in the array
+      const conditions = query.specializations.map(
+        (spec, index) => `careHome.specializations @> ARRAY[:spec${index}]`
+      );
+      const parameters = query.specializations.reduce((acc, spec, index) => {
+        acc[`spec${index}`] = spec;
+        return acc;
+      }, {} as any);
+
+      queryBuilder.andWhere(`(${conditions.join(" OR ")})`, parameters);
     }
 
     // Distance filter (if coordinates provided)
@@ -394,5 +433,41 @@ export class HealthcareHomesService {
       .orderBy(distanceFormula, "ASC")
       .take(10)
       .getMany();
+  }
+
+  async getRegionStatistics(): Promise<
+    {
+      region: string;
+      count: number;
+      averageRating: number;
+    }[]
+  > {
+    const query = this.careHomeRepository
+      .createQueryBuilder("careHome")
+      .select("careHome.region", "region")
+      .addSelect("COUNT(careHome.id)", "count")
+      .addSelect("AVG(careHome.rating)", "averageRating")
+      .where("careHome.isActive = :isActive", { isActive: true })
+      .andWhere("careHome.region IS NOT NULL")
+      .andWhere("careHome.region != ''")
+      .groupBy("careHome.region")
+      .orderBy("count", "DESC");
+
+    const results = await query.getRawMany();
+
+    return results.map((result) => ({
+      region: result.region,
+      count: parseInt(result.count),
+      averageRating: result.averageRating
+        ? parseFloat(result.averageRating)
+        : 0,
+    }));
+  }
+
+  async getSpecializations(): Promise<Specialization[]> {
+    return this.specializationRepository.find({
+      where: { isActive: true },
+      order: { sortOrder: "ASC", name: "ASC" },
+    });
   }
 }

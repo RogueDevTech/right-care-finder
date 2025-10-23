@@ -4,12 +4,14 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-hot-toast";
 import Link from "next/link";
+import Image from "next/image";
+import AppLogo from "@/../public/right-care-logo.png";
 import styles from "./accept-invitation.module.scss";
+import { useAdminActions } from "@/actions-client/admin";
 
 interface AcceptInvitationForm {
   password: string;
   confirmPassword: string;
-  phoneNumber: string;
 }
 
 interface InvitationData {
@@ -26,11 +28,15 @@ interface InvitationData {
   expiresAt: string;
 }
 
+interface ValidateInvitationResponse {
+  success: boolean;
+  invitation: InvitationData;
+}
+
 function AcceptInvitationContent() {
   const [formData, setFormData] = useState<AcceptInvitationForm>({
     password: "",
     confirmPassword: "",
-    phoneNumber: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [invitationData, setInvitationData] = useState<InvitationData | null>(
@@ -40,23 +46,27 @@ function AcceptInvitationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+  const { validateInvitation, acceptInvitation } = useAdminActions();
 
   useEffect(() => {
     if (token) {
-      validateInvitation();
+      validateInvitationToken();
     } else {
       setIsValidating(false);
     }
   }, [token]);
 
-  const validateInvitation = async () => {
+  const validateInvitationToken = async () => {
     try {
-      // TODO: Call API to validate invitation token
-      const response = await fetch(`/api/invitations/validate?token=${token}`);
-      const data = await response.json();
+      const result = await validateInvitation(token!);
 
-      if (data.success) {
-        setInvitationData(data.invitation);
+      if (result.success && result.data) {
+        const response = result.data as ValidateInvitationResponse;
+        if (response.invitation) {
+          setInvitationData(response.invitation);
+        } else {
+          toast.error("Invalid or expired invitation link");
+        }
       } else {
         toast.error("Invalid or expired invitation link");
       }
@@ -92,26 +102,16 @@ function AcceptInvitationContent() {
     try {
       setIsLoading(true);
 
-      // TODO: Call API to accept invitation and create user account
-      const response = await fetch("/api/invitations/accept", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          token,
-          password: formData.password,
-          phoneNumber: formData.phoneNumber,
-        }),
+      const result = await acceptInvitation({
+        token: token!,
+        password: formData.password,
       });
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (result.success) {
         toast.success("Account created successfully! You can now log in.");
         router.push("/login");
       } else {
-        toast.error(data.error || "Failed to create account");
+        toast.error(result.error || "Failed to create account");
       }
     } catch (error) {
       console.error("Error accepting invitation:", error);
@@ -124,7 +124,28 @@ function AcceptInvitationContent() {
   if (isValidating) {
     return (
       <div className={styles.container}>
+        <div className={styles.backButton}>
+          <Link href="/">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M19 12H5M12 19L5 12L12 5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </Link>
+        </div>
         <div className={styles.loadingContainer}>
+          <div className={styles.logo}>
+            <Image
+              src={AppLogo}
+              alt="Right Care Finder"
+              width={120}
+              height={40}
+            />
+          </div>
           <div className={styles.loadingSpinner}></div>
           <p>Validating your invitation...</p>
         </div>
@@ -135,7 +156,39 @@ function AcceptInvitationContent() {
   if (!token || !invitationData) {
     return (
       <div className={styles.container}>
+        <div className={styles.backButton}>
+          <Link href="/">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M19 12H5M12 19L5 12L12 5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </Link>
+        </div>
         <div className={styles.errorContainer}>
+          <div className={styles.logo}>
+            <Image
+              src={AppLogo}
+              alt="Right Care Finder"
+              width={120}
+              height={40}
+            />
+          </div>
+          <div className={styles.errorIcon}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
           <h1>Invalid Invitation</h1>
           <p>The invitation link is invalid or has expired.</p>
           <Link href="/" className={styles.homeLink}>
@@ -148,54 +201,35 @@ function AcceptInvitationContent() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.formCard}>
+      <div className={styles.backButton}>
+        <Link href="/">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M19 12H5M12 19L5 12L12 5"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </Link>
+      </div>
+
+      <div className={styles.formWrapper}>
         <div className={styles.header}>
+          <div className={styles.logo}>
+            <Image
+              src={AppLogo}
+              alt="Right Care Finder"
+              width={120}
+              height={40}
+            />
+          </div>
           <h1>Welcome to Right Care Finder</h1>
           <p>Complete your account setup to start managing your care home</p>
         </div>
 
-        <div className={styles.invitationInfo}>
-          <h2>Invitation Details</h2>
-          <div className={styles.infoGrid}>
-            <div className={styles.infoItem}>
-              <span className={styles.label}>Name:</span>
-              <span>
-                {invitationData.firstName} {invitationData.lastName}
-              </span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.label}>Email:</span>
-              <span>{invitationData.email}</span>
-            </div>
-            {invitationData.careHomeName && (
-              <div className={styles.infoItem}>
-                <span className={styles.label}>Care Home:</span>
-                <span>{invitationData.careHomeName}</span>
-              </div>
-            )}
-            {invitationData.careHomeAddress && (
-              <div className={styles.infoItem}>
-                <span className={styles.label}>Address:</span>
-                <span>{invitationData.careHomeAddress}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
         <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.formGroup}>
-            <label htmlFor="phoneNumber">Phone Number</label>
-            <input
-              type="tel"
-              id="phoneNumber"
-              name="phoneNumber"
-              value={formData.phoneNumber}
-              onChange={handleInputChange}
-              placeholder="Enter your phone number"
-              required
-            />
-          </div>
-
           <div className={styles.formGroup}>
             <label htmlFor="password">Password</label>
             <input

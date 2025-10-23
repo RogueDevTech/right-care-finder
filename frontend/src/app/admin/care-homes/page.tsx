@@ -34,7 +34,7 @@ export default function CareHomesPage() {
 
       const queryParams: CareHomesQueryParams = {
         page: currentPage,
-        limit: 10,
+        limit: 20,
         search: searchTerm || undefined,
         isActive:
           statusFilter === "all" ? undefined : statusFilter === "active",
@@ -44,7 +44,7 @@ export default function CareHomesPage() {
       const result = await getCareHomes(queryParams);
       if (result.success && result.data) {
         setCareHomes(result.data.data || []);
-        setTotalPages(Math.ceil((result.data.total || 0) / 10));
+        setTotalPages(Math.ceil((result.data.total || 0) / 20));
         setTotalCareHomes(result.data.total || 0);
       } else {
         toast.error(result.error || "Failed to load care homes");
@@ -64,10 +64,6 @@ export default function CareHomesPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-  };
-
-  const getStatusColor = (isActive: boolean) => {
-    return isActive ? styles.active : styles.inactive;
   };
 
   return (
@@ -127,124 +123,148 @@ export default function CareHomesPage() {
         </div>
 
         {isLoading ? (
-          <div className={styles.careHomesGrid}>
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className={styles.skeletonCareHomeCard}>
-                <div className={styles.skeletonCardHeader}>
-                  <div className={styles.skeletonCardInfo}>
-                    <div className={styles.skeletonCardTitle}></div>
-                    <div className={styles.skeletonCardLocation}>
-                      <div className={styles.skeletonLocationLine}></div>
-                      <div className={styles.skeletonLocationLine}></div>
-                    </div>
-                  </div>
-                  <div className={styles.skeletonStatusBadge}>
-                    <div className={styles.skeletonStatus}></div>
-                    <div className={styles.skeletonVerifiedBadge}></div>
-                  </div>
-                </div>
-                <div className={styles.skeletonCardBody}>
-                  <div className={styles.skeletonContactInfo}>
-                    <div className={styles.skeletonContactItem}>
-                      <div className={styles.skeletonContactLabel}></div>
-                      <div className={styles.skeletonContactValue}></div>
-                    </div>
-                    <div className={styles.skeletonContactItem}>
-                      <div className={styles.skeletonContactLabel}></div>
-                      <div className={styles.skeletonContactValue}></div>
-                    </div>
-                  </div>
-                  <div className={styles.skeletonDetails}>
-                    <div className={styles.skeletonRating}>
-                      <div className={styles.skeletonRatingLabel}></div>
-                      <div className={styles.skeletonRatingValue}></div>
-                    </div>
-                    <div className={styles.skeletonSpecializations}>
-                      <div
-                        className={styles.skeletonSpecializationsLabel}
-                      ></div>
-                      <div className={styles.skeletonSpecializationsTags}>
-                        <div className={styles.skeletonTag}></div>
+          <div className={styles.tableContainer}>
+            <table className={styles.careHomesTable}>
+              <thead>
+                <tr>
+                  <th>Care Home Name</th>
+                  <th>Location</th>
+                  <th>Contact</th>
+                  <th>Specializations</th>
+                  <th>Rating</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <tr key={i} className={styles.skeletonRow}>
+                    <td>
+                      <div className={styles.nameCell}>
+                        <div className={styles.skeletonName}></div>
+                        <div className={styles.skeletonTextSmall}></div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className={styles.locationCell}>
+                        <div className={styles.skeletonText}></div>
+                        <div className={styles.skeletonTextSmall}></div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className={styles.contactCell}>
+                        <div className={styles.skeletonText}></div>
+                        <div className={styles.skeletonTextSmall}></div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className={styles.skeletonTags}>
                         <div className={styles.skeletonTag}></div>
                         <div className={styles.skeletonTag}></div>
                       </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+                    </td>
+                    <td>
+                      <div className={styles.skeletonStars}></div>
+                    </td>
+                    <td>
+                      <div className={styles.skeletonStatus}></div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         ) : (
-          <div className={styles.careHomesGrid}>
-            {careHomes.map((careHome) => (
-              <div
-                key={careHome.id}
-                className={styles.careHomeCard}
-                onClick={() => router.push(`/admin/care-homes/${careHome.id}`)}
-                style={{ cursor: "pointer" }}
-              >
-                <div className={styles.cardHeader}>
-                  <div className={styles.careHomeInfo}>
-                    <h3>{careHome.name}</h3>
-                    <div className={styles.location}>
-                      <span>
-                        📍 {careHome.city}, {careHome.region}
-                      </span>
-                      <span>📮 {careHome.postcode}</span>
-                    </div>
-                  </div>
-                  <div className={styles.statusBadge}>
-                    <span
-                      className={`${styles.status} ${getStatusColor(
-                        careHome.isActive
-                      )}`}
+          <div className={styles.tableContainer}>
+            <table className={styles.careHomesTable}>
+              <thead>
+                <tr>
+                  <th>Care Home Name</th>
+                  <th>Location</th>
+                  <th>Contact</th>
+                  <th>Specializations</th>
+                  <th>Rating</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {careHomes?.length > 0 &&
+                  careHomes?.map((careHome) => (
+                    <tr
+                      key={careHome.id}
+                      className={styles.clickableRow}
+                      onClick={() =>
+                        router.push(`/admin/care-homes/${careHome.id}`)
+                      }
                     >
-                      {careHome.isActive ? "Active" : "Inactive"}
-                    </span>
-                    {careHome.isVerified && (
-                      <span className={styles.verifiedBadge}>✓ Verified</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className={styles.cardBody}>
-                  <div className={styles.contactInfo}>
-                    <div className={styles.contactItem}>
-                      <span className={styles.label}>📞 Phone:</span>
-                      <span>{careHome.phone}</span>
-                    </div>
-                    <div className={styles.contactItem}>
-                      <span className={styles.label}>✉️ Email:</span>
-                      <span>{careHome.email || "Not provided"}</span>
-                    </div>
-                  </div>
-
-                  <div className={styles.details}>
-                    <div className={styles.cqcRating}>
-                      <span className={styles.label}>Rating:</span>
-                      <span className={styles.rating}>
-                        {careHome.rating
-                          ? `${careHome.rating}/5 (${careHome.reviewCount} reviews)`
-                          : "No reviews yet"}
-                      </span>
-                    </div>
-
-                    <div className={styles.careTypes}>
-                      <span className={styles.label}>Specializations:</span>
-                      <div className={styles.typeTags}>
-                        {careHome.specializations.map(
-                          (specialization, index) => (
-                            <span key={index} className={styles.typeTag}>
-                              {specialization}
+                      <td>
+                        <div className={styles.nameCell}>
+                          <strong>{careHome.name}</strong>
+                          {careHome.isVerified && (
+                            <span className={styles.verifiedBadgeTable}>
+                              ✓ Verified
                             </span>
-                          )
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <div className={styles.locationCell}>
+                          <span>
+                            {careHome.city}, {careHome.region}
+                          </span>
+                          <span className={styles.secondaryText}>
+                            {careHome.postcode}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <div className={styles.contactCell}>
+                          <span>{careHome.phone}</span>
+                          <span className={styles.secondaryText}>
+                            {careHome.email || "Not provided"}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <div className={styles.specializationsCell}>
+                          {careHome.specializations
+                            .slice(0, 3)
+                            .map((specialization, idx) => (
+                              <span key={idx} className={styles.typeTag}>
+                                {specialization}
+                              </span>
+                            ))}
+                          {careHome.specializations.length > 3 && (
+                            <span className={styles.typeTag}>
+                              +{careHome.specializations.length - 3}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <div className={styles.ratingCell}>
+                          <span className={styles.ratingStars}>
+                            {careHome.rating ? `${careHome.rating}/5` : "N/A"}
+                          </span>
+                          {careHome.reviewCount > 0 && (
+                            <span className={styles.secondaryText}>
+                              {careHome.reviewCount} reviews
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <span
+                          className={`${styles.statusBadge} ${
+                            careHome.isActive ? styles.active : styles.inactive
+                          }`}
+                        >
+                          {careHome.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
           </div>
         )}
 
@@ -321,27 +341,71 @@ export default function CareHomesPage() {
         {totalPages > 1 && (
           <div className={styles.pagination}>
             <div className={styles.paginationInfo}>
-              Showing {(currentPage - 1) * 10 + 1} to{" "}
-              {Math.min(currentPage * 10, totalCareHomes)} of {totalCareHomes}{" "}
+              Showing {(currentPage - 1) * 20 + 1} to{" "}
+              {Math.min(currentPage * 20, totalCareHomes)} of {totalCareHomes}{" "}
               care homes
             </div>
             <div className={styles.paginationControls}>
               <button
                 className={styles.paginationButton}
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+                title="First Page"
+              >
+                ««
+              </button>
+              <button
+                className={styles.paginationButton}
                 onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
+                title="Previous Page"
               >
-                Previous
+                ‹
               </button>
-              <span className={styles.pageInfo}>
-                Page {currentPage} of {totalPages}
-              </span>
+
+              {/* Page Numbers */}
+              <div className={styles.pageNumbers}>
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+
+                  return (
+                    <button
+                      key={pageNum}
+                      className={`${styles.pageNumber} ${
+                        currentPage === pageNum ? styles.activePage : ""
+                      }`}
+                      onClick={() => handlePageChange(pageNum)}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+
               <button
                 className={styles.paginationButton}
                 onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
+                title="Next Page"
               >
-                Next
+                ›
+              </button>
+              <button
+                className={styles.paginationButton}
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+                title="Last Page"
+              >
+                »»
               </button>
             </div>
           </div>

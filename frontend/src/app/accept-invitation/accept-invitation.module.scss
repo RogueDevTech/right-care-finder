@@ -1,140 +1,218 @@
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 20px;
+  position: relative;
+  background: #f8f9fa;
 }
 
-.formCard {
+.backButton {
+  position: absolute;
+  top: 30px;
+  left: 30px;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  padding: 3rem;
-  max-width: 500px;
+  border: 2px solid #e2e8f0;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+
+  &:hover {
+    background: #f0fdfa;
+    border-color: #1c7c8a;
+    color: #1c7c8a;
+  }
+
+  @media (max-width: 480px) {
+    top: 15px;
+    left: 15px;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+.formWrapper {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+  padding: 40px;
   width: 100%;
+  max-width: 500px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
 }
 
 .header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 32px;
+
+  .logo {
+    margin-bottom: 24px;
+  }
 
   h1 {
-    font-size: 2rem;
+    font-size: 28px;
     font-weight: 700;
     color: #1a202c;
-    margin-bottom: 0.5rem;
+    margin-bottom: 8px;
   }
 
   p {
-    color: #718096;
-    font-size: 1rem;
+    color: #4a5568;
+    font-size: 16px;
   }
 }
 
 .invitationInfo {
-  background: #f7fafc;
-  border-radius: 8px;
-  padding: 1.5rem;
-  margin-bottom: 2rem;
-  border-left: 4px solid #1c7c8a;
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 
-  h2 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1a202c;
-    margin-bottom: 1rem;
+  .infoHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+
+    .infoIcon {
+      color: #1c7c8a;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2d3748;
+      margin: 0;
+    }
   }
 
   .infoGrid {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 12px;
   }
 
   .infoItem {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f5f9;
+
+    &:last-child {
+      border-bottom: none;
+    }
 
     .label {
       font-weight: 500;
       color: #4a5568;
-      font-size: 0.875rem;
+      font-size: 14px;
     }
 
     span:last-child {
-      color: #1a202c;
+      color: #2d3748;
       font-weight: 500;
+      font-size: 14px;
     }
   }
 }
 
 .form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
   .formGroup {
-    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 
     label {
-      display: block;
-      font-weight: 500;
-      color: #374151;
-      margin-bottom: 0.5rem;
-      font-size: 0.875rem;
+      font-weight: 600;
+      color: #2d3748;
+      font-size: 14px;
+      margin-bottom: 4px;
     }
 
     input {
+      padding: 14px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background: #ffffff;
       width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      font-size: 0.875rem;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      box-sizing: border-box;
 
       &:focus {
         outline: none;
         border-color: #1c7c8a;
-        box-shadow: 0 0 0 3px rgba(28, 124, 138, 0.1);
+        background: #ffffff;
+        box-shadow: 0 0 0 4px rgba(28, 124, 138, 0.1);
+        transform: translateY(-1px);
       }
 
       &::placeholder {
-        color: #9ca3af;
+        color: #a0aec0;
+        font-size: 15px;
+      }
+
+      &:hover {
+        border-color: #cbd5e0;
       }
     }
   }
 
   .submitButton {
     width: 100%;
-    background: #1c7c8a;
+    background: linear-gradient(135deg, #1c7c8a 0%, #0891b2 100%);
     color: white;
     border: none;
-    padding: 0.875rem 1.5rem;
-    border-radius: 8px;
+    padding: 16px 24px;
+    border-radius: 12px;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 16px;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
+    margin-top: 8px;
+    box-shadow: 0 4px 15px rgba(28, 124, 138, 0.3);
 
     &:hover:not(:disabled) {
-      background: #156d7a;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(28, 124, 138, 0.3);
+      background: linear-gradient(135deg, #145e6a 0%, #0e7490 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(28, 124, 138, 0.4);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
     }
 
     &:disabled {
       opacity: 0.6;
       cursor: not-allowed;
+      transform: none;
     }
   }
 }
 
 .footer {
-  margin-top: 2rem;
+  margin-top: 24px;
   text-align: center;
 
   p {
-    color: #6b7280;
-    font-size: 0.875rem;
+    color: #4a5568;
+    font-size: 14px;
     line-height: 1.5;
   }
 
@@ -145,6 +223,7 @@
 
     &:hover {
       text-decoration: underline;
+      color: #145e6a;
     }
   }
 }
@@ -155,11 +234,15 @@
   align-items: center;
   justify-content: center;
   min-height: 400px;
-  gap: 1rem;
+  gap: 16px;
+
+  .logo {
+    margin-bottom: 16px;
+  }
 
   .loadingSpinner {
-    width: 3rem;
-    height: 3rem;
+    width: 48px;
+    height: 48px;
     border: 3px solid #e2e8f0;
     border-top: 3px solid #1c7c8a;
     border-radius: 50%;
@@ -167,46 +250,58 @@
   }
 
   p {
-    color: #718096;
-    font-size: 1rem;
+    color: #4a5568;
+    font-size: 16px;
   }
 }
 
 .errorContainer {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  padding: 3rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  padding: 40px;
   max-width: 500px;
   width: 100%;
   text-align: center;
 
+  .logo {
+    margin-bottom: 24px;
+  }
+
+  .errorIcon {
+    color: #dc2626;
+    margin-bottom: 16px;
+  }
+
   h1 {
-    font-size: 2rem;
+    font-size: 24px;
     font-weight: 700;
     color: #dc2626;
-    margin-bottom: 1rem;
+    margin-bottom: 8px;
   }
 
   p {
-    color: #6b7280;
-    margin-bottom: 2rem;
-    font-size: 1rem;
+    color: #4a5568;
+    margin-bottom: 24px;
+    font-size: 16px;
   }
 
   .homeLink {
     display: inline-block;
-    background: #1c7c8a;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
+    padding: 12px 24px;
+    border-radius: 10px;
     text-decoration: none;
-    font-weight: 500;
-    transition: all 0.2s;
+    font-weight: 600;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 
     &:hover {
-      background: #156d7a;
-      transform: translateY(-1px);
+      background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
     }
   }
 }
@@ -223,24 +318,54 @@
 // Responsive adjustments
 @media (max-width: 768px) {
   .container {
-    padding: 1rem;
+    padding: 15px;
   }
 
-  .formCard {
-    padding: 2rem;
+  .formWrapper {
+    padding: 24px;
+    max-width: 100%;
   }
 
-  .header h1 {
-    font-size: 1.75rem;
+  .header {
+    h1 {
+      font-size: 24px;
+    }
+
+    p {
+      font-size: 14px;
+    }
   }
 
   .invitationInfo {
-    padding: 1rem;
+    padding: 16px;
 
     .infoItem {
       flex-direction: column;
       align-items: flex-start;
-      gap: 0.25rem;
+      gap: 4px;
+    }
+  }
+
+  .backButton {
+    top: 15px;
+    left: 15px;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 10px;
+  }
+
+  .formWrapper {
+    padding: 20px;
+  }
+
+  .header {
+    h1 {
+      font-size: 22px;
     }
   }
 }

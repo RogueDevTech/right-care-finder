@@ -35,7 +35,7 @@ export class ConfigService {
     });
   }
 
-  async getCareTypeById(id: number) {
+  async getCareTypeById(id: string) {
     const careType = await this.careTypeRepository.findOne({ where: { id } });
     if (!careType) {
       throw new NotFoundException(`Care type with ID ${id} not found`);
@@ -51,13 +51,13 @@ export class ConfigService {
     return this.careTypeRepository.save(careType);
   }
 
-  async updateCareType(id: number, updateCareTypeDto: UpdateCareTypeDto) {
+  async updateCareType(id: string, updateCareTypeDto: UpdateCareTypeDto) {
     const careType = await this.getCareTypeById(id);
     Object.assign(careType, updateCareTypeDto);
     return this.careTypeRepository.save(careType);
   }
 
-  async deleteCareType(id: number) {
+  async deleteCareType(id: string) {
     const careType = await this.getCareTypeById(id);
     await this.careTypeRepository.remove(careType);
     return { message: "Care type deleted successfully" };

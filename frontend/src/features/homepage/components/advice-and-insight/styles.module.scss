@@ -1,8 +1,12 @@
-.container {
+.bg {
   background-color: #f6f6f6;
+}
+.container {
   padding: 40px 44px;
   display: flex;
   flex-direction: column;
+  max-width: 1240px;
+  margin: 0 auto;
   @media (max-width: 500px) {
     padding: 40px 16px;
     gap: 24px;

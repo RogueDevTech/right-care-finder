@@ -49,7 +49,7 @@ export default function EnquiryDetails() {
             </span>
           </button>
         </div>
-        <div className={styles.price}>$3000</div>
+        <div className={styles.price}>£3000</div>
       </div>
     </div>
   );

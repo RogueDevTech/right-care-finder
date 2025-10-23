@@ -52,7 +52,7 @@ export interface CareHome {
   images: Array<{
     id: string;
     url: string;
-    altText?: string;
+    alt?: string;
   }>;
   reviews: Array<{
     id: string;
@@ -79,7 +79,7 @@ export interface CareHomeQueryParams {
   postcode?: string;
 
   // Care type and facility filters
-  careTypeId?: number;
+  careTypeId?: string; // Changed from number to string to match backend UUID validation
   facilityIds?: string[];
   specializations?: string[];
 
@@ -119,6 +119,32 @@ export interface CareHomeResponse {
   limit: number;
 }
 
+export interface RegionStatistics {
+  region: string;
+  count: number;
+  averageRating: number;
+}
+
+export interface CareType {
+  id: string; // Changed from number to string to match backend UUID validation
+  name: string;
+  description: string;
+  icon?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Specialization {
+  id: number;
+  name: string;
+  description?: string;
+  isActive: boolean;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export const useHealthcareHomesActions = () => {
   const client = useClient();
 
@@ -136,7 +162,10 @@ export const useHealthcareHomesActions = () => {
       Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           if (Array.isArray(value)) {
-            queryParams.append(key, value.join(","));
+            // For arrays, append each value with array notation
+            value.forEach((item) => {
+              queryParams.append(`${key}[]`, String(item));
+            });
           } else {
             queryParams.append(key, String(value));
           }
@@ -164,24 +193,18 @@ export const useHealthcareHomesActions = () => {
   );
 
   const getCareHomeById = useCallback(
-    async (
-      id: string
-    ): Promise<{
-      success: boolean;
-      data?: CareHome;
-      error?: string;
-    }> => {
+    async (id: string) => {
       const response = await client.get(`/healthcare-homes/${id}`);
 
       if (response.data) {
         return {
           success: true,
-          data: response.data as CareHome,
+          data: (response.data as unknown as { data: CareHome })?.data,
         };
       } else {
         return {
           success: false,
-          error: response.error,
+          error: response.error || "Failed to fetch care home",
         };
       }
     },
@@ -202,7 +225,10 @@ export const useHealthcareHomesActions = () => {
       Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           if (Array.isArray(value)) {
-            queryParams.append(key, value.join(","));
+            // For arrays, append each value with array notation
+            value.forEach((item) => {
+              queryParams.append(`${key}[]`, String(item));
+            });
           } else {
             queryParams.append(key, String(value));
           }
@@ -229,9 +255,64 @@ export const useHealthcareHomesActions = () => {
     [client]
   );
 
+  const getRegionStatistics = useCallback(async (): Promise<{
+    success: boolean;
+    data?: RegionStatistics[];
+    error?: string;
+  }> => {
+    const response = await client.get("/healthcare-homes/statistics/regions");
+
+    if (response.data) {
+      return {
+        success: true,
+        data: (response.data as unknown as { data: RegionStatistics[] })?.data,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  }, [client]);
+
+  const getCareTypes = useCallback(async () => {
+    const response = await client.get("/healthcare-homes/care-types");
+
+    if (response.data) {
+      return {
+        success: true,
+        data: (response.data as unknown as { data: CareType[] })?.data,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  }, [client]);
+
+  const getSpecializations = useCallback(async () => {
+    const response = await client.get("/healthcare-homes/specializations");
+
+    if (response.data) {
+      return {
+        success: true,
+        data: (response.data as unknown as { data: Specialization[] })?.data,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  }, [client]);
+
   return {
     searchCareHomes,
     getCareHomeById,
     getHomeCreListings,
+    getRegionStatistics,
+    getCareTypes,
+    getSpecializations,
   };
 };

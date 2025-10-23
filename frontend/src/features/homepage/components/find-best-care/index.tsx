@@ -1,52 +1,92 @@
 "use client";
 import { GridIcon, LocationIcon } from "@/components/icon";
 import CardHomeCare from "../care-home-cards";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { LatLngExpression } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import styles from "./styles.module.scss";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import React from "react";
-import L from "leaflet";
-import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
-import markerIcon from "leaflet/dist/images/marker-icon.png";
-import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import dynamic from "next/dynamic";
+import {
+  useHealthcareHomesActions,
+  RegionStatistics,
+} from "@/actions-client/healthcare-homes";
 
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x.src,
-  iconUrl: markerIcon.src,
-  shadowUrl: markerShadow.src,
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  { ssr: false }
+);
+const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  { ssr: false }
+);
+const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  { ssr: false }
+);
+const Popup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
+  ssr: false,
 });
 
-// import Image from "next/image";
-// import toggle from "@/../public/toggle.png";
-const cards = [
-  { title: "South East England", description: "1,210 Care Homes" },
-  { title: "Greater London", description: "1,210 Care Homes" },
-  { title: "East of England", description: "1,210 Care Homes" },
-  { title: "West Midlands", description: "1,210 Care Homes" },
-  { title: "East Midlands ", description: "1,210 Care Homes" },
-  { title: "North West England", description: "1,210 Care Homes" },
-  { title: "North East England", description: "1,210 Care Homes" },
-  { title: "Yorkshire ", description: "1,210 Care Homes" },
-  { title: "Scottish Highlands", description: "1,210 Care Homes" },
-  { title: "Scottish Lowlands", description: "1,210 Care Homes" },
-  { title: "Wales", description: "1,210 Care Homes" },
-  { title: "North West England", description: "1,210 Care Homes" },
-  { title: "Midlands", description: "1,210 Care Homes" },
-  { title: "Wiltshire", description: "1,210 Care Homes" },
-  { title: "Dorset", description: "1,210 Care Homes" },
-];
 const FindBestCare: React.FC = () => {
   const [selected, setSelected] = useState("Highest rated");
   const [toggle, setToggle] = useState("grid");
+  const [regionStats, setRegionStats] = useState<RegionStatistics[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const options = ["Highest rated", "Newest", "Oldest", "Most popular"];
+  const { getRegionStatistics } = useHealthcareHomesActions();
+
   const locations: { id: number; name: string; coords: LatLngExpression }[] = [
     { id: 1, name: "London", coords: [51.505, -0.09] },
     { id: 2, name: "Manchester", coords: [53.48, -2.24] },
     { id: 3, name: "Birmingham", coords: [52.48, -1.89] },
     { id: 4, name: "Liverpool", coords: [53.41, -2.99] },
   ];
+
+  useEffect(() => {
+    // Configure Leaflet icons only on client side
+    const configureLeaflet = async () => {
+      if (typeof window !== "undefined") {
+        const L = await import("leaflet");
+        const markerIcon2x = await import(
+          "leaflet/dist/images/marker-icon-2x.png"
+        );
+        const markerIcon = await import("leaflet/dist/images/marker-icon.png");
+        const markerShadow = await import(
+          "leaflet/dist/images/marker-shadow.png"
+        );
+
+        L.Icon.Default.mergeOptions({
+          iconRetinaUrl: markerIcon2x.default?.src || markerIcon2x,
+          iconUrl: markerIcon.default?.src || markerIcon,
+          shadowUrl: markerShadow.default?.src || markerShadow,
+        });
+      }
+    };
+
+    configureLeaflet();
+  }, []);
+
+  useEffect(() => {
+    const fetchRegionStats = async () => {
+      try {
+        setIsLoading(true);
+        const result = await getRegionStatistics();
+        if (result.success && result.data) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          setRegionStats((result.data as any).data || []);
+        } else {
+          console.error("Failed to fetch region statistics:", result.error);
+        }
+      } catch (error) {
+        console.error("Error fetching region statistics:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRegionStats();
+  }, []);
 
   return (
     <div className={styles.container}>
@@ -104,13 +144,27 @@ const FindBestCare: React.FC = () => {
       </div>
       <div className={styles.cardWrapper}>
         {toggle === "grid" ? (
-          cards.map((card, index) => (
-            <CardHomeCare
-              key={index}
-              title={card.title}
-              description={card.description}
-            />
-          ))
+          isLoading ? (
+            <div className={styles.loadingContainer}>
+              <p>Loading region statistics...</p>
+            </div>
+          ) : (
+            <>
+              {console.log(
+                "Rendering regions:",
+                regionStats.length,
+                regionStats
+              )}
+              {regionStats.map((stat, index) => (
+                <CardHomeCare
+                  key={index}
+                  title={stat.region}
+                  description={`${stat.count.toLocaleString()} Care Homes`}
+                  rating={stat.averageRating}
+                />
+              ))}
+            </>
+          )
         ) : (
           <MapContainer
             center={[51.505, -0.09]}

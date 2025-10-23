@@ -13,6 +13,7 @@ import {
   Facility,
 } from "@/actions-client/admin";
 import styles from "./add-care-home.module.scss";
+import { parseCSV } from "@/utils/csv-to-care-homes";
 
 interface CareHomeFormData {
   name: string;
@@ -813,10 +814,30 @@ const convertTo24Hour = (time12: string): string => {
 };
 
 export default function AddCareHomePage() {
+  const [addMode, setAddMode] = useState<"manual" | "csv">("manual");
   const [formData, setFormData] = useState<CareHomeFormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  // CSV import state
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  type RawCsvRow = {
+    title?: string;
+    totalScore?: string;
+    street?: string;
+    city?: string;
+    state?: string;
+    countryCode?: string;
+    website?: string;
+    phone?: string;
+    categoryName?: string;
+    [key: string]: unknown;
+  };
+  const [csvData, setCsvData] = useState<RawCsvRow[]>([]);
+  const [csvErrors, setCsvErrors] = useState<string[]>([]);
+  const [isProcessingCsv, setIsProcessingCsv] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
 
   // Configuration data state
   const [careTypes, setCareTypes] = useState<CareType[]>([]);
@@ -825,8 +846,13 @@ export default function AddCareHomePage() {
   const [isLoadingConfig, setIsLoadingConfig] = useState(true);
 
   const router = useRouter();
-  const { createCareHome, getCareTypes, getSpecializations, getFacilities } =
-    useAdminActions();
+  const {
+    createCareHome,
+    bulkImportCareHomes,
+    getCareTypes,
+    getSpecializations,
+    getFacilities,
+  } = useAdminActions();
 
   // Fetch configuration data on component mount
   useEffect(() => {
@@ -1260,6 +1286,232 @@ export default function AddCareHomePage() {
     }
   };
 
+  // CSV Processing Functions
+  const handleCsvFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCsvFile(file);
+      setCsvErrors([]);
+    }
+  };
+
+  const processCsvFile = async () => {
+    if (!csvFile) {
+      toast.error("Please select a CSV file");
+      return;
+    }
+
+    setIsProcessingCsv(true);
+    setCsvErrors([]);
+
+    try {
+      const text = await csvFile.text();
+      const rows = parseCSV(text) as unknown as RawCsvRow[];
+
+      // Ignore row-level required-field validation during preview; just show what we have
+      setCsvErrors([]);
+      setCsvData(rows as RawCsvRow[]);
+      toast.success(`Successfully parsed ${rows.length} care homes from CSV`);
+    } catch (error) {
+      console.error("Error processing CSV:", error);
+      setCsvErrors(["Failed to process CSV file. Please check the format."]);
+    } finally {
+      setIsProcessingCsv(false);
+    }
+  };
+
+  const handleCsvImport = async () => {
+    if (csvData.length === 0) {
+      toast.error("No data to import. Please process a CSV file first.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Check if care types are loaded
+      if (!careTypes || careTypes.length === 0) {
+        toast.error(
+          "Care types not loaded. Please refresh the page and try again."
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Helpers
+      const extractPostcode = (stateVal?: string): string => {
+        if (!stateVal) return "";
+        const match = String(stateVal).match(
+          /[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}/i
+        );
+        return match ? match[0].toUpperCase() : "";
+      };
+
+      const countryNameFromCode = (code?: string): string => {
+        if (!code) return "United Kingdom";
+        const upper = code.toUpperCase();
+        if (upper === "GB" || upper === "UK") return "United Kingdom";
+        if (upper === "US") return "United States";
+        if (upper === "IE") return "Ireland";
+        return "United Kingdom";
+      };
+
+      // Transform CSV data to CreateCareHomeData format
+      const careHomesToImport: CreateCareHomeData[] = [];
+
+      for (const row of csvData as RawCsvRow[]) {
+        // Skip rows with missing required data
+        if (!row.title || !row.street || !row.city || !row.phone) {
+          console.warn(`Skipping row with missing required data: ${row.title}`);
+          continue;
+        }
+
+        // Try to find matching care type, fallback to first available if no match
+        let careType = careTypes.find(
+          (ct) =>
+            ct.name.toLowerCase() ===
+            String(row.categoryName || "").toLowerCase()
+        );
+
+        // If no exact match, try partial matching
+        if (!careType) {
+          careType = careTypes.find(
+            (ct) =>
+              ct.name
+                .toLowerCase()
+                .includes(String(row.categoryName || "").toLowerCase()) ||
+              String(row.categoryName || "")
+                .toLowerCase()
+                .includes(ct.name.toLowerCase())
+          );
+        }
+
+        // If still no match, use the first available care type as fallback
+        if (!careType && careTypes.length > 0) {
+          careType = careTypes[0];
+          console.warn(
+            `Using fallback care type for ${row.title}: ${row.categoryName} -> ${careType.name}`
+          );
+        }
+
+        if (!careType) {
+          console.error(`No care types available for ${row.title}`);
+          continue;
+        }
+
+        const postcode = extractPostcode(row.state);
+        const city = String(row.city || "");
+        const region = String(row.state || "");
+        const description: string[] = [];
+        description.push(
+          `${row.categoryName || "Care facility"} located in ${
+            city || "Unknown location"
+          }.`
+        );
+        if (row.totalScore && !isNaN(parseFloat(row.totalScore))) {
+          description.push(`Rated ${row.totalScore} stars.`);
+        }
+
+        const careHomeData: CreateCareHomeData = {
+          name: String(row.title || "").trim(),
+          description,
+          addressLine1: String(row.street || "").trim(),
+          addressLine2: "",
+          city,
+          region,
+          postcode: postcode || "EH0 0XX",
+          country: countryNameFromCode(row.countryCode),
+          countryCode: String(row.countryCode || "GB"),
+          latitude: 0,
+          longitude: 0,
+          phone: String(row.phone || "").trim(),
+          email: "",
+          website: String(row.website || "").trim(),
+          weeklyPrice: undefined,
+          monthlyPrice: undefined,
+          totalBeds: undefined,
+          availableBeds: undefined,
+          isActive: true,
+          specializations: [String(row.categoryName || "Care facility")],
+          openingHours: {
+            Monday: "9:00 AM - 5:00 PM",
+            Tuesday: "9:00 AM - 5:00 PM",
+            Wednesday: "9:00 AM - 5:00 PM",
+            Thursday: "9:00 AM - 5:00 PM",
+            Friday: "9:00 AM - 5:00 PM",
+            Saturday: "9:00 AM - 5:00 PM",
+            Sunday: "9:00 AM - 5:00 PM",
+          },
+          contactInfo: {
+            emergency: "",
+            manager: "",
+          },
+          careTypeId: careType.id.toString(),
+          facilityIds: [],
+          imageUrls: [],
+        };
+
+        careHomesToImport.push(careHomeData);
+      }
+
+      console.log(
+        `Processed ${csvData.length} CSV rows, created ${careHomesToImport.length} valid care homes`
+      );
+      console.log(
+        "Available care types:",
+        careTypes.map((ct) => ct.name)
+      );
+      console.log("Sample care home data:", careHomesToImport[0]);
+
+      if (careHomesToImport.length === 0) {
+        toast.error("No valid care homes to import. Please check the data.");
+        console.error(
+          "No valid care homes created. Check console for details."
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Call bulk import API
+      const result = await bulkImportCareHomes(careHomesToImport);
+
+      if (result.success && result.data) {
+        const { success, failed, errors } = result.data;
+
+        if (success > 0) {
+          toast.success(
+            `Successfully imported ${success} care home(s).${
+              failed > 0 ? ` ${failed} failed.` : ""
+            }`
+          );
+
+          // Show errors if any
+          if (errors && errors.length > 0) {
+            console.error("Import errors:", errors);
+          }
+
+          router.push("/admin/care-homes");
+        } else {
+          toast.error(
+            "Failed to import any care homes. Please check the data."
+          );
+          if (errors && errors.length > 0) {
+            console.error("Import errors:", errors);
+          }
+        }
+      } else {
+        toast.error(
+          result.error || "Failed to import care homes. Please try again."
+        );
+      }
+    } catch (error) {
+      console.error("Error importing care homes:", error);
+      toast.error("Failed to import care homes. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const steps = [
     {
       id: "basic",
@@ -1301,629 +1553,936 @@ export default function AddCareHomePage() {
           </div>
         </div>
 
-        <div className={styles.progressContainer}>
-          <div className={styles.progressBar}>
-            <div
-              className={styles.progressFill}
-              style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-            ></div>
-          </div>
-          <div className={styles.stepsIndicator}>
-            {steps.map((step, index) => (
-              <div
-                key={step.id}
-                className={`${styles.step} ${
-                  index <= currentStep ? styles.completed : ""
-                } ${index === currentStep ? styles.current : ""}`}
-              >
-                <div className={styles.stepNumber}>{index + 1}</div>
-                <div className={styles.stepInfo}>
-                  <div className={styles.stepLabel}>{step.label}</div>
-                  <div className={styles.stepDescription}>
-                    {step.description}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+        {/* Mode Toggle */}
+        <div className={styles.modeToggle}>
+          <button
+            className={`${styles.modeButton} ${
+              addMode === "manual" ? styles.active : ""
+            }`}
+            onClick={() => setAddMode("manual")}
+          >
+            📝 Manual Entry
+          </button>
+          <button
+            className={`${styles.modeButton} ${
+              addMode === "csv" ? styles.active : ""
+            }`}
+            onClick={() => setAddMode("csv")}
+          >
+            📊 CSV Import
+          </button>
         </div>
 
-        <form className={styles.form} onKeyDown={handleKeyDown}>
-          {/* Basic Information Step */}
-          {currentStep === 0 && (
-            <div className={styles.tabContent}>
-              <div className={styles.formSection}>
-                <h3>Basic Information</h3>
-                <div className={styles.formGrid}>
-                  <div className={getFormGroupClass("name")}>
-                    <label htmlFor="name">
-                      Care Home Name <span>*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Enter care home name"
-                    />
-                  </div>
-
-                  <div className={getFormGroupClass("description")}>
-                    <label htmlFor="description">Description</label>
-                    <textarea
-                      id="description"
-                      name="description"
-                      value={formData.description.join("\n")}
-                      onChange={(e) => handleDescriptionChange(e.target.value)}
-                      rows={6}
-                      placeholder="Enter care home description...&#10;&#10;Each line will be treated as a separate paragraph.&#10;Press Enter to create new lines.&#10;Empty lines will be automatically removed."
-                    />
-                    <div className={styles.helpText}>
-                      Each line will be treated as a separate paragraph. Press
-                      Enter to create new lines. Empty lines will be
-                      automatically removed when saving.
-                    </div>
-                  </div>
-
-                  <div className={getFormGroupClass("careTypeId")}>
-                    <label htmlFor="careTypeId">
-                      Care Type <span>*</span>
-                    </label>
-                    <select
-                      id="careTypeId"
-                      name="careTypeId"
-                      value={formData.careTypeId}
-                      onChange={handleInputChange}
-                      required
-                    >
-                      <option value="">Select care type</option>
-                      {isLoadingConfig ? (
-                        <option value="">Loading care types...</option>
-                      ) : (
-                        careTypes.map((type) => (
-                          <option key={type.id} value={type.id}>
-                            {type.name}
-                          </option>
-                        ))
-                      )}
-                    </select>
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label>
-                      <input
-                        type="checkbox"
-                        name="isActive"
-                        checked={formData.isActive}
-                        onChange={handleInputChange}
-                      />
-                      Active
-                    </label>
-                  </div>
-                </div>
-              </div>
+        {addMode === "csv" ? (
+          <div className={styles.csvImportSection}>
+            <div className={styles.csvInstructions}>
+              <h2>Import Care Homes from CSV</h2>
             </div>
-          )}
 
-          {/* Location & Contact Step */}
-          {currentStep === 1 && (
-            <div className={styles.tabContent}>
-              <div className={styles.formSection}>
-                <h3>Address Information</h3>
-                <div className={styles.formGrid}>
-                  <div className={getFormGroupClass("addressLine1")}>
-                    <label htmlFor="addressLine1">
-                      Address Line 1 <span>*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="addressLine1"
-                      name="addressLine1"
-                      value={formData.addressLine1}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Street address"
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label htmlFor="addressLine2">Address Line 2</label>
-                    <input
-                      type="text"
-                      id="addressLine2"
-                      name="addressLine2"
-                      value={formData.addressLine2}
-                      onChange={handleInputChange}
-                      placeholder="Apartment, suite, etc."
-                    />
-                  </div>
-
-                  <div className={getFormGroupClass("country")}>
-                    <label htmlFor="country">
-                      Country <span>*</span>
-                    </label>
-                    <select
-                      id="country"
-                      name="country"
-                      value={formData.countryCode}
-                      onChange={(e) => handleCountryChange(e.target.value)}
-                      required
-                    >
-                      <option value="">Select country</option>
-                      {ukCountries.map((country) => (
-                        <option key={country.code} value={country.code}>
-                          {country.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className={getFormGroupClass("region")}>
-                    <label htmlFor="region">
-                      State <span>*</span>
-                    </label>
-                    <select
-                      id="region"
-                      name="region"
-                      value={formData.region}
-                      onChange={(e) => handleRegionChange(e.target.value)}
-                      required
-                      disabled={!formData.countryCode}
-                    >
-                      <option value="">Select region/county</option>
-                      {formData.countryCode &&
-                        ukRegions[
-                          formData.countryCode as keyof typeof ukRegions
-                        ]?.map((region) => (
-                          <option key={region} value={region}>
-                            {region}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-
-                  <div className={getFormGroupClass("city")}>
-                    <label htmlFor="city">
-                      City <span>*</span>
-                    </label>
-                    <select
-                      id="city"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      required
-                      disabled={!formData.region}
-                    >
-                      <option value="">Select city</option>
-                      {getCitiesForRegion(
-                        formData.countryCode,
-                        formData.region
-                      ).map((city: string) => (
-                        <option key={city} value={city}>
-                          {city}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className={getFormGroupClass("postcode")}>
-                    <label htmlFor="postcode">
-                      Postcode <span>*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="postcode"
-                      name="postcode"
-                      value={formData.postcode}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="Postcode"
-                    />
-                  </div>
-
-                  <div className={getFormGroupClass("latitude")}>
-                    <label htmlFor="latitude">Latitude (optional)</label>
-                    <input
-                      type="number"
-                      id="latitude"
-                      name="latitude"
-                      value={formData.latitude || ""}
-                      onChange={handleInputChange}
-                      step="0.000001"
-                      min="-90"
-                      max="90"
-                      placeholder="57.6869 (Fraserburgh)"
-                    />
-                    <small className={styles.helpText}>
-                      Must be between -90 and 90 degrees. Leave as 0 if unknown.
-                    </small>
-                    {formData.latitude !== 0 &&
-                      (formData.latitude < -90 || formData.latitude > 90) && (
-                        <div className={styles.errorMessage}>
-                          Latitude must be between -90 and 90 degrees
-                        </div>
-                      )}
-                  </div>
-
-                  <div className={getFormGroupClass("longitude")}>
-                    <label htmlFor="longitude">Longitude (optional)</label>
-                    <input
-                      type="number"
-                      id="longitude"
-                      name="longitude"
-                      value={formData.longitude || ""}
-                      onChange={handleInputChange}
-                      step="0.000001"
-                      min="-180"
-                      max="180"
-                      placeholder="-2.0054 (Fraserburgh)"
-                    />
-                    <small className={styles.helpText}>
-                      Must be between -180 and 180 degrees. Leave as 0 if
-                      unknown.
-                    </small>
-                    {formData.longitude !== 0 &&
-                      (formData.longitude < -180 ||
-                        formData.longitude > 180) && (
-                        <div className={styles.errorMessage}>
-                          Longitude must be between -180 and 180 degrees
-                        </div>
-                      )}
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.formSection}>
-                <h3>Contact Information *</h3>
-                <div className={styles.formGrid}>
-                  <div className={getFormGroupClass("phone")}>
-                    <label htmlFor="phone">
-                      Phone Number <span>*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      id="phone"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="+44 161 123 4567"
-                    />
-                  </div>
-
-                  <div className={getFormGroupClass("email")}>
-                    <label htmlFor="email">
-                      Email <span>*</span>
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                      placeholder="info@carehome.co.uk"
-                    />
-                  </div>
-
-                  <div className={getFormGroupClass("website")}>
-                    <label htmlFor="website">Website</label>
-                    <input
-                      type="url"
-                      id="website"
-                      name="website"
-                      value={formData.website}
-                      onChange={handleInputChange}
-                      placeholder="https://www.carehome.co.uk"
-                    />
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label htmlFor="emergency">Emergency Contact *</label>
-                    <input
-                      type="tel"
-                      id="emergency"
-                      value={formData.contactInfo.emergency}
-                      onChange={(e) =>
-                        handleContactInfoChange("emergency", e.target.value)
-                      }
-                      placeholder="Emergency phone number"
-                    />
-                  </div>
-
-                  <div className={getFormGroupClass("manager")}>
-                    <label htmlFor="manager">Manager Name</label>
-                    <input
-                      type="text"
-                      id="manager"
-                      value={formData.contactInfo.manager}
-                      onChange={(e) =>
-                        handleContactInfoChange("manager", e.target.value)
-                      }
-                      placeholder="Manager's name"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Pricing & Capacity Step */}
-          {currentStep === 2 && (
-            <div className={styles.tabContent}>
-              <div className={styles.formSection}>
-                <h3>Pricing Information</h3>
-                <div className={styles.formGrid}>
-                  <div className={getFormGroupClass("weeklyPrice")}>
-                    <label htmlFor="weeklyPrice">Weekly Price (£)</label>
-                    <input
-                      type="number"
-                      id="weeklyPrice"
-                      name="weeklyPrice"
-                      value={formData.weeklyPrice || ""}
-                      onChange={handleInputChange}
-                      min="0"
-                      step="0.01"
-                      placeholder="1200"
-                    />
-                  </div>
-
-                  <div className={getFormGroupClass("monthlyPrice")}>
-                    <label htmlFor="monthlyPrice">Monthly Price (£)</label>
-                    <input
-                      type="number"
-                      id="monthlyPrice"
-                      name="monthlyPrice"
-                      value={formData.monthlyPrice || ""}
-                      onChange={handleInputChange}
-                      min="0"
-                      step="0.01"
-                      placeholder="4800"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.formSection}>
-                <h3>Capacity Information</h3>
-                <div className={styles.formGrid}>
-                  <div className={getFormGroupClass("totalBeds")}>
-                    <label htmlFor="totalBeds">Total Beds</label>
-                    <input
-                      type="number"
-                      id="totalBeds"
-                      name="totalBeds"
-                      value={formData.totalBeds || ""}
-                      onChange={handleInputChange}
-                      min="0"
-                      placeholder="50"
-                    />
-                  </div>
-
-                  <div className={getFormGroupClass("availableBeds")}>
-                    <label htmlFor="availableBeds">Available Beds</label>
-                    <input
-                      type="number"
-                      id="availableBeds"
-                      name="availableBeds"
-                      value={formData.availableBeds || ""}
-                      onChange={handleInputChange}
-                      min="0"
-                      placeholder="5"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Services & Facilities Step */}
-          {currentStep === 3 && (
-            <div className={styles.tabContent}>
-              <div className={getFormGroupClass("specializations")}>
-                <h3>Specializations</h3>
-                <div className={styles.checkboxGrid}>
-                  {isLoadingConfig ? (
-                    <div className={styles.loadingMessage}>
-                      Loading specializations...
-                    </div>
-                  ) : (
-                    specializations.map((specialization) => (
-                      <div
-                        key={specialization.id}
-                        className={styles.checkboxItem}
-                      >
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={formData.specializations.includes(
-                              specialization.name
-                            )}
-                            onChange={() =>
-                              handleSpecializationChange(specialization.name)
-                            }
-                          />
-                          {specialization.name}
-                        </label>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              <div className={styles.formSection}>
-                <h3>Facilities</h3>
-                <div className={styles.checkboxGrid}>
-                  {isLoadingConfig ? (
-                    <div className={styles.loadingMessage}>
-                      Loading facilities...
-                    </div>
-                  ) : (
-                    facilities.map((facility) => (
-                      <div key={facility.id} className={styles.checkboxItem}>
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={formData.facilityIds.includes(facility.id)}
-                            onChange={() => handleFacilityChange(facility.id)}
-                          />
-                          {facility.name}
-                        </label>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Opening Hours Step */}
-          {currentStep === 4 && (
-            <div className={styles.tabContent}>
-              <div className={styles.formSection}>
-                <h3>Opening Hours</h3>
-                <div className={styles.formGrid}>
-                  {Object.entries(formData.openingHours).map(([day, hours]) => {
-                    // Parse the current hours string to get opening and closing times
-                    const timeMatch = hours.match(
-                      /(\d{1,2}:\d{2}\s*(?:AM|PM)?)\s*-\s*(\d{1,2}:\d{2}\s*(?:AM|PM)?)/i
-                    );
-                    const openingTime = timeMatch
-                      ? convertTo24Hour(timeMatch[1])
-                      : "09:00";
-                    const closingTime = timeMatch
-                      ? convertTo24Hour(timeMatch[2])
-                      : "17:00";
-
-                    return (
-                      <div key={day} className={styles.formGroup}>
-                        <label htmlFor={`${day}-opening`}>{day}</label>
-                        <div className={styles.timePickerContainer}>
-                          <div className={styles.timePickerGroup}>
-                            <label htmlFor={`${day}-opening`}>Opening</label>
-                            <TimePicker
-                              value={openingTime}
-                              onChange={(time) => {
-                                const newHours = `${formatTimeForDisplay(
-                                  time
-                                )} - ${formatTimeForDisplay(closingTime)}`;
-                                handleOpeningHoursChange(day, newHours);
-                              }}
-                              placeholder="Opening time"
-                            />
-                          </div>
-                          <div className={styles.timePickerGroup}>
-                            <label htmlFor={`${day}-closing`}>Closing</label>
-                            <TimePicker
-                              value={closingTime}
-                              onChange={(time) => {
-                                const newHours = `${formatTimeForDisplay(
-                                  openingTime
-                                )} - ${formatTimeForDisplay(time)}`;
-                                handleOpeningHoursChange(day, newHours);
-                              }}
-                              placeholder="Closing time"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Images & Media Step */}
-          {currentStep === 5 && (
-            <div className={styles.tabContent}>
-              <div className={styles.formSection}>
-                <h3>
-                  Images <span style={{ color: "red" }}>*</span>
-                </h3>
-                <p style={{ color: "#666", marginBottom: "1rem" }}>
-                  Please add at least one image URL to continue.
-                </p>
-                <div className={styles.imageUrlsContainer}>
-                  {formData.imageUrls.map((url, index) => (
-                    <div key={index} className={styles.imageUrlItem}>
-                      <input
-                        type="url"
-                        value={url}
-                        onChange={(e) =>
-                          handleImageUrlChange(index, e.target.value)
-                        }
-                        placeholder="https://example.com/image.jpg"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeImageUrl(index)}
-                        className={styles.removeButton}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
+            <div className={styles.csvUploadArea}>
+              <h3>Upload CSV File</h3>
+              <input
+                type="file"
+                accept=".csv"
+                onChange={handleCsvFileChange}
+                className={styles.fileInput}
+              />
+              {csvFile && (
+                <div className={styles.fileInfo}>
+                  <p>Selected file: {csvFile.name}</p>
                   <button
                     type="button"
-                    onClick={addImageUrl}
-                    className={styles.addButton}
+                    onClick={processCsvFile}
+                    disabled={isProcessingCsv}
+                    className={styles.processButton}
                   >
-                    + Add Image URL
+                    {isProcessingCsv ? "Processing..." : "Process CSV"}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {csvErrors.length > 0 && (
+              <div className={styles.csvErrors}>
+                <h4>Errors found in CSV:</h4>
+                <ul>
+                  {csvErrors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {csvData.length > 0 && (
+              <div className={styles.csvPreview}>
+                <h3>CSV Data Ready ({csvData.length} care homes)</h3>
+                <div className={styles.csvActions}>
+                  <button
+                    type="button"
+                    onClick={() => setShowPreviewModal(true)}
+                    className={styles.previewButton}
+                  >
+                    👁️ Preview Data
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCsvImport}
+                    disabled={isSubmitting}
+                    className={styles.importButton}
+                  >
+                    {isSubmitting
+                      ? `Importing... (${csvData.length} homes)`
+                      : `Import ${csvData.length} Care Home(s)`}
                   </button>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className={styles.formActions}>
-            <button
-              type="button"
-              onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
-              disabled={currentStep === 0}
-              className={styles.secondaryButton}
-            >
-              Previous
-            </button>
+            {/* Preview Modal */}
+            {showPreviewModal && (
+              <div className={styles.modalOverlay}>
+                <div className={styles.modalContent}>
+                  <div className={styles.modalHeader}>
+                    <h2>CSV Preview ({csvData.length} care homes)</h2>
+                    <button
+                      type="button"
+                      onClick={() => setShowPreviewModal(false)}
+                      className={styles.closeButton}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className={styles.modalBody}>
+                    <div className={styles.previewStats}>
+                      <div className={styles.statItem}>
+                        <span className={styles.statLabel}>Total Records:</span>
+                        <span className={styles.statValue}>
+                          {csvData.length}
+                        </span>
+                      </div>
+                      <div className={styles.statItem}>
+                        <span className={styles.statLabel}>
+                          Care Type Matches:
+                        </span>
+                        <span className={styles.statValue}>
+                          {
+                            csvData.filter((row) =>
+                              careTypes.find(
+                                (ct) =>
+                                  ct.name.toLowerCase() ===
+                                  String(row.categoryName || "").toLowerCase()
+                              )
+                            ).length
+                          }{" "}
+                          / {csvData.length}
+                        </span>
+                      </div>
+                    </div>
 
-            {currentStep < steps.length - 1 ? (
-              <button
-                type="button"
-                onClick={() => {
-                  const validation = validateCurrentStep();
-                  if (!validation.isValid) {
-                    setValidationErrors(validation.errors);
-                    return;
-                  }
-                  setValidationErrors([]);
-                  setCurrentStep(currentStep + 1);
-                }}
-                className={styles.primaryButton}
-              >
-                Next
-              </button>
-            ) : (
-              <button
-                type="button"
-                disabled={
-                  isSubmitting ||
-                  !formData.imageUrls.some((url) => url.trim() !== "")
-                }
-                onClick={handleSubmit}
-                className={styles.primaryButton}
-                title={
-                  !formData.imageUrls.some((url) => url.trim() !== "")
-                    ? "Please add at least one image URL"
-                    : ""
-                }
-              >
-                {isSubmitting ? "Adding Care Home..." : "Add Care Home"}
-              </button>
+                    <div className={styles.previewTableWrapper}>
+                      <div className={styles.tableContainer}>
+                        <table className={styles.previewTable}>
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Care Home Name</th>
+                              <th>Address</th>
+                              <th>Contact</th>
+                              <th>Category</th>
+                              <th>Match Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {csvData
+                              .slice(0, 100)
+                              .map((row: RawCsvRow, index: number) => {
+                                const matchedType = careTypes.find(
+                                  (ct) =>
+                                    ct.name.toLowerCase() ===
+                                    String(row.categoryName || "").toLowerCase()
+                                );
+                                const postcodeMatch = String(
+                                  row.state || ""
+                                ).match(
+                                  /[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}/i
+                                );
+                                const postcode = postcodeMatch
+                                  ? postcodeMatch[0].toUpperCase()
+                                  : "";
+                                return (
+                                  <tr key={index} className={styles.previewRow}>
+                                    <td className={styles.rowNumber}>
+                                      {index + 1}
+                                    </td>
+                                    <td className={styles.careHomeName}>
+                                      <div className={styles.nameCell}>
+                                        <strong>{row.title}</strong>
+                                        {row.website && (
+                                          <a
+                                            href={row.website}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={styles.websiteLink}
+                                          >
+                                            🌐 Website
+                                          </a>
+                                        )}
+                                      </div>
+                                    </td>
+                                    <td className={styles.addressCell}>
+                                      <div className={styles.addressInfo}>
+                                        <div>{row.street}</div>
+                                        <div>
+                                          {row.city}
+                                          {row.state && `, ${row.state}`}
+                                        </div>
+                                        <div className={styles.countryCode}>
+                                          {row.countryCode}
+                                        </div>
+                                        {postcode && (
+                                          <div className={styles.postcode}>
+                                            📮 {postcode}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </td>
+                                    <td className={styles.contactCell}>
+                                      {row.phone && (
+                                        <div className={styles.phoneNumber}>
+                                          📞 {row.phone}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className={styles.categoryCell}>
+                                      <div className={styles.categoryInfo}>
+                                        <div className={styles.categoryName}>
+                                          {row.categoryName}
+                                        </div>
+                                        {row.totalScore && (
+                                          <div className={styles.score}>
+                                            Score: {row.totalScore}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </td>
+                                    <td className={styles.matchCell}>
+                                      <div
+                                        className={`${styles.matchStatus} ${
+                                          matchedType
+                                            ? styles.matched
+                                            : styles.noMatch
+                                        }`}
+                                      >
+                                        {matchedType ? (
+                                          <span className={styles.matchIcon}>
+                                            ✅
+                                          </span>
+                                        ) : (
+                                          <span className={styles.noMatchIcon}>
+                                            ❌
+                                          </span>
+                                        )}
+                                        <span className={styles.matchText}>
+                                          {matchedType
+                                            ? matchedType.name
+                                            : "No match"}
+                                        </span>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                          </tbody>
+                        </table>
+                      </div>
+                      {csvData.length > 100 && (
+                        <div className={styles.previewNote}>
+                          <p>
+                            📊 Showing first 100 of {csvData.length} care homes
+                          </p>
+                          <p>
+                            💡 All data will be imported, not just the preview
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className={styles.modalFooter}>
+                    <button
+                      type="button"
+                      onClick={() => setShowPreviewModal(false)}
+                      className={styles.secondaryButton}
+                    >
+                      Close
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowPreviewModal(false);
+                        handleCsvImport();
+                      }}
+                      disabled={isSubmitting}
+                      className={styles.primaryButton}
+                    >
+                      {isSubmitting
+                        ? `Importing... (${csvData.length} homes)`
+                        : `Import ${csvData.length} Care Home(s)`}
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
-        </form>
+        ) : (
+          <>
+            <div className={styles.progressContainer}>
+              <div className={styles.progressBar}>
+                <div
+                  className={styles.progressFill}
+                  style={{
+                    width: `${((currentStep + 1) / steps.length) * 100}%`,
+                  }}
+                ></div>
+              </div>
+              <div className={styles.stepsIndicator}>
+                {steps.map((step, index) => (
+                  <div
+                    key={step.id}
+                    className={`${styles.step} ${
+                      index <= currentStep ? styles.completed : ""
+                    } ${index === currentStep ? styles.current : ""}`}
+                  >
+                    <div className={styles.stepNumber}>{index + 1}</div>
+                    <div className={styles.stepInfo}>
+                      <div className={styles.stepLabel}>{step.label}</div>
+                      <div className={styles.stepDescription}>
+                        {step.description}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <form className={styles.form} onKeyDown={handleKeyDown}>
+              {/* Basic Information Step */}
+              {currentStep === 0 && (
+                <div className={styles.tabContent}>
+                  <div className={styles.formSection}>
+                    <h3>Basic Information</h3>
+                    <div className={styles.formGrid}>
+                      <div className={getFormGroupClass("name")}>
+                        <label htmlFor="name">
+                          Care Home Name <span>*</span>
+                        </label>
+                        <input
+                          type="text"
+                          id="name"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          required
+                          placeholder="Enter care home name"
+                        />
+                      </div>
+
+                      <div className={getFormGroupClass("description")}>
+                        <label htmlFor="description">Description</label>
+                        <textarea
+                          id="description"
+                          name="description"
+                          value={formData.description.join("\n")}
+                          onChange={(e) =>
+                            handleDescriptionChange(e.target.value)
+                          }
+                          rows={6}
+                          placeholder="Enter care home description...&#10;&#10;Each line will be treated as a separate paragraph.&#10;Press Enter to create new lines.&#10;Empty lines will be automatically removed."
+                        />
+                        <div className={styles.helpText}>
+                          Each line will be treated as a separate paragraph.
+                          Press Enter to create new lines. Empty lines will be
+                          automatically removed when saving.
+                        </div>
+                      </div>
+
+                      <div className={getFormGroupClass("careTypeId")}>
+                        <label htmlFor="careTypeId">
+                          Care Type <span>*</span>
+                        </label>
+                        <select
+                          id="careTypeId"
+                          name="careTypeId"
+                          value={formData.careTypeId}
+                          onChange={handleInputChange}
+                          required
+                        >
+                          <option value="">Select care type</option>
+                          {isLoadingConfig ? (
+                            <option value="">Loading care types...</option>
+                          ) : (
+                            careTypes.map((type) => (
+                              <option key={type.id} value={type.id}>
+                                {type.name}
+                              </option>
+                            ))
+                          )}
+                        </select>
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label>
+                          <input
+                            type="checkbox"
+                            name="isActive"
+                            checked={formData.isActive}
+                            onChange={handleInputChange}
+                          />
+                          Active
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Location & Contact Step */}
+              {currentStep === 1 && (
+                <div className={styles.tabContent}>
+                  <div className={styles.formSection}>
+                    <h3>Address Information</h3>
+                    <div className={styles.formGrid}>
+                      <div className={getFormGroupClass("addressLine1")}>
+                        <label htmlFor="addressLine1">
+                          Address Line 1 <span>*</span>
+                        </label>
+                        <input
+                          type="text"
+                          id="addressLine1"
+                          name="addressLine1"
+                          value={formData.addressLine1}
+                          onChange={handleInputChange}
+                          required
+                          placeholder="Street address"
+                        />
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label htmlFor="addressLine2">Address Line 2</label>
+                        <input
+                          type="text"
+                          id="addressLine2"
+                          name="addressLine2"
+                          value={formData.addressLine2}
+                          onChange={handleInputChange}
+                          placeholder="Apartment, suite, etc."
+                        />
+                      </div>
+
+                      <div className={getFormGroupClass("country")}>
+                        <label htmlFor="country">
+                          Country <span>*</span>
+                        </label>
+                        <select
+                          id="country"
+                          name="country"
+                          value={formData.countryCode}
+                          onChange={(e) => handleCountryChange(e.target.value)}
+                          required
+                        >
+                          <option value="">Select country</option>
+                          {ukCountries.map((country) => (
+                            <option key={country.code} value={country.code}>
+                              {country.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className={getFormGroupClass("region")}>
+                        <label htmlFor="region">
+                          State <span>*</span>
+                        </label>
+                        <select
+                          id="region"
+                          name="region"
+                          value={formData.region}
+                          onChange={(e) => handleRegionChange(e.target.value)}
+                          required
+                          disabled={!formData.countryCode}
+                        >
+                          <option value="">Select region/county</option>
+                          {formData.countryCode &&
+                            ukRegions[
+                              formData.countryCode as keyof typeof ukRegions
+                            ]?.map((region) => (
+                              <option key={region} value={region}>
+                                {region}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+
+                      <div className={getFormGroupClass("city")}>
+                        <label htmlFor="city">
+                          City <span>*</span>
+                        </label>
+                        <select
+                          id="city"
+                          name="city"
+                          value={formData.city}
+                          onChange={handleInputChange}
+                          required
+                          disabled={!formData.region}
+                        >
+                          <option value="">Select city</option>
+                          {getCitiesForRegion(
+                            formData.countryCode,
+                            formData.region
+                          ).map((city: string) => (
+                            <option key={city} value={city}>
+                              {city}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className={getFormGroupClass("postcode")}>
+                        <label htmlFor="postcode">
+                          Postcode <span>*</span>
+                        </label>
+                        <input
+                          type="text"
+                          id="postcode"
+                          name="postcode"
+                          value={formData.postcode}
+                          onChange={handleInputChange}
+                          required
+                          placeholder="Postcode"
+                        />
+                      </div>
+
+                      <div className={getFormGroupClass("latitude")}>
+                        <label htmlFor="latitude">Latitude (optional)</label>
+                        <input
+                          type="number"
+                          id="latitude"
+                          name="latitude"
+                          value={formData.latitude || ""}
+                          onChange={handleInputChange}
+                          step="0.000001"
+                          min="-90"
+                          max="90"
+                          placeholder="57.6869 (Fraserburgh)"
+                        />
+                        <small className={styles.helpText}>
+                          Must be between -90 and 90 degrees. Leave as 0 if
+                          unknown.
+                        </small>
+                        {formData.latitude !== 0 &&
+                          (formData.latitude < -90 ||
+                            formData.latitude > 90) && (
+                            <div className={styles.errorMessage}>
+                              Latitude must be between -90 and 90 degrees
+                            </div>
+                          )}
+                      </div>
+
+                      <div className={getFormGroupClass("longitude")}>
+                        <label htmlFor="longitude">Longitude (optional)</label>
+                        <input
+                          type="number"
+                          id="longitude"
+                          name="longitude"
+                          value={formData.longitude || ""}
+                          onChange={handleInputChange}
+                          step="0.000001"
+                          min="-180"
+                          max="180"
+                          placeholder="-2.0054 (Fraserburgh)"
+                        />
+                        <small className={styles.helpText}>
+                          Must be between -180 and 180 degrees. Leave as 0 if
+                          unknown.
+                        </small>
+                        {formData.longitude !== 0 &&
+                          (formData.longitude < -180 ||
+                            formData.longitude > 180) && (
+                            <div className={styles.errorMessage}>
+                              Longitude must be between -180 and 180 degrees
+                            </div>
+                          )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={styles.formSection}>
+                    <h3>Contact Information *</h3>
+                    <div className={styles.formGrid}>
+                      <div className={getFormGroupClass("phone")}>
+                        <label htmlFor="phone">
+                          Phone Number <span>*</span>
+                        </label>
+                        <input
+                          type="tel"
+                          id="phone"
+                          name="phone"
+                          value={formData.phone}
+                          onChange={handleInputChange}
+                          required
+                          placeholder="+44 161 123 4567"
+                        />
+                      </div>
+
+                      <div className={getFormGroupClass("email")}>
+                        <label htmlFor="email">
+                          Email <span>*</span>
+                        </label>
+                        <input
+                          type="email"
+                          id="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleInputChange}
+                          required
+                          placeholder="info@carehome.co.uk"
+                        />
+                      </div>
+
+                      <div className={getFormGroupClass("website")}>
+                        <label htmlFor="website">Website</label>
+                        <input
+                          type="url"
+                          id="website"
+                          name="website"
+                          value={formData.website}
+                          onChange={handleInputChange}
+                          placeholder="https://www.carehome.co.uk"
+                        />
+                      </div>
+
+                      <div className={styles.formGroup}>
+                        <label htmlFor="emergency">Emergency Contact *</label>
+                        <input
+                          type="tel"
+                          id="emergency"
+                          value={formData.contactInfo.emergency}
+                          onChange={(e) =>
+                            handleContactInfoChange("emergency", e.target.value)
+                          }
+                          placeholder="Emergency phone number"
+                        />
+                      </div>
+
+                      <div className={getFormGroupClass("manager")}>
+                        <label htmlFor="manager">Manager Name</label>
+                        <input
+                          type="text"
+                          id="manager"
+                          value={formData.contactInfo.manager}
+                          onChange={(e) =>
+                            handleContactInfoChange("manager", e.target.value)
+                          }
+                          placeholder="Manager's name"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Pricing & Capacity Step */}
+              {currentStep === 2 && (
+                <div className={styles.tabContent}>
+                  <div className={styles.formSection}>
+                    <h3>Pricing Information</h3>
+                    <div className={styles.formGrid}>
+                      <div className={getFormGroupClass("weeklyPrice")}>
+                        <label htmlFor="weeklyPrice">Weekly Price (£)</label>
+                        <input
+                          type="number"
+                          id="weeklyPrice"
+                          name="weeklyPrice"
+                          value={formData.weeklyPrice || ""}
+                          onChange={handleInputChange}
+                          min="0"
+                          step="0.01"
+                          placeholder="1200"
+                        />
+                      </div>
+
+                      <div className={getFormGroupClass("monthlyPrice")}>
+                        <label htmlFor="monthlyPrice">Monthly Price (£)</label>
+                        <input
+                          type="number"
+                          id="monthlyPrice"
+                          name="monthlyPrice"
+                          value={formData.monthlyPrice || ""}
+                          onChange={handleInputChange}
+                          min="0"
+                          step="0.01"
+                          placeholder="4800"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={styles.formSection}>
+                    <h3>Capacity Information</h3>
+                    <div className={styles.formGrid}>
+                      <div className={getFormGroupClass("totalBeds")}>
+                        <label htmlFor="totalBeds">Total Beds</label>
+                        <input
+                          type="number"
+                          id="totalBeds"
+                          name="totalBeds"
+                          value={formData.totalBeds || ""}
+                          onChange={handleInputChange}
+                          min="0"
+                          placeholder="50"
+                        />
+                      </div>
+
+                      <div className={getFormGroupClass("availableBeds")}>
+                        <label htmlFor="availableBeds">Available Beds</label>
+                        <input
+                          type="number"
+                          id="availableBeds"
+                          name="availableBeds"
+                          value={formData.availableBeds || ""}
+                          onChange={handleInputChange}
+                          min="0"
+                          placeholder="5"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Services & Facilities Step */}
+              {currentStep === 3 && (
+                <div className={styles.tabContent}>
+                  <div className={getFormGroupClass("specializations")}>
+                    <h3>Specializations</h3>
+                    <div className={styles.checkboxGrid}>
+                      {isLoadingConfig ? (
+                        <div className={styles.loadingMessage}>
+                          Loading specializations...
+                        </div>
+                      ) : (
+                        specializations.map((specialization) => (
+                          <div
+                            key={specialization.id}
+                            className={styles.checkboxItem}
+                          >
+                            <label>
+                              <input
+                                type="checkbox"
+                                checked={formData.specializations.includes(
+                                  specialization.name
+                                )}
+                                onChange={() =>
+                                  handleSpecializationChange(
+                                    specialization.name
+                                  )
+                                }
+                              />
+                              {specialization.name}
+                            </label>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  <div className={styles.formSection}>
+                    <h3>Facilities</h3>
+                    <div className={styles.checkboxGrid}>
+                      {isLoadingConfig ? (
+                        <div className={styles.loadingMessage}>
+                          Loading facilities...
+                        </div>
+                      ) : (
+                        facilities.map((facility) => (
+                          <div
+                            key={facility.id}
+                            className={styles.checkboxItem}
+                          >
+                            <label>
+                              <input
+                                type="checkbox"
+                                checked={formData.facilityIds.includes(
+                                  facility.id
+                                )}
+                                onChange={() =>
+                                  handleFacilityChange(facility.id)
+                                }
+                              />
+                              {facility.name}
+                            </label>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Opening Hours Step */}
+              {currentStep === 4 && (
+                <div className={styles.tabContent}>
+                  <div className={styles.formSection}>
+                    <h3>Opening Hours</h3>
+                    <div className={styles.formGrid}>
+                      {Object.entries(formData.openingHours).map(
+                        ([day, hours]) => {
+                          // Parse the current hours string to get opening and closing times
+                          const timeMatch = hours.match(
+                            /(\d{1,2}:\d{2}\s*(?:AM|PM)?)\s*-\s*(\d{1,2}:\d{2}\s*(?:AM|PM)?)/i
+                          );
+                          const openingTime = timeMatch
+                            ? convertTo24Hour(timeMatch[1])
+                            : "09:00";
+                          const closingTime = timeMatch
+                            ? convertTo24Hour(timeMatch[2])
+                            : "17:00";
+
+                          return (
+                            <div key={day} className={styles.formGroup}>
+                              <label htmlFor={`${day}-opening`}>{day}</label>
+                              <div className={styles.timePickerContainer}>
+                                <div className={styles.timePickerGroup}>
+                                  <label htmlFor={`${day}-opening`}>
+                                    Opening
+                                  </label>
+                                  <TimePicker
+                                    value={openingTime}
+                                    onChange={(time) => {
+                                      const newHours = `${formatTimeForDisplay(
+                                        time
+                                      )} - ${formatTimeForDisplay(
+                                        closingTime
+                                      )}`;
+                                      handleOpeningHoursChange(day, newHours);
+                                    }}
+                                    placeholder="Opening time"
+                                  />
+                                </div>
+                                <div className={styles.timePickerGroup}>
+                                  <label htmlFor={`${day}-closing`}>
+                                    Closing
+                                  </label>
+                                  <TimePicker
+                                    value={closingTime}
+                                    onChange={(time) => {
+                                      const newHours = `${formatTimeForDisplay(
+                                        openingTime
+                                      )} - ${formatTimeForDisplay(time)}`;
+                                      handleOpeningHoursChange(day, newHours);
+                                    }}
+                                    placeholder="Closing time"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        }
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Images & Media Step */}
+              {currentStep === 5 && (
+                <div className={styles.tabContent}>
+                  <div className={styles.formSection}>
+                    <h3>
+                      Images <span style={{ color: "red" }}>*</span>
+                    </h3>
+                    <p style={{ color: "#666", marginBottom: "1rem" }}>
+                      Please add at least one image URL to continue.
+                    </p>
+                    <div className={styles.imageUrlsContainer}>
+                      {formData.imageUrls.map((url, index) => (
+                        <div key={index} className={styles.imageUrlItem}>
+                          <input
+                            type="url"
+                            value={url}
+                            onChange={(e) =>
+                              handleImageUrlChange(index, e.target.value)
+                            }
+                            placeholder="https://example.com/image.jpg"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImageUrl(index)}
+                            className={styles.removeButton}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={addImageUrl}
+                        className={styles.addButton}
+                      >
+                        + Add Image URL
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className={styles.formActions}>
+                <button
+                  type="button"
+                  onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+                  disabled={currentStep === 0}
+                  className={styles.secondaryButton}
+                >
+                  Previous
+                </button>
+
+                {currentStep < steps.length - 1 ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const validation = validateCurrentStep();
+                      if (!validation.isValid) {
+                        setValidationErrors(validation.errors);
+                        return;
+                      }
+                      setValidationErrors([]);
+                      setCurrentStep(currentStep + 1);
+                    }}
+                    className={styles.primaryButton}
+                  >
+                    Next
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={
+                      isSubmitting ||
+                      !formData.imageUrls.some((url) => url.trim() !== "")
+                    }
+                    onClick={handleSubmit}
+                    className={styles.primaryButton}
+                    title={
+                      !formData.imageUrls.some((url) => url.trim() !== "")
+                        ? "Please add at least one image URL"
+                        : ""
+                    }
+                  >
+                    {isSubmitting ? "Adding Care Home..." : "Add Care Home"}
+                  </button>
+                )}
+              </div>
+            </form>
+          </>
+        )}
       </div>
     </AdminLayout>
   );

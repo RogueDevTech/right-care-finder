@@ -11,6 +11,8 @@
     width: 90%;
     margin: auto;
     padding: 40px 0;
+    max-width: 1240px;
+
     // background-image: url(/frontend/public/Right-care-founder.png);
     @media (max-width: 500px) {
       flex-direction: column;

@@ -7,6 +7,7 @@ import { CareType } from "./entities/care-type.entity";
 import { CareHomeFacility } from "./entities/care-home-facility.entity";
 import { CareHomeImage } from "./entities/care-home-image.entity";
 import { CareHomeReview } from "./entities/care-home-review.entity";
+import { Specialization } from "./entities/specialization.entity";
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { CareHomeReview } from "./entities/care-home-review.entity";
       CareHomeFacility,
       CareHomeImage,
       CareHomeReview,
+      Specialization,
     ]),
   ],
   controllers: [HealthcareHomesController],

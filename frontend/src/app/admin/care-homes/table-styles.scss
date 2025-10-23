@@ -1,0 +1,429 @@
+// Modern Table Styles for Care Homes Admin
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.careHomesTable {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.875rem;
+
+  thead {
+    tr {
+      background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
+
+      th {
+        padding: 16px 20px;
+        text-align: left;
+        font-weight: 600;
+        color: #1e293b;
+        border-bottom: 2px solid #e2e8f0;
+        font-size: 0.813rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        white-space: nowrap;
+        position: sticky;
+        top: 0;
+        background: #f8fafc;
+        z-index: 10;
+
+        &:first-child {
+          border-top-left-radius: 12px;
+        }
+
+        &:last-child {
+          border-top-right-radius: 12px;
+        }
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      background: white;
+      border-bottom: 1px solid #f1f5f9;
+      transition: all 0.2s ease;
+      cursor: pointer;
+
+      &:hover {
+        background: #f8fafc;
+        transform: scale(1.001);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+
+      &:last-child td {
+        &:first-child {
+          border-bottom-left-radius: 12px;
+        }
+
+        &:last-child {
+          border-bottom-right-radius: 12px;
+        }
+      }
+
+      td {
+        padding: 20px;
+        vertical-align: middle;
+        color: #475569;
+      }
+    }
+  }
+}
+
+.checkboxColumn {
+  width: 48px !important;
+  text-align: center !important;
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    border-radius: 4px;
+    border: 2px solid #cbd5e1;
+
+    &:checked {
+      background: #1c7c8a;
+      border-color: #1c7c8a;
+    }
+  }
+}
+
+.actionsColumn {
+  width: 180px !important;
+  text-align: center !important;
+}
+
+// Care Home Cell
+.careHomeCell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.careHomeInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.careHomeName {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 0.938rem;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.verifiedIcon {
+  display: inline-flex;
+  align-items: center;
+
+  svg {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+  }
+}
+
+.careHomeSpecializations {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.specializationTag {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  color: #1e40af;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid #bfdbfe;
+}
+
+.noSpecialization {
+  color: #94a3b8;
+  font-size: 0.813rem;
+  font-style: italic;
+}
+
+.moreTag {
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+// Location Cell
+.locationCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.locationPrimary {
+  color: #0f172a;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.locationSecondary {
+  color: #94a3b8;
+  font-size: 0.813rem;
+}
+
+// Contact Cell
+.contactCell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contactItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #475569;
+  font-size: 0.813rem;
+
+  svg {
+    color: #94a3b8;
+    flex-shrink: 0;
+  }
+}
+
+// Beds Cell
+.bedsCell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 100px;
+}
+
+.bedsAvailable {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.bedsNumber {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1c7c8a;
+}
+
+.bedsTotal {
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+.bedsBar {
+  width: 100%;
+  height: 6px;
+  background: #f1f5f9;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.bedsBarFill {
+  height: 100%;
+  background: linear-gradient(90deg, #1c7c8a 0%, #2dd4bf 100%);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+// Rating Cell
+.ratingCell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.ratingStars {
+  display: flex;
+  gap: 2px;
+  font-size: 1rem;
+}
+
+.starFilled {
+  color: #fbbf24;
+}
+
+.starEmpty {
+  color: #e5e7eb;
+}
+
+.ratingCount {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.noRating {
+  color: #cbd5e1;
+  font-size: 0.813rem;
+  font-style: italic;
+}
+
+// Status Cell with Toggle Switch
+.statusCell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.statusSwitch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+
+    &:checked + .statusSlider {
+      background: #22c55e;
+    }
+
+    &:checked + .statusSlider:before {
+      transform: translateX(20px);
+    }
+  }
+}
+
+.statusSlider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #cbd5e1;
+  transition: 0.3s;
+  border-radius: 24px;
+
+  &:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.statusText {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+
+  &.activeText {
+    color: #22c55e;
+  }
+
+  &.inactiveText {
+    color: #94a3b8;
+  }
+}
+
+// Action Buttons
+.tableActions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.actionBtn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    transition: transform 0.2s ease;
+  }
+
+  &:hover svg {
+    transform: scale(1.1);
+  }
+
+  &.viewBtn {
+    background: linear-gradient(135deg, #1c7c8a 0%, #145e6a 100%);
+    color: white;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(28, 124, 138, 0.3);
+      transform: translateY(-2px);
+    }
+  }
+
+  &.verifyBtn {
+    background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    color: #15803d;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+      transform: translateY(-2px);
+    }
+  }
+
+  &.unverifyBtn {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #dc2626;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+      transform: translateY(-2px);
+    }
+  }
+
+  &.editBtn {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    color: #b45309;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+      transform: translateY(-2px);
+    }
+  }
+
+  &.deleteBtn {
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    color: #dc2626;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.tableRow {
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #e2e8f0 20%, #e2e8f0 80%, transparent 100%);
+  }
+}

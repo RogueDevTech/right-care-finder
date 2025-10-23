@@ -415,8 +415,8 @@ export const GridIcon: React.FC<Props> = ({ className }) => (
     <path
       d="M8.99998 8H19M8.99998 12H19M8.99998 16H19M4.98998 8H4.99998M4.97998 12H4.98998M4.98998 16H4.99998"
       stroke="white"
-      stroke-width="2"
-      stroke-linecap="round"
+      strokeWidth="2"
+      strokeLinecap="round"
     />
   </svg>
 );

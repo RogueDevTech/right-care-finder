@@ -35,9 +35,7 @@ export const useClient = () => {
               data: undefined,
             };
           }
-
           const error: E = (data && data.message) || response.statusText;
-
           return {
             error,
             status: response.status,
@@ -45,7 +43,7 @@ export const useClient = () => {
           };
         }
 
-        const responseData: R = data.data || data.message || data;
+        const responseData: R = data || data.message || data;
 
         return {
           data: responseData,

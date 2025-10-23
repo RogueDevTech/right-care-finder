@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import {
   useHealthcareHomesActions,
   CareHome,
@@ -12,10 +11,10 @@ import { toast } from "react-hot-toast";
 import NavBar from "@/components/navbar";
 import Footer from "@/components/footer";
 import styles from "./search.module.scss";
+import CareHomeCard from "@/components/ui/care-home-card";
 
 function SearchPageContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const { searchCareHomes } = useHealthcareHomesActions();
 
   const [careHomes, setCareHomes] = useState<CareHome[]>([]);
@@ -28,12 +27,23 @@ function SearchPageContent() {
   });
 
   const query = searchParams.get("q") || "";
+  const specializations = searchParams.get("specializations") || "";
 
   useEffect(() => {
     if (query) {
       setFilters((prev) => ({ ...prev, search: query, page: 1 }));
     }
   }, [query]);
+
+  useEffect(() => {
+    if (specializations) {
+      setFilters((prev) => ({
+        ...prev,
+        specializations: [specializations],
+        page: 1,
+      }));
+    }
+  }, [specializations]);
 
   useEffect(() => {
     const fetchCareHomes = async () => {
@@ -71,10 +81,6 @@ function SearchPageContent() {
     setCurrentPage(page);
   };
 
-  const handleCareHomeClick = (careHome: CareHome) => {
-    router.push(`/care-home/${careHome.id}`);
-  };
-
   const totalPages = Math.ceil(totalResults / (filters.limit || 12));
 
   return (
@@ -87,6 +93,12 @@ function SearchPageContent() {
           {query && (
             <p className={styles.searchQuery}>
               Results for &quot;{query}&quot; ({totalResults} care homes found)
+            </p>
+          )}
+          {specializations && !query && (
+            <p className={styles.searchQuery}>
+              Results for specialization: &quot;{specializations}&quot; (
+              {totalResults} care homes found)
             </p>
           )}
         </div>
@@ -209,63 +221,7 @@ function SearchPageContent() {
               <>
                 <div className={styles.resultsGrid}>
                   {careHomes.map((careHome) => (
-                    <div
-                      key={careHome.id}
-                      className={styles.careHomeCard}
-                      onClick={() => handleCareHomeClick(careHome)}
-                    >
-                      <div className={styles.cardImage}>
-                        {careHome.images && careHome.images.length > 0 ? (
-                          <img
-                            src={careHome.images[0].url}
-                            alt={careHome.images[0].altText || careHome.name}
-                          />
-                        ) : (
-                          <div className={styles.placeholderImage}>
-                            <span>No image available</span>
-                          </div>
-                        )}
-                        {careHome.isVerified && (
-                          <div className={styles.verifiedBadge}>Verified</div>
-                        )}
-                      </div>
-
-                      <div className={styles.cardContent}>
-                        <h3 className={styles.careHomeName}>{careHome.name}</h3>
-                        <p className={styles.careHomeLocation}>
-                          {careHome.city}, {careHome.region}
-                        </p>
-                        {careHome.careType && (
-                          <p className={styles.careType}>
-                            {careHome.careType.name}
-                          </p>
-                        )}
-                        {careHome.weeklyPrice && (
-                          <p className={styles.price}>
-                            £{careHome.weeklyPrice.toLocaleString()}/week
-                          </p>
-                        )}
-                        {careHome.averageRating && (
-                          <div className={styles.rating}>
-                            <span className={styles.stars}>
-                              {"★".repeat(Math.round(careHome.averageRating))}
-                              {"☆".repeat(
-                                5 - Math.round(careHome.averageRating)
-                              )}
-                            </span>
-                            <span className={styles.ratingText}>
-                              {careHome.averageRating.toFixed(1)} (
-                              {careHome.totalReviews} reviews)
-                            </span>
-                          </div>
-                        )}
-                        {careHome.availableBeds !== undefined && (
-                          <p className={styles.beds}>
-                            {careHome.availableBeds} beds available
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                    <CareHomeCard key={careHome.id} careHome={careHome} />
                   ))}
                 </div>
 

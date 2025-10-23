@@ -7,6 +7,7 @@ import { CareHomeFacility } from "../modules/healthcare-homes/entities/care-home
 import { CareHomeImage } from "../modules/healthcare-homes/entities/care-home-image.entity";
 import { CareHomeReview } from "../modules/healthcare-homes/entities/care-home-review.entity";
 import { Invitation } from "../modules/admin/entities/invitation.entity";
+import { BlogPost } from "../modules/blog/entities/blog-post.entity";
 
 export const entities = {
   User,
@@ -18,6 +19,7 @@ export const entities = {
   CareHomeImage,
   CareHomeReview,
   Invitation,
+  BlogPost,
 };
 
 export {
@@ -30,4 +32,5 @@ export {
   CareHomeImage,
   CareHomeReview,
   Invitation,
+  BlogPost,
 };

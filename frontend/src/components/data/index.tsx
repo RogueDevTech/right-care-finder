@@ -13,7 +13,7 @@ export const careerHomeDetails = [
     lastRefurbishment: "2015",
     phone: "0348932453",
     reviewNum: "49 reviews",
-    price: "$3000",
+    price: "£3000",
     careProvided: [
       {
         careName: "Primary care category",
@@ -106,7 +106,7 @@ export const careHomes = [
     description:
       "A modern 45-bed home offering 24/7 residential and dementia care in a warm, family-like environment. Spacious gardens, daily activities, and chef-prepared meals.",
     tagline: "“Where comfort meets care in the heart of Manchester.”",
-    price: "$3000",
+    price: "£3000",
     image: CareerHomeCardImage,
   },
   {
@@ -117,7 +117,7 @@ export const careHomes = [
     description:
       "A modern 45-bed home offering 24/7 residential and dementia care in a warm, family-like environment. Spacious gardens, daily activities, and chef-prepared meals.",
     tagline: "“Where comfort meets care in the heart of Manchester.”",
-    price: "$3000",
+    price: "£3000",
     image: CareerHomeCardImage,
   },
   {
@@ -128,7 +128,7 @@ export const careHomes = [
     description:
       "A modern 45-bed home offering 24/7 residential and dementia care in a warm, family-like environment. Spacious gardens, daily activities, and chef-prepared meals.",
     tagline: "“Where comfort meets care in the heart of Manchester.”",
-    price: "$3000",
+    price: "£3000",
     image: CareerHomeCardImage,
   },
   {
@@ -139,7 +139,7 @@ export const careHomes = [
     description:
       "A modern 45-bed home offering 24/7 residential and dementia care in a warm, family-like environment. Spacious gardens, daily activities, and chef-prepared meals.",
     tagline: "“Where comfort meets care in the heart of Manchester.”",
-    price: "$3000",
+    price: "£3000",
     image: CareerHomeCardImage,
   },
   {
@@ -150,7 +150,7 @@ export const careHomes = [
     description:
       "A modern 45-bed home offering 24/7 residential and dementia care in a warm, family-like environment. Spacious gardens, daily activities, and chef-prepared meals.",
     tagline: "“Where comfort meets care in the heart of Manchester.”",
-    price: "$3000",
+    price: "£3000",
     image: CareerHomeCardImage,
   },
 ];

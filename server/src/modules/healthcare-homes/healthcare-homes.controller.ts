@@ -48,12 +48,12 @@ export class HealthcareHomesController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.PROVIDER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
   @ApiBearerAuth()
   @ApiOperation({
     summary: "Create a new care home",
     description:
-      "Creates a new care home listing with comprehensive details including basic information, location, pricing, services, facilities, opening hours, and media. Requires ADMIN or PROVIDER role.",
+      "Creates a new care home listing with comprehensive details including basic information, location, pricing, services, facilities, opening hours, and media. Requires ADMIN or OWNER role.",
   })
   @ApiBody({
     type: CreateCareHomeDto,
@@ -92,6 +92,56 @@ export class HealthcareHomesController {
       req.user?.id
     );
     return BaseResponseDto.success("Care home created successfully", careHome);
+  }
+
+  @Version("v1")
+  @Post("bulk-import")
+  @HttpCode(HttpStatus.CREATED)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: "Bulk import care homes",
+    description:
+      "Import multiple care homes at once from an array. Requires ADMIN role.",
+  })
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        careHomes: {
+          type: "array",
+          items: { type: "object" },
+          description: "Array of care home data objects",
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: HttpStatus.CREATED,
+    description: "Care homes imported successfully",
+    type: BaseResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: "Unauthorized - Invalid or missing JWT token",
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: "Forbidden - Insufficient permissions",
+  })
+  async bulkImport(
+    @Body("careHomes") careHomes: CreateCareHomeDto[],
+    @Request() req: { user?: { id: string } }
+  ) {
+    const results = await this.healthcareHomesService.bulkImport(
+      careHomes,
+      req.user?.id
+    );
+    return BaseResponseDto.success(
+      `Successfully imported ${results.success} care homes. ${results.failed} failed.`,
+      results
+    );
   }
 
   @Version("v1")
@@ -219,7 +269,11 @@ export class HealthcareHomesController {
     type: BaseResponseDto,
   })
   async findAll(@Query() query: CareHomeQueryDto) {
-    const result = await this.healthcareHomesService.findAll(query);
+    // For public endpoint, always filter to only show active care homes
+    const result = await this.healthcareHomesService.findAll({
+      ...query,
+      isActive: true,
+    });
     return BaseResponseDto.success("Care homes retrieved successfully", result);
   }
 
@@ -340,6 +394,49 @@ export class HealthcareHomesController {
   }
 
   @Version("v1")
+  @Get("specializations")
+  @Public()
+  @ApiOperation({
+    summary: "Get all specializations",
+    description:
+      "Retrieves all available specializations for filtering care homes.",
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Specializations retrieved successfully",
+    type: BaseResponseDto,
+  })
+  async getSpecializations() {
+    const specializations =
+      await this.healthcareHomesService.getSpecializations();
+    return BaseResponseDto.success(
+      "Specializations retrieved successfully",
+      specializations
+    );
+  }
+
+  @Version("v1")
+  @Get("statistics/regions")
+  @Public()
+  @ApiOperation({
+    summary: "Get care home statistics by region",
+    description:
+      "Retrieves statistics about care homes grouped by region, including count and average ratings.",
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Region statistics retrieved successfully",
+    type: BaseResponseDto,
+  })
+  async getRegionStatistics() {
+    const statistics = await this.healthcareHomesService.getRegionStatistics();
+    return BaseResponseDto.success(
+      "Region statistics retrieved successfully",
+      statistics
+    );
+  }
+
+  @Version("v1")
   @Get(":id")
   @Public()
   @ApiOperation({
@@ -368,12 +465,11 @@ export class HealthcareHomesController {
   @Patch(":id")
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN, UserRole.PROVIDER)
+  @Roles(UserRole.ADMIN, UserRole.OWNER)
   @ApiBearerAuth()
   @ApiOperation({
     summary: "Update a care home",
-    description:
-      "Updates an existing care home. Requires ADMIN or PROVIDER role.",
+    description: "Updates an existing care home. Requires ADMIN or OWNER role.",
   })
   @ApiParam({ name: "id", description: "Care home ID" })
   @ApiBody({ type: UpdateCareHomeDto })

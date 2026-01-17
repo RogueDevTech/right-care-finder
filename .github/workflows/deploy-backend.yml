@@ -30,6 +30,7 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        continue-on-error: false
 
       - name: Run linter
         run: npm run lint || true

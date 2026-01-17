@@ -123,11 +123,49 @@ jobs:
             TYPEORM_LOGGING=${{ secrets.TYPEORM_LOGGING || false }}
             EOF
             chmod 600 .env
-            npm ci --only=production
+            
+            # Install dependencies
+            echo "Installing dependencies..."
+            npm ci --only=production || npm install --only=production
+            
+            # Build application
+            echo "Building application..."
             npm run build
+            
+            # Verify build succeeded
+            if [ ! -f "dist/main.js" ]; then
+              echo "Error: Build failed - dist/main.js not found"
+              ls -la dist/ || echo "dist directory does not exist"
+              exit 1
+            fi
+            
+            # Create logs directory if it doesn't exist
+            mkdir -p logs
+            
+            # Run migrations
+            echo "Running migrations..."
             npm run migration:run || echo "No migrations to run"
-            pm2 restart right-care-finder-api || pm2 start deploy/ecosystem.config.js
+            
+            # Start or restart PM2
+            echo "Starting application with PM2..."
+            if pm2 list | grep -q "right-care-finder-api"; then
+              echo "Restarting existing PM2 process..."
+              pm2 restart right-care-finder-api
+            else
+              echo "Starting new PM2 process..."
+              pm2 start deploy/ecosystem.config.js
+            fi
+            
+            # Verify PM2 started successfully
+            sleep 2
+            if ! pm2 list | grep -q "right-care-finder-api"; then
+              echo "Error: PM2 process not found after start"
+              pm2 logs right-care-finder-api --lines 50 || echo "No logs available"
+              exit 1
+            fi
+            
             pm2 save
+            pm2 status
 
       - name: Verify deployment
         uses: appleboy/ssh-action@v1.0.3
@@ -137,6 +175,29 @@ jobs:
           key: ${{ secrets.DROPLET_SSH_KEY }}
           port: ${{ secrets.DROPLET_PORT || 22 }}
           script: |
-            sleep 5
+            echo "Checking PM2 status..."
             pm2 status
-            curl -f http://localhost:4001/api || exit 1
+            
+            echo "Checking if process is running..."
+            if pm2 list | grep -q "right-care-finder-api"; then
+              echo "✅ PM2 process found"
+              pm2 info right-care-finder-api
+              echo "Recent logs:"
+              pm2 logs right-care-finder-api --lines 20 --nostream || echo "No logs available"
+            else
+              echo "❌ PM2 process not found"
+              exit 1
+            fi
+            
+            echo "Waiting for application to start..."
+            sleep 5
+            
+            echo "Testing API endpoint..."
+            curl -f http://localhost:4001/api || {
+              echo "❌ API endpoint not responding"
+              echo "Checking if port is listening..."
+              netstat -tlnp | grep 4001 || ss -tlnp | grep 4001 || echo "Port 4001 not listening"
+              exit 1
+            }
+            
+            echo "✅ Deployment verified successfully"

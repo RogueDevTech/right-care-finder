@@ -1,9 +1,14 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { Repository, In } from "typeorm";
 import { User } from "./entities/user.entity";
 import { Address } from "./entities/address.entity";
 import { CreateAddressDto, UpdateAddressDto } from "./dto/address.dto";
+import {
+  Invitation,
+  InvitationStatus,
+} from "../admin/entities/invitation.entity";
+import { CareHome } from "../healthcare-homes/entities/care-home.entity";
 
 @Injectable()
 export class UsersService {
@@ -12,6 +17,10 @@ export class UsersService {
     private usersRepository: Repository<User>,
     @InjectRepository(Address)
     private addressRepository: Repository<Address>,
+    @InjectRepository(Invitation)
+    private invitationRepository: Repository<Invitation>,
+    @InjectRepository(CareHome)
+    private careHomeRepository: Repository<CareHome>
   ) {}
 
   async create(createUserDto: any): Promise<User> {
@@ -44,7 +53,7 @@ export class UsersService {
       typeof updateUserDto.dateOfBirth === "string"
     ) {
       updateUserDto.dateOfBirth = new Date(
-        updateUserDto.dateOfBirth + "T00:00:00.000Z",
+        updateUserDto.dateOfBirth + "T00:00:00.000Z"
       );
     }
 
@@ -69,7 +78,7 @@ export class UsersService {
 
   async createAddress(
     userId: string,
-    createAddressDto: CreateAddressDto,
+    createAddressDto: CreateAddressDto
   ): Promise<Address> {
     // If this is set as default, unset other default addresses
     if (createAddressDto.isDefault) {
@@ -95,7 +104,7 @@ export class UsersService {
   async updateAddress(
     userId: string,
     addressId: string,
-    updateAddressDto: UpdateAddressDto,
+    updateAddressDto: UpdateAddressDto
   ): Promise<Address> {
     const address = await this.addressRepository.findOne({
       where: { id: addressId, userId },
@@ -117,7 +126,7 @@ export class UsersService {
             userId,
             isDefault: true,
             addressId,
-          },
+          }
         )
         .execute();
     }
@@ -161,5 +170,40 @@ export class UsersService {
     // Set this address as default
     address.isDefault = true;
     return this.addressRepository.save(address);
+  }
+
+  // Get care homes for an owner based on accepted invitations
+  async getMyCareHomes(userId: string): Promise<CareHome[]> {
+    // Find all accepted invitations for this user
+    const acceptedInvitations = await this.invitationRepository.find({
+      where: {
+        acceptedByUserId: userId,
+        status: InvitationStatus.ACCEPTED,
+      },
+      relations: ["careHome"],
+    });
+
+    // Extract care home IDs
+    const careHomeIds = acceptedInvitations
+      .filter((inv) => inv.careHomeId)
+      .map((inv) => inv.careHomeId);
+
+    if (careHomeIds.length === 0) {
+      return [];
+    }
+
+    // Fetch care homes with their relations
+    const careHomes = await this.careHomeRepository.find({
+      where: { id: In(careHomeIds) },
+      relations: [
+        "careType",
+        "facilities",
+        "images",
+        "reviews",
+        "reviews.user",
+      ],
+    });
+
+    return careHomes;
   }
 }

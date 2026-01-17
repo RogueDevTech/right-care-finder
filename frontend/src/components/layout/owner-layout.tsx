@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { logout } from "@/actions-server";
+import { useAuthStore } from "@/store/auth.store";
 import styles from "./owner-layout.module.scss";
 
 interface OwnerLayoutProps {
@@ -11,8 +13,21 @@ interface OwnerLayoutProps {
 
 export default function OwnerLayout({ children }: OwnerLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const router = useRouter();
   const pathname = usePathname();
+  const { clearAuth } = useAuthStore();
+
+  const handleLogout = async () => {
+    try {
+      // Clear auth store
+      clearAuth();
+      // Call server logout action (which will destroy session and redirect)
+      await logout();
+    } catch (error) {
+      console.error("Error during logout:", error);
+      // Even if logout fails, redirect to home
+      window.location.href = "/";
+    }
+  };
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
@@ -72,7 +87,7 @@ export default function OwnerLayout({ children }: OwnerLayoutProps) {
                   >
                     <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
                   </svg>
-                  <span className={styles.navText}>View Public Site</span>
+                  <span className={styles.navText}>Go back to home</span>
                 </Link>
               </li>
             </ul>
@@ -83,9 +98,12 @@ export default function OwnerLayout({ children }: OwnerLayoutProps) {
             <ul className={styles.navList}>
               <li className={styles.navItem}>
                 <Link
-                  href="/owner/profile"
+                  href="/owner/care-home"
                   className={`${styles.navLink} ${
-                    isActiveLink("/owner/profile") ? styles.active : ""
+                    isActiveLink("/owner/care-home") ||
+                    isActiveLink("/owner/care-homes/")
+                      ? styles.active
+                      : ""
                   }`}
                 >
                   <svg
@@ -93,11 +111,12 @@ export default function OwnerLayout({ children }: OwnerLayoutProps) {
                     viewBox="0 0 24 24"
                     fill="currentColor"
                   >
-                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
                   </svg>
-                  <span className={styles.navText}>Profile</span>
+                  <span className={styles.navText}>My Care Home</span>
                 </Link>
               </li>
+
               <li className={styles.navItem}>
                 <Link
                   href="/owner/bookings"
@@ -157,6 +176,23 @@ export default function OwnerLayout({ children }: OwnerLayoutProps) {
             <ul className={styles.navList}>
               <li className={styles.navItem}>
                 <Link
+                  href="/owner/billing"
+                  className={`${styles.navLink} ${
+                    isActiveLink("/owner/billing") ? styles.active : ""
+                  }`}
+                >
+                  <svg
+                    className={styles.navIcon}
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                  >
+                    <path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z" />
+                  </svg>
+                  <span className={styles.navText}>Billing</span>
+                </Link>
+              </li>
+              <li className={styles.navItem}>
+                <Link
                   href="/owner/settings"
                   className={`${styles.navLink} ${
                     isActiveLink("/owner/settings") ? styles.active : ""
@@ -175,11 +211,7 @@ export default function OwnerLayout({ children }: OwnerLayoutProps) {
               <li className={styles.navItem}>
                 <button
                   className={`${styles.navLink} ${styles.logoutNavLink}`}
-                  onClick={() => {
-                    // TODO: Implement logout logic
-                    console.log("Logout clicked");
-                    router.push("/");
-                  }}
+                  onClick={handleLogout}
                 >
                   <svg
                     className={styles.navIcon}
@@ -214,11 +246,15 @@ export default function OwnerLayout({ children }: OwnerLayoutProps) {
             <div className={styles.breadcrumb}>
               <span className={styles.breadcrumbText}>
                 {pathname === "/owner" && "Dashboard"}
+                {pathname === "/owner/care-home" && "My Care Home"}
                 {pathname === "/owner/profile" && "Care Home Profile"}
                 {pathname === "/owner/bookings" && "Bookings Management"}
                 {pathname === "/owner/enquiries" && "Enquiries"}
                 {pathname === "/owner/reviews" && "Reviews & Ratings"}
+                {pathname === "/owner/billing" && "Billing"}
                 {pathname === "/owner/settings" && "Settings"}
+                {pathname?.startsWith("/owner/care-homes/") &&
+                  "Care Home Details"}
               </span>
             </div>
           </div>

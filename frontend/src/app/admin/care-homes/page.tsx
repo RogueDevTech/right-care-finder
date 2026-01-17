@@ -340,50 +340,45 @@ export default function CareHomesPage() {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className={styles.pagination}>
-            <div className={styles.paginationInfo}>
-              Showing {(currentPage - 1) * 20 + 1} to{" "}
-              {Math.min(currentPage * 20, totalCareHomes)} of {totalCareHomes}{" "}
-              care homes
-            </div>
-            <div className={styles.paginationControls}>
-              <button
-                className={styles.paginationButton}
-                onClick={() => handlePageChange(1)}
-                disabled={currentPage === 1}
-                title="First Page"
-              >
-                ««
-              </button>
-              <button
-                className={styles.paginationButton}
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                title="Previous Page"
-              >
-                ‹
-              </button>
+            <div className={styles.paginationContent}>
+              {/* Left: Page Info */}
+              <div className={styles.pageInfo}>
+                <span className={styles.pageText}>
+                  Page <strong>{currentPage}</strong> of{" "}
+                  <strong>{totalPages}</strong>
+                </span>
+                <span className={styles.separator}>•</span>
+                <span className={styles.resultsText}>
+                  {totalCareHomes}{" "}
+                  {totalCareHomes === 1 ? "result" : "results"}
+                </span>
+              </div>
 
-              {/* Page Numbers */}
-              <div className={styles.pageNumbers}>
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              {/* Center: Page Numbers */}
+              <div className={styles.pageNumbersContainer}>
+                {Array.from({ length: Math.min(7, totalPages) }, (_, i) => {
                   let pageNum;
-                  if (totalPages <= 5) {
+                  if (totalPages <= 7) {
                     pageNum = i + 1;
-                  } else if (currentPage <= 3) {
+                  } else if (currentPage <= 4) {
                     pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
+                  } else if (currentPage >= totalPages - 3) {
+                    pageNum = totalPages - 6 + i;
                   } else {
-                    pageNum = currentPage - 2 + i;
+                    pageNum = currentPage - 3 + i;
                   }
 
                   return (
                     <button
                       key={pageNum}
-                      className={`${styles.pageNumber} ${
-                        currentPage === pageNum ? styles.activePage : ""
+                      className={`${styles.pageBtn} ${
+                        currentPage === pageNum ? styles.pageActive : ""
                       }`}
                       onClick={() => handlePageChange(pageNum)}
+                      aria-label={`Page ${pageNum}`}
+                      aria-current={
+                        currentPage === pageNum ? "page" : undefined
+                      }
                     >
                       {pageNum}
                     </button>
@@ -391,22 +386,43 @@ export default function CareHomesPage() {
                 })}
               </div>
 
-              <button
-                className={styles.paginationButton}
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                title="Next Page"
-              >
-                ›
-              </button>
-              <button
-                className={styles.paginationButton}
-                onClick={() => handlePageChange(totalPages)}
-                disabled={currentPage === totalPages}
-                title="Last Page"
-              >
-                »»
-              </button>
+              {/* Right: Navigation */}
+              <div className={styles.navButtons}>
+                <button
+                  className={styles.navBtn}
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  aria-label="Previous page"
+                >
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path
+                      d="M12.5 15L7.5 10L12.5 5"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span>Previous</span>
+                </button>
+                <button
+                  className={styles.navBtn}
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  aria-label="Next page"
+                >
+                  <span>Next</span>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path
+                      d="M7.5 15L12.5 10L7.5 5"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         )}

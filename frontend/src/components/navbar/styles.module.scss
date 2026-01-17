@@ -1,20 +1,31 @@
 .container {
-  display: flex;
-  padding: 16px 24px;
-  align-items: center;
-  justify-content: space-between;
+  // background-color: #F6F6F6;
+  border-bottom: 1px solid #d0cfcf;
+  color: #000;
+  background-color: #f6f6f6;
   position: sticky;
-  top: 15px;
-  width: 90%;
-  margin: 0 auto;
-  background-color: rgba(0, 0, 0, 0.5);
-  color: #f6f6f6;
-  border-radius: 12px;
-  z-index: 999;
-  max-width: 1240px;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: saturate(180%) blur(8px);
+  background-color: rgba(246, 246, 246, 0.9);
+  & > div {
+    max-width: 1240px;
+    margin: 0 auto;
+    width: 100%;
+
+    z-index: 999;
+    display: flex;
+    padding: 16px 24px;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 15px;
+    width: 90%;
+    margin: 0 auto;
+  }
   @media (max-width: 500px) {
     padding: 24px 16px;
-    background-color: #151717;
+    background-color: #ffffff;
   }
 }
 .leftNav {
@@ -23,7 +34,7 @@
   align-items: center;
   gap: 20px;
   .logo {
-    max-width: 194px;
+    // max-width: 194px;
     width: 100%;
     @media (max-width: 500px) {
       max-width: 138px;
@@ -51,7 +62,7 @@
     font-size: 16px;
     font-weight: 400;
     color: rgba(41, 41, 41, 1);
-    color: #f6f6f6;
+    // color: #f6f6f6;
     cursor: pointer;
     padding: 8px 12px;
     outline: none;
@@ -260,7 +271,7 @@
     z-index: 50;
     right: 0;
     bottom: 0;
-    background-color: #f6f6f6;
+    background-color: #ffffff;
     height: 100%;
     overflow: auto;
     .menuHeader {
@@ -286,8 +297,11 @@
       gap: 20px;
       height: 100%;
       overflow: auto;
+      background-color: #ffffff;
       a {
         padding: 8px;
+        color: #111827;
+        text-decoration: none;
       }
       .mobileNav {
         display: flex;
@@ -297,6 +311,7 @@
           display: flex;
           align-items: center;
           justify-content: space-between;
+          color: #111827;
         }
         .careTypeDropdown {
           padding: 0 16px;
@@ -305,8 +320,12 @@
           gap: 10px;
           a {
             padding: 8px 12px;
-            color: #8c8c8c;
+            color: #374151;
             font-size: 14px;
+            &:hover {
+              background: #f3f4f6;
+              border-radius: 6px;
+            }
           }
         }
       }

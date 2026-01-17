@@ -233,4 +233,25 @@ export class UsersController {
       address
     );
   }
+
+  @Get("me/care-homes")
+  @ApiOperation({
+    summary: "Get care homes for the current owner",
+    description:
+      "Retrieves all care homes that the authenticated owner user manages through accepted invitations.",
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Care homes retrieved successfully",
+  })
+  @ApiResponse({ status: 401, description: "Unauthorized" })
+  async getMyCareHomes(
+    @Req() req: RequestWithUser
+  ): Promise<BaseResponseDto<any[]>> {
+    const careHomes = await this.usersService.getMyCareHomes(req.user.id);
+    return BaseResponseDto.success(
+      "Care homes retrieved successfully",
+      careHomes
+    );
+  }
 }

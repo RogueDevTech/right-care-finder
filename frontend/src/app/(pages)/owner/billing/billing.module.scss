@@ -1,0 +1,687 @@
+.billingContainer {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0;
+  background: transparent;
+}
+
+.header {
+  margin-bottom: 32px;
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  @media (max-width: 500px) {
+    padding: 16px;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0 0 8px 0;
+  }
+
+  p {
+    font-size: 0.875rem;
+    color: #718096;
+    margin: 0;
+  }
+}
+
+// Current Subscription Card
+.currentSubscription {
+  background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 2px solid #e2e8f0;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #1c7c8a 0%, #0891b2 100%);
+  }
+
+  @media (max-width: 768px) {
+    padding: 24px;
+  }
+}
+
+.subscriptionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+
+  h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #6b7280;
+    margin: 0 0 0.5rem 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .subscriptionTier {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+  }
+}
+
+.subscriptionStatus {
+  .statusBadge {
+    padding: 8px 20px;
+    border-radius: 24px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    &::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    &.active {
+      background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+      color: #065f46;
+      box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+
+      &::before {
+        background: #059669;
+      }
+    }
+
+    &.inactive {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      color: #991b1b;
+      box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+
+      &::before {
+        background: #dc2626;
+      }
+    }
+  }
+}
+
+.subscriptionDetails {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  .detailLabel {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .detailValue {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #111827;
+  }
+}
+
+.subscriptionActions {
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+// Analytics Card
+.analyticsCard {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 0.5rem 0;
+  }
+
+  .analyticsDescription {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0 0 1.5rem 0;
+  }
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.statCard {
+  background: linear-gradient(135deg, #f0f9ff 0%, #ffffff 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  border: 1px solid #e0f2fe;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .statIcon {
+    font-size: 2rem;
+    flex-shrink: 0;
+  }
+
+  .statContent {
+    flex: 1;
+
+    h3 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #111827;
+      margin: 0 0 0.25rem 0;
+    }
+
+    p {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #6b7280;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .statChange {
+      font-size: 0.75rem;
+      color: #059669;
+      font-weight: 500;
+    }
+  }
+}
+
+// Pricing Section
+.pricingSection {
+  margin-bottom: 2rem;
+}
+
+.sectionHeader {
+  margin-bottom: 32px;
+  text-align: center;
+
+  h2 {
+    font-size: 2.25rem;
+    font-weight: 800;
+    color: #1a202c;
+    margin: 0 0 12px 0;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, #1a202c 0%, #4a5568 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  p {
+    font-size: 1rem;
+    color: #718096;
+    margin: 0;
+    font-weight: 500;
+  }
+}
+
+.billingToggle {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 40px;
+  background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+  padding: 6px;
+  border-radius: 16px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #cbd5e0;
+}
+
+.toggleButton {
+  padding: 12px 28px;
+  border: none;
+  background: transparent;
+  border-radius: 12px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #718096;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &:hover {
+    color: #1a202c;
+  }
+
+  &.active {
+    background: white;
+    color: #1c7c8a;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transform: scale(1.02);
+  }
+
+  .saveBadge {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);
+  }
+}
+
+.pricingGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 32px;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+.pricingCard {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  border: 2px solid #e2e8f0;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    border-color: #1c7c8a;
+  }
+
+  &.popular {
+    border-color: #1c7c8a;
+    box-shadow: 0 4px 20px rgba(28, 124, 138, 0.18);
+    transform: scale(1);
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #1c7c8a 0%, #0891b2 100%);
+      border-radius: 12px 12px 0 0;
+    }
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(28, 124, 138, 0.22);
+    }
+  }
+
+  &.currentPlan {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+    box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+      border-radius: 12px 12px 0 0;
+    }
+  }
+
+  .badge,
+  .popularBadge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: linear-gradient(135deg, #1c7c8a 0%, #0891b2 100%);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 16px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(28, 124, 138, 0.3);
+  }
+
+  .popularBadge {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+  }
+}
+
+.cardHeader {
+  margin-bottom: 12px;
+  padding-top: 4px;
+
+  h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0 0 4px 0;
+    letter-spacing: -0.01em;
+  }
+
+  .tierDescription {
+    font-size: 0.75rem;
+    color: #718096;
+    margin: 0;
+    line-height: 1.4;
+  }
+}
+
+.cardPricing {
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+
+  .price {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #1a202c;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #1c7c8a 0%, #0891b2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+
+    .pricePeriod {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #718096;
+      -webkit-text-fill-color: #718096;
+      background: none;
+    }
+  }
+
+  .annualPrice {
+    font-size: 0.6875rem;
+    color: #718096;
+    margin: 4px 0 0 0;
+    font-weight: 500;
+  }
+}
+
+.featuresList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.8125rem;
+    color: #4a5568;
+    line-height: 1.5;
+    padding: 4px 0;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #1a202c;
+      transform: translateX(2px);
+    }
+
+    svg {
+      width: 16px;
+      height: 16px;
+      color: #10b981;
+      flex-shrink: 0;
+      margin-top: 2px;
+      stroke-width: 2.5px;
+    }
+  }
+}
+
+.cardActions {
+  margin-top: auto;
+
+  button {
+    width: 100%;
+  }
+}
+
+// Payment History
+.paymentHistory {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 2px solid #e2e8f0;
+
+  @media (max-width: 768px) {
+    padding: 24px;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1a202c;
+    margin: 0 0 24px 0;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e2e8f0;
+  }
+}
+
+.historyTable {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.tableHeader,
+.tableRow {
+  display: grid;
+  grid-template-columns: 1.2fr 2.5fr 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
+  align-items: center;
+}
+
+.tableHeader {
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.tableRow {
+  border-bottom: 2px solid #edf2f7;
+  font-size: 0.9375rem;
+  color: #4a5568;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: linear-gradient(135deg, #f7fafc 0%, #ffffff 100%);
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .statusPaid {
+    color: #10b981;
+    font-weight: 700;
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.8125rem;
+    display: inline-block;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 1024px) {
+  .sectionHeader {
+    h2 {
+      font-size: 2rem;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .billingContainer {
+    padding: 0;
+  }
+
+  .header {
+    h1 {
+      font-size: 1.5rem;
+    }
+  }
+
+  .sectionHeader {
+    h2 {
+      font-size: 1.75rem;
+    }
+
+    p {
+      font-size: 0.875rem;
+    }
+  }
+
+  .billingToggle {
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .toggleButton {
+    flex: 1;
+    padding: 10px 16px;
+    font-size: 0.875rem;
+  }
+
+  .currentSubscription,
+  .analyticsCard,
+  .paymentHistory {
+    padding: 20px;
+  }
+
+  .subscriptionDetails {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pricingCard {
+    padding: 24px;
+
+    &.popular {
+      transform: scale(1);
+    }
+
+    .cardHeader h3 {
+      font-size: 1.375rem;
+    }
+
+    .cardPricing .price {
+      font-size: 2.5rem;
+    }
+  }
+
+  .tableHeader,
+  .tableRow {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+
+    span {
+      padding: 0.5rem 0;
+    }
+  }
+
+  .tableHeader {
+    display: none;
+  }
+
+  .tableRow {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+
+    span {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      &::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #6b7280;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+      }
+    }
+  }
+}

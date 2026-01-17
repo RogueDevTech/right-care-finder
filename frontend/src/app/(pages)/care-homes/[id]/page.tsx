@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useCounterStore } from "@/store/useStore";
 import { LocationIcon, PhoneIcon } from "@/components/icon";
-import starRating from "@/../public/starRating.png";
+// import starRating from "@/../public/starRating.png";
 import primaryCare from "@/../public/primaryCategory.png";
-import ownersSectionImage from "@/../public/ownersSectionImage.png";
+// import ownersSectionImage from "@/../public/ownersSectionImage.png";
 import careProvided from "@/../public/careProvided.png";
 import lengthOfStarting from "@/../public/lenghtOfStating.png";
 import demantiaCare from "@/../public/demantiaCare.png";
 import dementia from "@/../public/dementia.png";
-import rating from "@/../public/starRating.png";
+// import rating from "@/../public/starRating.png";
 import ReviewModal from "@/features/view-home-details/ratings-and-reviews/review-modal";
 import { StarIcon } from "@/components/icon";
 import {
@@ -25,6 +25,20 @@ type ImageType = {
   id: number;
   src: string;
   alt: string;
+};
+type ReviewItem = {
+  id?: string;
+  rating: number;
+  isAnonymous?: boolean;
+  user?: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    id?: string;
+    name?: string;
+  } | null;
+  comment?: string;
+  createdAt?: string;
 };
 
 // Removed static initialImages - now using dynamic images from API
@@ -42,20 +56,80 @@ export default function CareHomesDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const { openReviewModal, setOpenReviewModal } = useCounterStore();
-  const { getCareHomeById } = useHealthcareHomesActions();
+  const { getCareHomeById, getReviews } = useHealthcareHomesActions();
 
   const [careHome, setCareHome] = useState<CareHome | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [reviews, setReviews] = useState<ReviewItem[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
 
   const [images, setImages] = useState<ImageType[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const reviewsSectionRef = useRef<HTMLDivElement>(null);
+
+  // Resolve external page URLs (e.g., unsplash page links) to direct image sources
+  const resolveImageUrl = (url: string): string => {
+    try {
+      const parsed = new URL(url);
+      if (
+        (parsed.hostname === "unsplash.com" ||
+          parsed.hostname === "www.unsplash.com") &&
+        parsed.pathname.startsWith("/photos/")
+      ) {
+        const segments = parsed.pathname.split("/");
+        const last = segments[segments.length - 1];
+        const id = last.split("-").pop() || last;
+        return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1600&q=80`;
+      }
+      return url;
+    } catch {
+      return url;
+    }
+  };
 
   const handleThumbnailClick = (index: number) => {
-    const newImages = [...images];
-    [newImages[0], newImages[index]] = [newImages[index], newImages[0]];
-    setImages(newImages);
+    setCurrentImageIndex(index);
+  };
+
+  const scrollToReviews = () => {
+    if (reviewsSectionRef.current) {
+      reviewsSectionRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
   };
 
   const careHomeId = params.id as string;
+
+  const fetchReviews = async () => {
+    if (!careHomeId) return;
+
+    setReviewsLoading(true);
+    try {
+      const response = await getReviews(careHomeId, {
+        page: 1,
+        limit: 10,
+        sortBy: "createdAt",
+        sortOrder: "DESC",
+      });
+
+      if (response.success && response.data) {
+        setReviews(response.data.data);
+      } else {
+        console.error("Failed to fetch reviews:", response.error);
+      }
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    } finally {
+      setReviewsLoading(false);
+    }
+  };
+
+  const handleReviewSubmitted = () => {
+    fetchReviews();
+  };
 
   useEffect(() => {
     const fetchCareHome = async () => {
@@ -92,6 +166,7 @@ export default function CareHomesDetailsPage() {
             );
             console.log("Setting care home images:", careHomeImages);
             setImages(careHomeImages);
+            setCurrentImageIndex(0);
           } else {
             // No images available - set empty array
             setImages([]);
@@ -107,20 +182,56 @@ export default function CareHomesDetailsPage() {
     };
 
     fetchCareHome();
+    fetchReviews();
   }, [careHomeId, router]);
+
+  // Auto-advance slideshow
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [images.length]);
+
+  const goToPrev = () => {
+    if (images.length <= 1) return;
+    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const goToNext = () => {
+    if (images.length <= 1) return;
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const overallRating = useMemo(() => {
+    const ch = careHome as unknown as {
+      rating?: string | number;
+      averageRating?: string | number;
+    } | null;
+    const rawRating = ch?.rating ?? ch?.averageRating ?? 0;
+    const num =
+      typeof rawRating === "string"
+        ? parseFloat(rawRating)
+        : Number(rawRating || 0);
+    return Math.max(0, Math.min(5, num));
+  }, [careHome]);
 
   if (isLoading) {
     return (
       <main>
-        {/* Gallery Skeleton */}
-        <div className={styles.gallery}>
-          <div className={styles.preview}>
+        {/* Slideshow Skeleton */}
+        <div className={styles.slideshow}>
+          <div className={styles.slideshowViewport}>
             <div className={`${styles.skeleton} ${styles.image}`}></div>
           </div>
-          <div className={styles.thumbnails}>
-            {Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className={styles.thumb}>
-                <div className={`${styles.skeleton} ${styles.thumbnail}`}></div>
+          <div className={styles.thumbnailsRow}>
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div key={index} className={styles.thumbBtn}>
+                <div
+                  className={`${styles.skeleton} ${styles.thumbnail}`}
+                  style={{ height: "72px" }}
+                ></div>
               </div>
             ))}
           </div>
@@ -358,58 +469,69 @@ export default function CareHomesDetailsPage() {
           // Single image - full width
           <div className={styles.singleImageContainer}>
             <img
-              src={images[0].src}
+              src={resolveImageUrl(images[0].src)}
               alt={images[0].alt}
               className={styles.singleImage}
             />
           </div>
-        ) : images.length === 2 ? (
-          // Two images - side by side
-          <div className={styles.twoImageContainer}>
-            <div className={styles.imageHalf}>
-              <img
-                src={images[0].src}
-                alt={images[0].alt}
-                className={styles.halfImage}
-              />
-            </div>
-            <div className={styles.imageHalf}>
-              <img
-                src={images[1].src}
-                alt={images[1].alt}
-                className={styles.halfImage}
-              />
-            </div>
-          </div>
         ) : (
-          // 3 or 4 images - main image + thumbnails
-          <>
-            {/* Left Side - Enlarged Image */}
-            <div className={styles.preview}>
+          <div className={styles.slideshow}>
+            <div className={styles.slideshowViewport}>
+              <button
+                className={styles.navButton}
+                onClick={goToPrev}
+                aria-label="Previous image"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
+                </svg>
+              </button>
               <img
-                src={images[0].src}
-                alt={images[0].alt}
+                src={resolveImageUrl(images[currentImageIndex].src)}
+                alt={images[currentImageIndex].alt}
                 className={styles.mainImage}
               />
+              <button
+                className={`${styles.navButton} ${styles.next}`}
+                onClick={goToNext}
+                aria-label="Next image"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M10 6 8.59 7.41 13.17 12 8.59 16.59 10 18l6-6z" />
+                </svg>
+              </button>
+              <div className={styles.indicators}>
+                {images.map((_, idx) => (
+                  <button
+                    key={idx}
+                    className={`${styles.dot} ${
+                      idx === currentImageIndex ? styles.active : ""
+                    }`}
+                    onClick={() => setCurrentImageIndex(idx)}
+                    aria-label={`Go to image ${idx + 1}`}
+                  />
+                ))}
+              </div>
             </div>
 
-            {/* Right Side - Thumbnails */}
-            <div className={styles.thumbnails}>
-              {images.slice(1).map((img, index) => (
-                <div
+            <div className={styles.thumbnailsRow}>
+              {images.map((img, index) => (
+                <button
                   key={img.id}
-                  className={styles.thumb}
-                  onClick={() => handleThumbnailClick(index + 1)}
+                  className={`${styles.thumbBtn} ${
+                    index === currentImageIndex ? styles.selected : ""
+                  }`}
+                  onClick={() => handleThumbnailClick(index)}
                 >
                   <img
-                    src={img.src}
+                    src={resolveImageUrl(img.src)}
                     alt={img.alt}
                     className={styles.thumbImage}
                   />
-                </div>
+                </button>
               ))}
             </div>
-          </>
+          </div>
         )}
       </div>
       <div className={styles.details}>
@@ -424,38 +546,65 @@ export default function CareHomesDetailsPage() {
             </p>
           </div>
           <div className={styles.review}>
-            <div className={styles.stars}>
-              <Image src={starRating} alt="rating" />
+            <div className={styles.starsInline}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <span
+                  key={i}
+                  className={
+                    i < Math.round(overallRating)
+                      ? styles.starFilledInline
+                      : styles.starEmptyInline
+                  }
+                >
+                  ★
+                </span>
+              ))}
+              <span className={styles.ratingInlineNumber}>
+                {overallRating.toFixed(1)}
+              </span>
             </div>
-            <p>{careHome.reviewCount} reviews</p>
+            <p
+              onClick={scrollToReviews}
+              style={{ cursor: "pointer", textDecoration: "underline" }}
+            >
+              {careHome.reviewCount} reviews
+            </p>
           </div>
         </div>
         <div className={styles.getInTouch}>
           <div className={styles.contactUs}>
-            <button>
+            <a href={`tel:${careHome.phone}`}>
               <span>
                 <PhoneIcon />
                 <span>{careHome.phone}</span>
               </span>
-            </button>
-            <button>
+            </a>
+            <a href={`mailto:${careHome.email || ""}`}>
               <span>
                 <PhoneIcon />
                 <span>Send an email</span>
               </span>
-            </button>
-            <button>
+            </a>
+            <a
+              href={`mailto:${careHome.email || ""}?subject=Request a Tour - ${
+                careHome.name
+              }`}
+            >
               <span>
                 <PhoneIcon />
                 <span>Request a tour</span>
               </span>
-            </button>
-            <button>
+            </a>
+            <a
+              href={`mailto:${careHome.email || ""}?subject=General Enquiry - ${
+                careHome.name
+              }`}
+            >
               <span>
                 <PhoneIcon />
                 <span>Make an enquiry</span>
               </span>
-            </button>
+            </a>
           </div>
           <div className={styles.price}>
             £{careHome.weeklyPrice?.toString().split(".")[0]}/Week
@@ -497,11 +646,20 @@ export default function CareHomesDetailsPage() {
                 Care types provided
               </h3>
               <ul>
-                <li>Residential care</li>
-                <li>Nursing care</li>
-                <li>Dementia residential care</li>
-                <li>Dementia nursing care</li>
-                <li>For a maximum of 74 service users</li>
+                {careHome.careType && (
+                  <li>
+                    {careHome.careType.icon && `${careHome.careType.icon} `}
+                    {careHome.careType.name}
+                  </li>
+                )}
+                {careHome.specializations &&
+                  careHome.specializations.length > 0 &&
+                  careHome.specializations.map((spec, index) => (
+                    <li key={index}>{spec}</li>
+                  ))}
+                {careHome.totalBeds && (
+                  <li>For a maximum of {careHome.totalBeds} service users</li>
+                )}
               </ul>
             </div>
           </div>
@@ -583,7 +741,27 @@ export default function CareHomesDetailsPage() {
             ))}
         </div>
       </div>
-      <div className={styles.aboutCareHome}>
+
+      {/* Image Gallery Section */}
+      {careHome.images && careHome.images.length > 1 && (
+        <div className={styles.imageGallerySection}>
+          <h3>Image Gallery</h3>
+          <div className={styles.imageGallery}>
+            {careHome.images.map((image) => (
+              <div key={image.id} className={styles.galleryImage}>
+                <img
+                  src={resolveImageUrl(image.url)}
+                  alt={image.alt || careHome.name}
+                  width={400}
+                  height={300}
+                  className={styles.galleryImageImg}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {/* <div className={styles.aboutCareHome}>
         <div className={styles.mobile}>
           <Image src={ownersSectionImage} alt="owners section image" />
         </div>
@@ -640,57 +818,85 @@ export default function CareHomesDetailsPage() {
         <div className={styles.ownersSectionImage}>
           <Image src={ownersSectionImage} alt="owners section image" />
         </div>
-      </div>
-      <div className={styles.ratingsAndReviewWrapper}>
-        <div className={styles.header}>
+      </div> */}
+      <div className={styles.ratingsAndReviewWrapper} ref={reviewsSectionRef}>
+        <div className={styles.headerTitle}>
           <h2>Rating and reviews</h2>
-          <button onClick={setOpenReviewModal}>Leave a review</button>
-          {openReviewModal && (
-            <div className={styles.reviewModal} onClick={setOpenReviewModal}>
-              <ReviewModal onClose={setOpenReviewModal} />
+        </div>
+
+        <div className={styles.reviewsSection}>
+          {reviewsLoading ? (
+            <div className={styles.loadingReviews}>
+              <p>Loading reviews...</p>
             </div>
+          ) : reviews.length === 0 ? (
+            <div className={styles.noReviews}>
+              <p>No reviews yet. Be the first to leave a review!</p>
+            </div>
+          ) : (
+            reviews.map((review) => (
+              <div key={review.id} className={styles.reviewRow}>
+                <div className={styles.reviewHeader}>
+                  <p className={styles.reviewerName}>
+                    {review.isAnonymous
+                      ? "Anonymous"
+                      : `${review.user?.firstName || ""} ${
+                          review.user?.lastName || ""
+                        }`.trim() ||
+                        (review.user?.email
+                          ? review.user.email.split("@")[0]
+                          : "User")}
+                  </p>
+                  <p className={styles.reviewTime}>
+                    {new Date(
+                      review.createdAt || new Date().toISOString()
+                    ).toLocaleDateString("en-GB", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                </div>
+
+                <div className={styles.reviewStarsRow}>
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <span
+                      key={index}
+                      className={
+                        index < review.rating
+                          ? styles.starFilled
+                          : styles.starEmpty
+                      }
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+
+                <p className={styles.reviewText}>{review.comment}</p>
+              </div>
+            ))
           )}
         </div>
-        <div className={styles.reviewsSection}>
-          <div className={styles.reviewCard}>
-            <div className={styles.rating}>
-              <Image src={rating} alt="rating" />
-            </div>
-            <div className={styles.reviewContent}>
-              <div className={styles.reviewer}>
-                <p className={styles.name}>James T.</p>
-                <div className={styles.review}>
-                  The carers are truly compassionate, and my father has received
-                  excellent medical and personal care. The only drawback we’ve
-                  noticed is that sometimes calls take a little longer to be
-                  answered during busy evenings. Other than that, the facilities
-                  and support are top-notch.
-                </div>
-              </div>
-              <div className={styles.likes}>👍3 people found helpful</div>
-            </div>
-          </div>
-          <div className={styles.reviewCard}>
-            <div className={styles.rating}>
-              <Image src={rating} alt="rating" />
-            </div>
-            <div className={styles.reviewContent}>
-              <div className={styles.reviewer}>
-                <p className={styles.name}>Emily S.</p>
-                <div className={styles.review}>
-                  My mother has been living at Rosewood Care Home for the past 8
-                  months, and we couldn’t be happier. The staff are incredibly
-                  attentive, always taking the time to chat with her and keep us
-                  updated. The activities are engaging, from art therapy to
-                  music afternoons, and she has made wonderful friends here. I’m
-                  reassured knowing she is safe, well cared for, and genuinely
-                  happy.
-                </div>
-              </div>
-              <div className={styles.likes}>👍7 people found helpful</div>
-            </div>
-          </div>
+
+        <div className={styles.addReviewSection}>
+          <button
+            onClick={setOpenReviewModal}
+            className={styles.addReviewButton}
+          >
+            Leave a review
+          </button>
         </div>
+
+        {openReviewModal && (
+          <div className={styles.reviewModal} onClick={setOpenReviewModal}>
+            <ReviewModal
+              onClose={setOpenReviewModal}
+              careHomeId={careHomeId}
+              onReviewSubmitted={handleReviewSubmitted}
+            />
+          </div>
+        )}
       </div>
     </main>
   );

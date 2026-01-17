@@ -548,7 +548,7 @@ export const useAdminActions = () => {
     careHomeId: string,
     careHomeData: Partial<CreateCareHomeData>
   ) => {
-    const response = await client.patch(
+    const response = await client.put(
       `/admin/care-homes/${careHomeId}`,
       careHomeData
     );

@@ -21,7 +21,7 @@
   }
 
   &.image {
-    height: 500px;
+    height: 650px;
     border-radius: 8px;
   }
 
@@ -105,21 +105,160 @@
 .gallery {
   display: flex;
   flex-direction: row;
-  gap: 1rem;
+  gap: 0rem;
   align-items: stretch;
-  height: 500px;
+  height: 650px;
   max-width: 1240px;
   margin: 0 auto;
-  padding: 30px 0px;
+  padding: 0px 0px;
   @media (max-width: 500px) {
     padding: 36px 16px;
   }
 }
 
+// Generic stars row for dynamic ratings outside the reviews list
+.starsInline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.starFilledInline {
+  color: #fbbf24;
+  font-size: 18px;
+}
+.starEmptyInline {
+  color: #e5e7eb;
+  font-size: 18px;
+}
+.ratingInlineNumber {
+  margin-left: 8px;
+  font-weight: 600;
+  color: #111827;
+}
+
+// Slideshow styles
+.slideshow {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 20px 0;
+
+  height: 630px;
+  @media (max-width: 500px) {
+    padding: 36px 16px;
+  }
+}
+
+.slideshowViewport {
+  position: relative;
+  height: 650px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f1f5f9;
+
+  // Overlay over main image
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.15) 0%,
+      rgba(0, 0, 0, 0.1) 30%,
+      rgba(0, 0, 0, 0.25) 100%
+    );
+    z-index: 1; // below nav buttons and indicators
+    pointer-events: none;
+  }
+
+  @media (max-width: 768px) {
+    height: 300px;
+  }
+}
+
+.navButton {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+
+  svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.7);
+  }
+}
+
+.navButton.next {
+  right: 16px;
+}
+
+.navButton:not(.next) {
+  left: 16px;
+}
+
+.indicators {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 2;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+}
+
+.dot.active {
+  background: #fff;
+}
+
+.thumbnailsRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.thumbBtn {
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.thumbBtn.selected {
+  border-color: #1c7c8a;
+}
+
 // No images container
 .noImageContainer {
   width: 100%;
-  height: 500px;
+  height: 650px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -155,7 +294,7 @@
 // Single image container
 .singleImageContainer {
   width: 100%;
-  height: 500px;
+  height: 650px;
   position: relative;
   flex: 1;
 
@@ -177,7 +316,7 @@
   display: flex;
   gap: 1rem;
   width: 100%;
-  height: 500px;
+  height: 650px;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -344,13 +483,22 @@
         flex-direction: column;
         width: 100%;
       }
-      button {
+      button,
+      a {
         color: white;
         background-color: transparent;
         border: 1px solid #d9d9d9;
         border-radius: 8px;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
         @media (max-width: 500px) {
           width: 100%;
+        }
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+          border-color: white;
+          transform: translateY(-2px);
         }
         span {
           display: flex;
@@ -563,90 +711,207 @@
   @media (max-width: 500px) {
     padding: 26px 16px;
   }
-  .header {
-    display: flex;
-    flex-direction: column;
-    gap: 36px;
-    @media (max-width: 500px) {
-      gap: 30px;
-    }
+  .headerTitle {
+    margin-bottom: 32px;
+
     h2 {
       font-size: 32px;
       font-weight: 600;
       text-align: center;
+
       @media (max-width: 500px) {
         font-size: 24px;
       }
     }
+  }
+
+  .addReviewSection {
+    display: flex;
+    justify-content: center;
+    margin-top: 32px;
+    padding: 32px 0;
+
     button {
       text-align: center;
       border-radius: 8px;
       width: 314px;
       padding: 16px;
       background: #1c7c8a;
-      display: flex;
-      justify-content: center;
-      margin: auto;
       color: #fff;
       cursor: pointer;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #156570;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(28, 124, 138, 0.25);
+      }
+
       @media (max-width: 500px) {
         width: 100%;
-        height: 51px;
-        align-items: center;
       }
     }
-    .reviewModal {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(33, 33, 33, 0.78);
-      backdrop-filter: blur(9.300000190734863px);
-      z-index: 20;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+  }
+
+  .reviewModal {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    animation: fadeInBackdrop 0.3s ease;
+
+    @media (max-width: 768px) {
+      padding: 0;
+      align-items: flex-end;
+    }
+  }
+
+  @keyframes fadeInBackdrop {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
     }
   }
   .reviewsSection {
     display: flex;
     flex-direction: column;
-    gap: 42px;
-    .reviewCard {
+    gap: 36px;
+
+    .loadingReviews,
+    .noReviews {
+      text-align: center;
+      padding: 48px 24px;
+      color: #6b7280;
+      font-size: 1rem;
+    }
+
+    .reviewRow {
       display: flex;
       flex-direction: column;
-      max-width: 1216px;
-      margin: auto;
-      gap: 24px;
-      .rating {
-        width: 136px;
-      }
-      .reviewContent {
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-        .reviewer {
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-          .name {
-            font-size: 20px;
-            font-weight: 500;
-          }
-          .review {
-            line-height: 163%;
-            color: #4f4f4f;
-          }
-        }
-        .likes {
-          font-size: 14px;
-          color: #656565;
-        }
-      }
+      gap: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 24px;
+    }
+
+    .reviewHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .reviewerName {
+      font-weight: 600;
+      color: #111827;
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .reviewTime {
+      margin: 0;
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    .reviewStarsRow {
+      display: flex;
+      gap: 6px;
+    }
+
+    .starFilled {
+      color: #fbbf24;
+      font-size: 20px;
+    }
+
+    .starEmpty {
+      color: #e5e7eb;
+      font-size: 20px;
+    }
+
+    .reviewText {
+      color: #374151;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .helpfulRow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #6b7280;
+      font-size: 14px;
     }
   }
 }
 .ratingsAndReviewWrapper::-webkit-scrollbar {
   display: none;
+}
+// Image Gallery Section
+.imageGallerySection {
+  max-width: 1240px;
+  margin: 0 auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1a202c;
+    margin: 0 0 20px 0;
+  }
+
+  .imageGallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 500px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .galleryImage {
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    aspect-ratio: 4 / 3;
+    background: #f3f4f6;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: #1c7c8a;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: scale(1.02);
+
+      .galleryImageImg {
+        transform: scale(1.05);
+      }
+    }
+
+    .galleryImageImg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+  }
 }

@@ -533,6 +533,65 @@ export class HealthcareHomesController {
   }
 
   @Version("v1")
+  @Get(":id/reviews")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Get reviews for a care home",
+    description:
+      "Fetches all verified reviews for a specific care home with pagination and sorting options. This is a public endpoint.",
+  })
+  @ApiParam({ name: "id", description: "Care home ID" })
+  @ApiQuery({
+    name: "page",
+    required: false,
+    type: Number,
+    description: "Page number (default: 1)",
+  })
+  @ApiQuery({
+    name: "limit",
+    required: false,
+    type: Number,
+    description: "Number of reviews per page (default: 10)",
+  })
+  @ApiQuery({
+    name: "sortBy",
+    required: false,
+    enum: ["createdAt", "rating"],
+    description: "Sort reviews by field (default: createdAt)",
+  })
+  @ApiQuery({
+    name: "sortOrder",
+    required: false,
+    enum: ["ASC", "DESC"],
+    description: "Sort order (default: DESC)",
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Reviews fetched successfully",
+    type: BaseResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: "Care home not found",
+  })
+  async getReviews(
+    @Param("id") id: string,
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
+    @Query("sortBy") sortBy?: "createdAt" | "rating",
+    @Query("sortOrder") sortOrder?: "ASC" | "DESC"
+  ) {
+    const reviews = await this.healthcareHomesService.getReviews(
+      id,
+      page ? Number(page) : 1,
+      limit ? Number(limit) : 10,
+      sortBy || "createdAt",
+      sortOrder || "DESC"
+    );
+    return BaseResponseDto.success("Reviews fetched successfully", reviews);
+  }
+
+  @Version("v1")
   @Post(":id/reviews")
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(JwtAuthGuard)

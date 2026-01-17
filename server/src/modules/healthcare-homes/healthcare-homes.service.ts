@@ -322,25 +322,30 @@ export class HealthcareHomesService {
       careHome.facilities = facilities;
     }
 
-    // Handle images update
-    if (updateCareHomeDto.imageUrls) {
+    // Update care home fields first (excluding imageUrls which we handle separately)
+    const { imageUrls, ...updateFields } = updateCareHomeDto;
+    Object.assign(careHome, updateFields);
+    const savedCareHome = await this.careHomeRepository.save(careHome);
+
+    // Handle images update AFTER saving the care home
+    if (imageUrls && imageUrls.length > 0) {
       // Remove existing images
       await this.imageRepository.delete({ careHome: { id } });
 
-      // Add new images
-      const images = updateCareHomeDto.imageUrls.map((url, index) =>
+      // Add new images - use the saved careHome entity
+      const images = imageUrls.map((url, index) =>
         this.imageRepository.create({
           url,
           isPrimary: index === 0,
           sortOrder: index,
-          careHome: { id },
+          careHome: savedCareHome,
         })
       );
       await this.imageRepository.save(images);
+    } else if (imageUrls && imageUrls.length === 0) {
+      // If imageUrls is explicitly an empty array, remove all existing images
+      await this.imageRepository.delete({ careHome: { id } });
     }
-
-    Object.assign(careHome, updateCareHomeDto);
-    await this.careHomeRepository.save(careHome);
 
     return this.findOne(id);
   }
@@ -369,6 +374,44 @@ export class HealthcareHomesService {
     await this.updateCareHomeRating(careHomeId);
 
     return savedReview;
+  }
+
+  async getReviews(
+    careHomeId: string,
+    page: number = 1,
+    limit: number = 10,
+    sortBy: 'createdAt' | 'rating' = 'createdAt',
+    sortOrder: 'ASC' | 'DESC' = 'DESC'
+  ): Promise<{
+    data: CareHomeReview[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    // Verify care home exists
+    await this.findOne(careHomeId);
+
+    const skip = (page - 1) * limit;
+
+    const [reviews, total] = await this.reviewRepository.findAndCount({
+      where: {
+        careHome: { id: careHomeId },
+        isVerified: true, // Only show verified reviews
+      },
+      relations: ['user'],
+      order: {
+        [sortBy]: sortOrder,
+      },
+      skip,
+      take: limit,
+    });
+
+    return {
+      data: reviews,
+      total,
+      page,
+      limit,
+    };
   }
 
   private async updateCareHomeRating(careHomeId: string): Promise<void> {

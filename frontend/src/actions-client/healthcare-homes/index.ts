@@ -42,6 +42,7 @@ export interface CareHome {
     id: number;
     name: string;
     description: string;
+    icon?: string;
   };
   facilities: Array<{
     id: string;
@@ -307,6 +308,184 @@ export const useHealthcareHomesActions = () => {
     }
   }, [client]);
 
+  const getFacilities = useCallback(async () => {
+    const response = await client.get("/healthcare-homes/facilities");
+
+    if (response.data) {
+      return {
+        success: true,
+        data: (
+          response.data as unknown as {
+            data: Array<{
+              id: string;
+              name: string;
+              description?: string;
+              icon?: string;
+              isActive: boolean;
+              sortOrder?: number;
+              createdAt?: string;
+              updatedAt?: string;
+            }>;
+          }
+        )?.data,
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error,
+      };
+    }
+  }, [client]);
+
+  const updateCareHome = useCallback(
+    async (
+      id: string,
+      data: Partial<{
+        name: string;
+        description: string[];
+        addressLine1: string;
+        addressLine2?: string;
+        city: string;
+        region?: string;
+        postcode: string;
+        country?: string;
+        latitude?: number;
+        longitude?: number;
+        phone: string;
+        email?: string;
+        website?: string;
+        weeklyPrice?: number;
+        monthlyPrice?: number;
+        totalBeds?: number;
+        availableBeds?: number;
+        isActive?: boolean;
+        specializations?: string[];
+        openingHours?: Record<string, string>;
+        contactInfo?: {
+          emergency?: string;
+          manager?: string;
+        };
+        careTypeId?: string;
+        facilityIds?: string[];
+        imageUrls?: string[];
+      }>
+    ): Promise<{
+      success: boolean;
+      data?: CareHome;
+      error?: string;
+    }> => {
+      const response = await client.patch(`/healthcare-homes/${id}`, data);
+
+      if (response.data) {
+        return {
+          success: true,
+          data: (response.data as unknown as { data: CareHome })?.data,
+        };
+      } else {
+        return {
+          success: false,
+          error: response.error || "Failed to update care home",
+        };
+      }
+    },
+    [client]
+  );
+
+  const getReviews = useCallback(
+    async (
+      careHomeId: string,
+      params?: {
+        page?: number;
+        limit?: number;
+        sortBy?: "createdAt" | "rating";
+        sortOrder?: "ASC" | "DESC";
+      }
+    ): Promise<{
+      success: boolean;
+      data?: {
+        data: Array<{
+          id: string;
+          rating: number;
+          comment: string;
+          createdAt: string;
+          updatedAt: string;
+          isVerified: boolean;
+          isAnonymous: boolean;
+          reviewData?: Record<string, any>;
+          user: {
+            id: string;
+            name: string;
+          } | null;
+        }>;
+        total: number;
+        page: number;
+        limit: number;
+      };
+      error?: string;
+    }> => {
+      const queryParams = new URLSearchParams();
+
+      if (params?.page) queryParams.append("page", String(params.page));
+      if (params?.limit) queryParams.append("limit", String(params.limit));
+      if (params?.sortBy) queryParams.append("sortBy", params.sortBy);
+      if (params?.sortOrder) queryParams.append("sortOrder", params.sortOrder);
+
+      const queryString = queryParams.toString();
+      const url = `/healthcare-homes/${careHomeId}/reviews${
+        queryString ? `?${queryString}` : ""
+      }`;
+
+      const response = await client.get(url);
+
+      if (response.data) {
+        return {
+          success: true,
+          data: (response.data as any)?.data,
+        };
+      } else {
+        return {
+          success: false,
+          error: response.error || "Failed to fetch reviews",
+        };
+      }
+    },
+    [client]
+  );
+
+  const createReview = useCallback(
+    async (
+      careHomeId: string,
+      data: {
+        rating: number;
+        comment: string;
+        isAnonymous?: boolean;
+        reviewData?: Record<string, any>;
+      }
+    ): Promise<{
+      success: boolean;
+      data?: any;
+      error?: string;
+    }> => {
+      const response = await client.post(
+        `/healthcare-homes/${careHomeId}/reviews`,
+        data
+      );
+
+      if (response.data) {
+        return {
+          success: true,
+          data: response.data,
+        };
+      } else {
+        return {
+          success: false,
+          error: response.error || "Failed to submit review",
+        };
+      }
+    },
+    [client]
+  );
+
   return {
     searchCareHomes,
     getCareHomeById,
@@ -314,5 +493,9 @@ export const useHealthcareHomesActions = () => {
     getRegionStatistics,
     getCareTypes,
     getSpecializations,
+    getFacilities,
+    updateCareHome,
+    getReviews,
+    createReview,
   };
 };

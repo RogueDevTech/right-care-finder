@@ -5,8 +5,6 @@ import {
   Version,
   HttpCode,
   HttpStatus,
-  ForbiddenException,
-  Get,
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from "@nestjs/swagger";
@@ -14,11 +12,9 @@ import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { AuthResponseDto } from "./dto/auth-response.dto";
 import { BaseResponseDto } from "../../common/dto/base-response.dto";
-import { User } from "../users/entities/user.entity";
 import {
   ForgotPasswordDto,
   ResetPasswordDto,
-  VerifyCodeDto,
 } from "./dto/forgot-password.dto";
 import { ContactSupportDto } from "./dto/contact-support.dto";
 

@@ -29,10 +29,7 @@ import {
 import { CreateCareHomeDto } from "../healthcare-homes/dto/create-care-home.dto";
 import { UpdateCareHomeDto } from "../healthcare-homes/dto/update-care-home.dto";
 import { UpdateUserDto } from "../users/dto/user.dto";
-import {
-  CareHomeResponseDto,
-  CareHomesListResponseDto,
-} from "./dto/care-home-response.dto";
+import { CareHomesListResponseDto } from "./dto/care-home-response.dto";
 import {
   CreateInvitationDto,
   InvitationResponseDto,
@@ -663,7 +660,7 @@ export class AdminController {
   })
   async inviteCareHomeOwner(
     @Body() createInvitationDto: CreateInvitationDto,
-    @Request() req: any
+    @Request() req: { user: { id: string } }
   ) {
     return this.invitationService.createInvitation(
       createInvitationDto,

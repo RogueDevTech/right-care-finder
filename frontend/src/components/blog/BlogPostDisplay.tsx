@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { BlogContentRenderer } from "./SafeHTMLRenderer";
 
 interface BlogPostDisplayProps {
@@ -30,9 +31,11 @@ export const BlogPostDisplay = ({
       {/* Featured Image */}
       {post.featuredImage && (
         <div className="mb-6">
-          <img
+          <Image
             src={post.featuredImage}
             alt={post.title}
+            width={1200}
+            height={400}
             className="w-full h-64 object-cover rounded-lg shadow-md"
           />
         </div>

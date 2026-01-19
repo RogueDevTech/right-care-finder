@@ -250,34 +250,73 @@ jobs:
             echo "Checking PM2 status..."
             pm2 status
             
-            echo "Checking if process is running..."
-            if pm2 list | grep -q "right-care-finder-api"; then
-              echo "✅ PM2 process found"
-              pm2 info right-care-finder-api
-              echo "Recent logs:"
-              pm2 logs right-care-finder-api --lines 20 --nostream || echo "No logs available"
-            else
+            echo "Checking if process exists..."
+            if ! pm2 list | grep -q "right-care-finder-api"; then
               echo "❌ PM2 process not found"
               exit 1
             fi
             
-            echo "Waiting for application to start..."
-            sleep 10
+            # Check if process is online by parsing pm2 list output (status is in column 9)
+            PM2_STATUS=$(pm2 list | grep "right-care-finder-api" | awk '{print $9}' || echo "unknown")
+            echo "PM2 process status from list: $PM2_STATUS"
+            pm2 info right-care-finder-api
             
-            echo "Checking application logs for database connection status..."
+            # Check if process is stopped or errored, restart if needed
+            if [ "$PM2_STATUS" != "online" ]; then
+              echo "⚠️  Process is not online (status: $PM2_STATUS). Checking error logs..."
+              echo "=== Error Logs ==="
+              pm2 logs right-care-finder-api --err --lines 50 --nostream || echo "No error logs available"
+              echo "=== Output Logs ==="
+              pm2 logs right-care-finder-api --out --lines 50 --nostream || echo "No output logs available"
+              
+              echo "Attempting to restart the process..."
+              cd /var/www/right-care-finder-api
+              pm2 restart right-care-finder-api || pm2 start deploy/ecosystem.config.js
+              echo "Waiting for process to start..."
+              sleep 5
+            fi
+            
+            # Wait for process to be online (check status multiple times)
+            MAX_ATTEMPTS=12
+            ATTEMPT=0
+            while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+              CURRENT_STATUS=$(pm2 list | grep "right-care-finder-api" | awk '{print $9}' || echo "unknown")
+              if [ "$CURRENT_STATUS" = "online" ]; then
+                echo "✅ Process is now online"
+                break
+              fi
+              ATTEMPT=$((ATTEMPT + 1))
+              echo "Waiting for process to start... (attempt $ATTEMPT/$MAX_ATTEMPTS, status: $CURRENT_STATUS)"
+              sleep 5
+            done
+            
+            # Final status check
+            FINAL_STATUS=$(pm2 list | grep "right-care-finder-api" | awk '{print $9}' || echo "unknown")
+            if [ "$FINAL_STATUS" != "online" ]; then
+              echo "❌ Process failed to start. Final status: $FINAL_STATUS"
+              echo "=== Recent Error Logs ==="
+              pm2 logs right-care-finder-api --err --lines 50 --nostream || echo "No error logs available"
+              echo "=== Recent Output Logs ==="
+              pm2 logs right-care-finder-api --out --lines 50 --nostream || echo "No output logs available"
+              exit 1
+            fi
+            
+            echo "Recent application logs:"
             pm2 logs right-care-finder-api --lines 30 --nostream || echo "No logs available"
+            
+            echo "Waiting a bit more for application to fully initialize..."
+            sleep 5
             
             echo "Testing API endpoint..."
             curl -f http://localhost:4001/api || {
               echo "❌ API endpoint not responding"
               echo "Checking if port is listening..."
-              netstat -tlnp | grep 4001 || ss -tlnp | grep 4001 || echo "Port 4001 not listening"
+              ss -tlnp | grep 4001 || echo "Port 4001 not listening"
               echo ""
-              echo "⚠️  If the app is running but API is not responding, check:"
-              echo "   1. Database connection (check logs above)"
-              echo "   2. Database credentials in .env file"
-              echo "   3. Database server accessibility from this server"
-              echo "   4. Firewall rules allowing connection to database port"
+              echo "=== Recent Error Logs ==="
+              pm2 logs right-care-finder-api --err --lines 30 --nostream || echo "No error logs available"
+              echo "=== Recent Output Logs ==="
+              pm2 logs right-care-finder-api --out --lines 30 --nostream || echo "No output logs available"
               exit 1
             }
             

@@ -5,7 +5,6 @@ import { toast } from "react-hot-toast";
 import { useUserActions } from "@/actions-client/user";
 import { CareHome } from "@/actions-client/healthcare-homes";
 import { LocationIcon, PhoneIcon } from "@/components/icon";
-import Image from "next/image";
 import Link from "next/link";
 import styles from "../owner.module.scss";
 

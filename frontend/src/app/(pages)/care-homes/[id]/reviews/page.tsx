@@ -47,13 +47,15 @@ export default function CareHomeAllReviewsPage() {
     return careHome.reviews.slice(start, start + pageSize);
   }, [careHome?.reviews, page]);
 
-  const displayName = (review: any) => {
+  const displayName = (review: {
+    isAnonymous?: boolean;
+    user?: {
+      id: string;
+      name: string;
+    } | null;
+  }) => {
     if (review.isAnonymous) return "Anonymous";
-    const full = `${review.user?.firstName || ""} ${
-      review.user?.lastName || ""
-    }`.trim();
-    if (full) return full;
-    if (review.user?.email) return review.user.email.split("@")[0];
+    if (review.user?.name) return review.user.name;
     return "User";
   };
 

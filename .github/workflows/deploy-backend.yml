@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    name: Test Backend
+    name: Preparing deployment
     runs-on: ubuntu-latest
 
     defaults:
@@ -131,6 +131,7 @@ jobs:
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             DB_DATABASE=${{ secrets.DB_DATABASE }}
+            DB_SSL=${{ secrets.DB_SSL || true }}
             DATABASE_URL=${{ secrets.DATABASE_URL }}
             JWT_SECRET=${{ secrets.JWT_SECRET }}
             TYPEORM_LOGGING=${{ secrets.TYPEORM_LOGGING || false }}
@@ -163,6 +164,52 @@ jobs:
             
             # Create logs directory if it doesn't exist
             mkdir -p logs
+            
+            # Test database connection before starting app (using GitHub secrets directly)
+            echo "Testing database connection..."
+            export DB_HOST="${{ secrets.DB_HOST }}"
+            export DB_PORT="${{ secrets.DB_PORT || 5432 }}"
+            export DB_USERNAME="${{ secrets.DB_USERNAME }}"
+            export DB_PASSWORD="${{ secrets.DB_PASSWORD }}"
+            export DB_DATABASE="${{ secrets.DB_DATABASE }}"
+            export DB_SSL="${{ secrets.DB_SSL || true }}"
+            node -e "
+              const { Client } = require('pg');
+              const useSSL = process.env.DB_SSL !== 'false';
+              const client = new Client({
+                host: process.env.DB_HOST,
+                port: parseInt(process.env.DB_PORT || '5432'),
+                user: process.env.DB_USERNAME,
+                password: process.env.DB_PASSWORD,
+                database: process.env.DB_DATABASE,
+                ssl: useSSL ? { rejectUnauthorized: false } : false
+              });
+              client.connect()
+                .then(() => {
+                  console.log('✅ Database connection successful');
+                  return client.query('SELECT NOW()');
+                })
+                .then((res) => {
+                  console.log('Database time:', res.rows[0].now);
+                  client.end();
+                  process.exit(0);
+                })
+                .catch((err) => {
+                  console.error('❌ Database connection failed:', err.message);
+                  console.error('Connection details:', {
+                    host: process.env.DB_HOST,
+                    port: process.env.DB_PORT,
+                    user: process.env.DB_USERNAME,
+                    database: process.env.DB_DATABASE,
+                    ssl: useSSL
+                  });
+                  client.end();
+                  process.exit(1);
+                });
+            " || {
+              echo "⚠️  Database connection test failed, but continuing deployment..."
+              echo "Check your database credentials and network connectivity"
+            }
             
             # Run migrations
             echo "Running migrations..."
@@ -212,13 +259,22 @@ jobs:
             fi
             
             echo "Waiting for application to start..."
-            sleep 5
+            sleep 10
+            
+            echo "Checking application logs for database connection status..."
+            pm2 logs right-care-finder-api --lines 30 --nostream || echo "No logs available"
             
             echo "Testing API endpoint..."
             curl -f http://localhost:4001/api || {
               echo "❌ API endpoint not responding"
               echo "Checking if port is listening..."
               netstat -tlnp | grep 4001 || ss -tlnp | grep 4001 || echo "Port 4001 not listening"
+              echo ""
+              echo "⚠️  If the app is running but API is not responding, check:"
+              echo "   1. Database connection (check logs above)"
+              echo "   2. Database credentials in .env file"
+              echo "   3. Database server accessibility from this server"
+              echo "   4. Firewall rules allowing connection to database port"
               exit 1
             }
             

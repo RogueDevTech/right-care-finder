@@ -97,6 +97,13 @@ jobs:
             
             # Copy only the server directory contents to app directory
             mkdir -p "$APP_DIR"
+            
+            # Remove any nested right-care-finder directory that might exist (prevents rsync error)
+            if [ -d "$APP_DIR/right-care-finder" ]; then
+              echo "Removing nested right-care-finder directory..."
+              rm -rf "$APP_DIR/right-care-finder"
+            fi
+            
             rsync -av --delete "$REPO_DIR/server/" "$APP_DIR/" --exclude='.git' --exclude='node_modules' --exclude='dist'
             
             # Verify package.json was copied
@@ -124,11 +131,12 @@ jobs:
             EOF
             chmod 600 .env
             
-            # Install dependencies
-            echo "Installing dependencies..."
-            npm ci --only=production || npm install --only=production
+            # Install ALL dependencies (including dev dependencies needed for build)
+            # The nest CLI is in devDependencies and is required for building
+            echo "Installing dependencies (including dev dependencies for build)..."
+            npm ci || npm install
             
-            # Build application
+            # Build application (requires @nestjs/cli from devDependencies)
             echo "Building application..."
             npm run build
             

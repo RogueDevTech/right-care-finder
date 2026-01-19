@@ -411,7 +411,7 @@ export const useHealthcareHomesActions = () => {
           updatedAt: string;
           isVerified: boolean;
           isAnonymous: boolean;
-          reviewData?: Record<string, any>;
+          reviewData?: Record<string, unknown>;
           user: {
             id: string;
             name: string;
@@ -440,7 +440,25 @@ export const useHealthcareHomesActions = () => {
       if (response.data) {
         return {
           success: true,
-          data: (response.data as any)?.data,
+          data: (response.data as unknown as {
+            data: Array<{
+              id: string;
+              rating: number;
+              comment: string;
+              createdAt: string;
+              updatedAt: string;
+              isVerified: boolean;
+              isAnonymous: boolean;
+              reviewData?: Record<string, unknown>;
+              user: {
+                id: string;
+                name: string;
+              } | null;
+            }>;
+            total: number;
+            page: number;
+            limit: number;
+          }),
         };
       } else {
         return {
@@ -459,11 +477,24 @@ export const useHealthcareHomesActions = () => {
         rating: number;
         comment: string;
         isAnonymous?: boolean;
-        reviewData?: Record<string, any>;
+        reviewData?: Record<string, unknown>;
       }
     ): Promise<{
       success: boolean;
-      data?: any;
+      data?: {
+        id: string;
+        rating: number;
+        comment: string;
+        createdAt: string;
+        updatedAt: string;
+        isVerified: boolean;
+        isAnonymous: boolean;
+        reviewData?: Record<string, unknown>;
+        user: {
+          id: string;
+          name: string;
+        } | null;
+      };
       error?: string;
     }> => {
       const response = await client.post(
@@ -474,7 +505,20 @@ export const useHealthcareHomesActions = () => {
       if (response.data) {
         return {
           success: true,
-          data: response.data,
+          data: response.data as {
+            id: string;
+            rating: number;
+            comment: string;
+            createdAt: string;
+            updatedAt: string;
+            isVerified: boolean;
+            isAnonymous: boolean;
+            reviewData?: Record<string, unknown>;
+            user: {
+              id: string;
+              name: string;
+            } | null;
+          },
         };
       } else {
         return {

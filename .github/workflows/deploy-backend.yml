@@ -80,8 +80,8 @@ jobs:
             # Clone or update the repository
             if [ -d "$REPO_DIR/.git" ]; then
               cd "$REPO_DIR"
-              git fetch origin
-              git reset --hard origin/main
+            git fetch origin
+            git reset --hard origin/main
             else
               rm -rf "$REPO_DIR"
               git clone https://github.com/RogueDevTech/right-care-finder.git "$REPO_DIR"
@@ -102,6 +102,12 @@ jobs:
             if [ -d "$APP_DIR/right-care-finder" ]; then
               echo "Removing nested right-care-finder directory..."
               rm -rf "$APP_DIR/right-care-finder"
+            fi
+            
+            # Remove .npmrc if it exists (might have production-only config)
+            if [ -f "$APP_DIR/.npmrc" ]; then
+              echo "Removing .npmrc file that might force production-only installs..."
+              rm -f "$APP_DIR/.npmrc"
             fi
             
             rsync -av --delete "$REPO_DIR/server/" "$APP_DIR/" --exclude='.git' --exclude='node_modules' --exclude='dist'
@@ -134,6 +140,14 @@ jobs:
             # Install ALL dependencies (including dev dependencies needed for build)
             # The nest CLI is in devDependencies and is required for building
             echo "Installing dependencies (including dev dependencies for build)..."
+            # Clear any npm config that might force production-only installs
+            npm config delete only 2>/dev/null || true
+            npm config delete omit 2>/dev/null || true
+            # Verify config is cleared
+            echo "NPM config check:"
+            npm config get only || echo "  'only' config not set (good)"
+            # npm ci includes dev dependencies by default (no flag needed)
+            # If npm ci fails, fall back to npm install (also includes dev by default)
             npm ci || npm install
             
             # Build application (requires @nestjs/cli from devDependencies)

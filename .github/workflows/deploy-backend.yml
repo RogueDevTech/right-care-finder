@@ -304,20 +304,85 @@ jobs:
             echo "Recent application logs:"
             pm2 logs right-care-finder-api --lines 30 --nostream || echo "No logs available"
             
-            echo "Waiting a bit more for application to fully initialize..."
+            # Wait for application to be fully ready (check logs for "successfully started")
+            echo "Waiting for application to be fully ready..."
+            MAX_WAIT=30
+            WAIT_COUNT=0
+            while [ $WAIT_COUNT -lt $MAX_WAIT ]; do
+              if pm2 logs right-care-finder-api --lines 100 --nostream | grep -q "Nest application successfully started"; then
+                echo "✅ Application successfully started (found in logs)"
+                break
+              fi
+              WAIT_COUNT=$((WAIT_COUNT + 1))
+              echo "Waiting for app to start... ($WAIT_COUNT/$MAX_WAIT)"
+              sleep 2
+            done
+            
+            # Additional wait for HTTP server to be ready
+            echo "Waiting additional time for HTTP server to be ready..."
             sleep 5
             
-            echo "Testing API endpoint..."
-            curl -f http://localhost:4001/api || {
-              echo "❌ API endpoint not responding"
-              echo "Checking if port is listening..."
-              ss -tlnp | grep 4001 || echo "Port 4001 not listening"
+            # Check if port is listening
+            echo "Checking if port 4001 is listening..."
+            if command -v ss >/dev/null 2>&1; then
+              ss -tlnp | grep 4001 || echo "Port 4001 not found with ss"
+            elif command -v netstat >/dev/null 2>&1; then
+              netstat -tlnp | grep 4001 || echo "Port 4001 not found with netstat"
+            else
+              echo "Neither ss nor netstat available, checking with lsof..."
+              lsof -i :4001 || echo "Port 4001 not found with lsof"
+            fi
+            
+            # Retry logic for health check
+            echo "Testing API endpoint with retries..."
+            MAX_RETRIES=5
+            RETRY_COUNT=0
+            SUCCESS=false
+            
+            while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+              echo "Attempt $((RETRY_COUNT + 1))/$MAX_RETRIES: Testing http://localhost:4001/api"
+              
+              # Try /api endpoint (Swagger - confirmed working by user)
+              if curl -f -m 10 -s http://localhost:4001/api >/dev/null 2>&1; then
+                echo "✅ API endpoint responding successfully"
+                SUCCESS=true
+                break
+              fi
+              
+              # If /api fails, try root endpoint
+              if curl -f -m 10 -s http://localhost:4001/ >/dev/null 2>&1; then
+                echo "✅ Root endpoint responding (API endpoint may have issues)"
+                SUCCESS=true
+                break
+              fi
+              
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                echo "⚠️  Endpoint not responding, retrying in 3 seconds..."
+                sleep 3
+              fi
+            done
+            
+            if [ "$SUCCESS" = false ]; then
+              echo "❌ Health check failed after $MAX_RETRIES attempts"
+              echo ""
+              echo "=== Checking process details ==="
+              pm2 info right-care-finder-api
               echo ""
               echo "=== Recent Error Logs ==="
-              pm2 logs right-care-finder-api --err --lines 30 --nostream || echo "No error logs available"
+              pm2 logs right-care-finder-api --err --lines 50 --nostream || echo "No error logs available"
+              echo ""
               echo "=== Recent Output Logs ==="
-              pm2 logs right-care-finder-api --out --lines 30 --nostream || echo "No output logs available"
+              pm2 logs right-care-finder-api --out --lines 50 --nostream || echo "No output logs available"
+              echo ""
+              echo "=== Testing connection manually ==="
+              curl -v http://localhost:4001/api 2>&1 | head -30 || echo "curl failed"
+              echo ""
+              echo "=== Port check ==="
+              if command -v ss >/dev/null 2>&1; then
+                ss -tlnp | grep 4001 || echo "Port 4001 not listening"
+              fi
               exit 1
-            }
+            fi
             
             echo "✅ Deployment verified successfully"

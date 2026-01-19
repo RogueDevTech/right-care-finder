@@ -7,17 +7,6 @@ import { CareHome } from "@/actions-client/healthcare-homes";
 import { Star1Icon } from "@/components/icon";
 import styles from "./styles.module.scss";
 
-interface Review {
-  id: string;
-  rating: number;
-  comment: string;
-  createdAt: string;
-  user: {
-    id: string;
-    name: string;
-  };
-}
-
 export default function OwnerReviewsPage() {
   const [careHome, setCareHome] = useState<CareHome | null>(null);
   const [isLoading, setIsLoading] = useState(true);

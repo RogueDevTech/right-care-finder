@@ -25,7 +25,7 @@ export default function ConditionalLayout({
 
   return (
     <div className="">
-      <NavBar session={session} />
+      <NavBar session={session !== null ? session : undefined} />
       {children}
       <Footer />
     </div>

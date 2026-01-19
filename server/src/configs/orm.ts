@@ -5,6 +5,9 @@ import { entities } from "./entities";
 const dotenv_path = path.resolve(process.cwd(), ".env");
 dotenv.config({ path: dotenv_path });
 
+// Determine if SSL should be used (default to true for production, false for local)
+const useSSL = process.env.DB_SSL !== "false";
+
 export const dataSourceOptions: DataSourceOptions = {
   type: "postgres",
   host: process.env.DB_HOST,
@@ -13,9 +16,11 @@ export const dataSourceOptions: DataSourceOptions = {
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
   entities: Object.values(entities),
-  ssl: {
-    rejectUnauthorized: false, // or provide CA cert if needed
-  },
+  ...(useSSL && {
+    ssl: {
+      rejectUnauthorized: false, // or provide CA cert if needed
+    },
+  }),
   synchronize: false, // Disable auto-synchronization
   migrations: [path.join(__dirname, "../migrations/*.{ts,js}")],
   migrationsTableName: "migrations",

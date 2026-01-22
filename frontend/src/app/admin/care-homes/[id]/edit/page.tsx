@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "react-hot-toast";
+import { errorToString } from "@/utils/error-to-string";
 import Link from "next/link";
 import AdminLayout from "@/components/layout/admin-layout";
 import {
@@ -619,7 +620,7 @@ export default function EditCareHomePage() {
         toast.success("Care home updated successfully!");
         router.push("/admin/care-homes");
       } else {
-        toast.error(result.error || "Failed to update care home");
+        toast.error(result.error ? errorToString(result.error, "Failed to update care home") : "Failed to update care home");
       }
     } catch (error) {
       console.error("Error updating care home:", error);

@@ -6,6 +6,7 @@ import {
   CareHome,
 } from "@/actions-client/healthcare-homes";
 import { toast } from "react-hot-toast";
+import { createCareHomeUrl } from "@/utils/slug";
 import styles from "./styles.module.scss";
 
 interface SearchBarProps {
@@ -123,8 +124,8 @@ export default function SearchBar({
     setQuery(careHome.name);
     setShowResults(false);
     setSelectedIndex(-1);
-    // Navigate to care home details page
-    router.push(`/care-homes/${careHome.id}`);
+    // Navigate to care home details page using new URL format: /region/care-home-name
+    router.push(createCareHomeUrl(careHome.region, careHome.name));
   };
 
   const handleSearchClick = () => {

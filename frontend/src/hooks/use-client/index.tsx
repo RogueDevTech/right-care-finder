@@ -10,7 +10,12 @@ import { getSession, logout } from "@/actions-server";
 import { toast } from "react-hot-toast";
 
 export const useClient = () => {
-  const baseApiUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  // Use environment variable or fallback to localhost for development
+  const baseApiUrl =
+    process.env.NEXT_PUBLIC_BASE_URL ||
+    (process.env.NODE_ENV === "development"
+      ? "http://localhost:4001"
+      : undefined);
   const generateAuthHeader = useCallback((token?: string) => {
     const isLoggedIn = !!token;
     if (isLoggedIn) {
@@ -51,22 +56,35 @@ export const useClient = () => {
           error: undefined,
         };
       })
-      .catch((error) => {
+      .catch((error: unknown) => {
         return {
           data: undefined,
           status: response.status,
-          error: error.message || "An error occurred",
+          error: (error instanceof Error ? error.message : "An error occurred") as E,
         };
       });
   }
 
   const request = useCallback(
     (method: RequestMethod) => {
-      return async function requestHandler<Response, Body, Error>(
+      return async function requestHandler<Response, Body, ErrorType>(
         url: string,
         body?: Body,
         options?: ClientRequestOptions
       ) {
+        // Validate base URL if not overriding
+        if (!options?.overrideDefaultBaseUrl && !baseApiUrl) {
+          const errorMessage =
+            "API base URL is not configured. Please set NEXT_PUBLIC_BASE_URL in your environment variables.";
+          console.error(errorMessage);
+          toast.error("Configuration error: API URL not set");
+          return {
+            error: errorMessage as unknown as ErrorType,
+            status: 500,
+            data: undefined,
+          };
+        }
+
         const tokenToUse = options?.token?.token || (await getSession()).token;
         const authHeaders = generateAuthHeader(tokenToUse);
 
@@ -93,13 +111,43 @@ export const useClient = () => {
           : baseApiUrl + (hideSlash ? "" : "/");
         const requestUrl = `${baseUrl}${url}`;
 
+        // Validate the constructed URL
+        try {
+          new URL(requestUrl);
+        } catch (urlError) {
+          const errorMessage = `Invalid API URL: ${requestUrl}. Please check your NEXT_PUBLIC_BASE_URL configuration.`;
+          console.error(errorMessage, urlError);
+          toast.error("Invalid API configuration");
+          return {
+            error: errorMessage as unknown as ErrorType,
+            status: 500,
+            data: undefined,
+          };
+        }
+
         return fetch(requestUrl, requestOptions)
           .then((response) => {
-            return handleResponse<Response, Error>(response);
+            return handleResponse<Response, ErrorType>(response);
           })
-          .catch((error: Error) => {
-            console.log("error ---", error);
-            return { error, status: 500, data: undefined };
+          .catch((error: unknown) => {
+            const errorMessage =
+              error instanceof Error && error.message === "Failed to fetch"
+                ? `Network error: Unable to connect to ${baseUrl || "API server"}. Please check if the server is running and CORS is configured correctly.`
+                : error instanceof Error
+                ? error.message
+                : "An error occurred while making the request";
+            console.error("Request failed:", {
+              url: requestUrl,
+              method,
+              error: errorMessage,
+              originalError: error,
+            });
+            toast.error("Request failed. Please try again.");
+            return {
+              error: errorMessage as unknown as ErrorType,
+              status: 500,
+              data: undefined,
+            };
           });
       };
     },

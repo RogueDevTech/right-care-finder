@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+import { errorToString } from "@/utils/error-to-string";
 import Link from "next/link";
 import AdminLayout from "@/components/layout/admin-layout";
 import {
@@ -1276,7 +1277,7 @@ export default function AddCareHomePage() {
         toast.success("Care home added successfully!");
         router.push("/admin/care-homes");
       } else {
-        toast.error(result.error || "Failed to add care home");
+        toast.error(result.error ? errorToString(result.error, "Failed to add care home") : "Failed to add care home");
       }
     } catch (error) {
       console.error("Error creating care home:", error);
@@ -1500,9 +1501,10 @@ export default function AddCareHomePage() {
           }
         }
       } else {
-        toast.error(
-          result.error || "Failed to import care homes. Please try again."
-        );
+        const errorMessage = result.error 
+          ? errorToString(result.error, "Failed to import care homes. Please try again.")
+          : "Failed to import care homes. Please try again.";
+        toast.error(errorMessage);
       }
     } catch (error) {
       console.error("Error importing care homes:", error);

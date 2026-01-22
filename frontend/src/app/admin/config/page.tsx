@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
+import { errorToString } from "@/utils/error-to-string";
 import Link from "next/link";
 import AdminLayout from "@/components/layout/admin-layout";
 import { useAdminActions } from "@/actions-client/admin";
@@ -150,7 +151,7 @@ export default function ConfigPage() {
             );
           }
         } else {
-          toast.error(result.error || "Failed to update care type");
+          toast.error(result.error ? errorToString(result.error, "Failed to update care type") : "Failed to update care type");
         }
       } else {
         const result = await createCareType({
@@ -163,7 +164,7 @@ export default function ConfigPage() {
           toast.success("Care type created successfully");
           setCareTypes([...careTypes, result.data]);
         } else {
-          toast.error(result.error || "Failed to create care type");
+          toast.error(result.error ? errorToString(result.error, "Failed to create care type") : "Failed to create care type");
         }
       }
 
@@ -197,7 +198,7 @@ export default function ConfigPage() {
         toast.success("Care type deleted successfully");
         setCareTypes(careTypes.filter((ct) => ct.id !== id));
       } else {
-        toast.error(result.error || "Failed to delete care type");
+        toast.error(result.error ? errorToString(result.error, "Failed to delete care type") : "Failed to delete care type");
       }
     } catch (error) {
       console.error("Error deleting care type:", error);
@@ -239,7 +240,7 @@ export default function ConfigPage() {
             );
           }
         } else {
-          toast.error(result.error || "Failed to update specialization");
+          toast.error(result.error ? errorToString(result.error, "Failed to update specialization") : "Failed to update specialization");
         }
       } else {
         const result = await createSpecialization(specializationForm);
@@ -247,7 +248,7 @@ export default function ConfigPage() {
           toast.success("Specialization created successfully");
           setSpecializations([...specializations, result.data]);
         } else {
-          toast.error(result.error || "Failed to create specialization");
+          toast.error(result.error ? errorToString(result.error, "Failed to create specialization") : "Failed to create specialization");
         }
       }
 
@@ -281,7 +282,7 @@ export default function ConfigPage() {
         toast.success("Specialization deleted successfully");
         setSpecializations(specializations.filter((s) => s.id !== id));
       } else {
-        toast.error(result.error || "Failed to delete specialization");
+        toast.error(result.error ? errorToString(result.error, "Failed to delete specialization") : "Failed to delete specialization");
       }
     } catch (error) {
       console.error("Error deleting specialization:", error);
@@ -319,7 +320,7 @@ export default function ConfigPage() {
             );
           }
         } else {
-          toast.error(result.error || "Failed to update facility");
+          toast.error(result.error ? errorToString(result.error, "Failed to update facility") : "Failed to update facility");
         }
       } else {
         const result = await createFacility(facilityForm);
@@ -327,7 +328,7 @@ export default function ConfigPage() {
           toast.success("Facility created successfully");
           setFacilities([...facilities, result.data]);
         } else {
-          toast.error(result.error || "Failed to create facility");
+          toast.error(result.error ? errorToString(result.error, "Failed to create facility") : "Failed to create facility");
         }
       }
 
@@ -361,7 +362,7 @@ export default function ConfigPage() {
         toast.success("Facility deleted successfully");
         setFacilities(facilities.filter((f) => f.id !== id));
       } else {
-        toast.error(result.error || "Failed to delete facility");
+        toast.error(result.error ? errorToString(result.error, "Failed to delete facility") : "Failed to delete facility");
       }
     } catch (error) {
       console.error("Error deleting facility:", error);

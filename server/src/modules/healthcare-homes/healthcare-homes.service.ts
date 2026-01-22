@@ -297,6 +297,38 @@ export class HealthcareHomesService {
     return careHome;
   }
 
+  /**
+   * Find a care home by region and slug (name)
+   * The slug is generated from the care home name, so we search by region and match names
+   */
+  async findByRegionAndSlug(region: string, slug: string): Promise<CareHome> {
+    // Convert slug back to a search pattern (handle hyphens as spaces)
+    // We'll search for care homes in the region with names that could generate this slug
+    const searchPattern = slug.replace(/-/g, " ");
+
+    const careHome = await this.careHomeRepository
+      .createQueryBuilder("careHome")
+      .leftJoinAndSelect("careHome.careType", "careType")
+      .leftJoinAndSelect("careHome.images", "images")
+      .leftJoinAndSelect("careHome.facilities", "facilities")
+      .leftJoinAndSelect("careHome.reviews", "reviews")
+      .leftJoinAndSelect("reviews.user", "reviewUser")
+      .leftJoinAndSelect("careHome.createdBy", "createdBy")
+      .where("careHome.region ILIKE :region", { region: `%${region}%` })
+      .andWhere("careHome.isActive = :isActive", { isActive: true })
+      .andWhere(
+        "(LOWER(REPLACE(careHome.name, ' ', '-')) = LOWER(:slug) OR LOWER(careHome.name) ILIKE LOWER(:searchPattern))",
+        { slug, searchPattern: `%${searchPattern}%` }
+      )
+      .getOne();
+
+    if (!careHome) {
+      throw new NotFoundException("Care home not found");
+    }
+
+    return careHome;
+  }
+
   async update(
     id: string,
     updateCareHomeDto: UpdateCareHomeDto

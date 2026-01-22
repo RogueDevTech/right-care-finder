@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
+import { errorToString } from "@/utils/error-to-string";
 import Button from "@/components/ui/button";
 import { useUserActions, Booking } from "@/actions-client/user";
 import styles from "./bookings.module.scss";
@@ -147,7 +148,7 @@ export default function OwnerBookingsPage() {
         );
         toast.success("Booking confirmed successfully!");
       } else {
-        toast.error(result.error || "Failed to confirm booking");
+        toast.error(result.error ? errorToString(result.error, "Failed to confirm booking") : "Failed to confirm booking");
       }
     } catch (error) {
       console.error("Error confirming booking:", error);
@@ -175,7 +176,7 @@ export default function OwnerBookingsPage() {
         );
         toast.success("Booking rejected");
       } else {
-        toast.error(result.error || "Failed to reject booking");
+        toast.error(result.error ? errorToString(result.error, "Failed to reject booking") : "Failed to reject booking");
       }
     } catch (error) {
       console.error("Error rejecting booking:", error);

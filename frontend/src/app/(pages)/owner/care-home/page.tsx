@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
+import { errorToString } from "@/utils/error-to-string";
 import { useUserActions } from "@/actions-client/user";
 import { CareHome } from "@/actions-client/healthcare-homes";
 import { LocationIcon, PhoneIcon } from "@/components/icon";
@@ -77,7 +78,7 @@ export default function MyCareHomePage() {
           setCareHome(null);
         }
       } else {
-        toast.error(result.error || "Failed to load care home");
+        toast.error(result.error ? errorToString(result.error, "Failed to load care home") : "Failed to load care home");
         setCareHome(null);
       }
     } catch (error) {

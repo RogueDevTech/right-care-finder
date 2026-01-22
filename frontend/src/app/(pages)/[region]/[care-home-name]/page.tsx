@@ -1,17 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useCounterStore } from "@/store/useStore";
 import { LocationIcon, PhoneIcon } from "@/components/icon";
-// import starRating from "@/../public/starRating.png";
 import primaryCare from "@/../public/primaryCategory.png";
-// import ownersSectionImage from "@/../public/ownersSectionImage.png";
 import careProvided from "@/../public/careProvided.png";
 import lengthOfStarting from "@/../public/lenghtOfStating.png";
 import demantiaCare from "@/../public/demantiaCare.png";
 import dementia from "@/../public/dementia.png";
-// import rating from "@/../public/starRating.png";
 import ReviewModal from "@/features/view-home-details/ratings-and-reviews/review-modal";
 import { StarIcon } from "@/components/icon";
 import {
@@ -22,11 +19,13 @@ import { toast } from "react-hot-toast";
 import { errorToString } from "@/utils/error-to-string";
 import styles from "./care-homes-details.module.scss";
 import absoluteGradient from "@/../public/abstract-wave-gradient.jpg";
+
 type ImageType = {
   id: number;
   src: string;
   alt: string;
 };
+
 type ReviewItem = {
   id?: string;
   rating: number;
@@ -42,8 +41,8 @@ type ReviewItem = {
   createdAt?: string;
 };
 
-// Removed static initialImages - now using dynamic images from API
 import Image from "next/image";
+
 function chunkArray<T>(arr: T[], size: number): T[][] {
   const chunks: T[][] = [];
   for (let i = 0; i < arr.length; i += size) {
@@ -77,13 +76,12 @@ function formatPhoneForDial(phone: string | undefined): string {
   // Otherwise, assume it's a UK number and add +44
   return `+44${cleaned}`;
 }
-// import { careHomes } from "@/components/data";
 
 export default function CareHomesDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const { openReviewModal, setOpenReviewModal } = useCounterStore();
-  const { getCareHomeById, getReviews } = useHealthcareHomesActions();
+  const { getCareHomeByRegionAndSlug, getReviews } = useHealthcareHomesActions();
 
   const [careHome, setCareHome] = useState<CareHome | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -94,6 +92,10 @@ export default function CareHomesDetailsPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const reviewsSectionRef = useRef<HTMLDivElement>(null);
+
+  // Get region and slug from URL params
+  const region = params.region as string;
+  const careHomeName = params["care-home-name"] as string;
 
   // Resolve external page URLs (e.g., unsplash page links) to direct image sources
   const resolveImageUrl = (url: string): string => {
@@ -128,9 +130,7 @@ export default function CareHomesDetailsPage() {
     }
   };
 
-  const careHomeId = params.id as string;
-
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async (careHomeId: string) => {
     if (!careHomeId) return;
 
     setReviewsLoading(true);
@@ -143,39 +143,36 @@ export default function CareHomesDetailsPage() {
       });
 
       if (response.success && response.data) {
-        // Ensure we always set an array, even if response.data.data is undefined
         const reviewsArray = Array.isArray(response.data.data)
           ? response.data.data
           : [];
         setReviews(reviewsArray);
       } else {
-        console.error("Failed to fetch reviews:", response.error);
-        // Set empty array on error to prevent map errors
         setReviews([]);
       }
     } catch (error) {
       console.error("Error fetching reviews:", error);
-      // Set empty array on error to prevent map errors
       setReviews([]);
     } finally {
       setReviewsLoading(false);
     }
-  };
+  }, [getReviews]);
 
-  const handleReviewSubmitted = () => {
-    fetchReviews();
-  };
+  const handleReviewSubmitted = useCallback(() => {
+    if (careHome?.id) {
+      fetchReviews(careHome.id);
+    }
+  }, [careHome?.id, fetchReviews]);
 
   useEffect(() => {
     const fetchCareHome = async () => {
-      if (!careHomeId) return;
+      if (!region || !careHomeName) return;
 
       setIsLoading(true);
       try {
-        const response = await getCareHomeById(careHomeId);
+        const response = await getCareHomeByRegionAndSlug(region, careHomeName);
         if (!response.success) {
           toast.error(`Failed to load care home details: ${errorToString(response.error, "Unknown error")}`);
-          // Don't redirect immediately, let user see the error
           setCareHome(null);
         } else {
           setCareHome(response.data || null);
@@ -195,7 +192,6 @@ export default function CareHomesDetailsPage() {
             setImages(careHomeImages);
             setCurrentImageIndex(0);
           } else {
-            // No images available - set empty array
             setImages([]);
           }
         }
@@ -209,8 +205,15 @@ export default function CareHomesDetailsPage() {
     };
 
     fetchCareHome();
-    fetchReviews();
-  }, [careHomeId, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Fetch reviews after care home is loaded
+  useEffect(() => {
+    if (careHome?.id) {
+      fetchReviews(careHome.id);
+    }
+  }, [careHome?.id]);
 
   // Auto-advance slideshow
   useEffect(() => {
@@ -306,164 +309,6 @@ export default function CareHomesDetailsPage() {
             </div>
           </div>
         </div>
-
-        {/* Cares Provided Skeleton */}
-        <div className={styles.CaresProvidedWrapper}>
-          <div
-            className={`${styles.skeleton} ${styles.title}`}
-            style={{ width: "200px", marginBottom: "2rem" }}
-          ></div>
-          <div className={styles.serviceProvided}>
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div key={index} className={styles.careCard}>
-                <div className={styles.image}>
-                  <div
-                    className={`${styles.skeleton} ${styles.image}`}
-                    style={{
-                      height: "80px",
-                      width: "80px",
-                      borderRadius: "8px",
-                    }}
-                  ></div>
-                </div>
-                <div className={styles.CareContent}>
-                  <div
-                    className={`${styles.skeleton} ${styles.title}`}
-                    style={{ width: "80%", marginBottom: "1rem" }}
-                  ></div>
-                  <div>
-                    {Array.from({ length: 4 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={`${styles.skeleton} ${styles.line}`}
-                        style={{ width: "90%", marginBottom: "0.5rem" }}
-                      ></div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Facilities Skeleton */}
-        <div className={styles.facilitiesContainer}>
-          <div
-            className={`${styles.skeleton} ${styles.title}`}
-            style={{ width: "150px", marginBottom: "2rem" }}
-          ></div>
-          <div className={styles.facilitiesCardContainer}>
-            {Array.from({ length: 2 }).map((_, index) => (
-              <div key={index} className={styles.facilitiesCard}>
-                <div className={styles.absoluteGradient}>
-                  <div
-                    className={`${styles.skeleton} ${styles.image}`}
-                    style={{ height: "100%", width: "100%" }}
-                  ></div>
-                </div>
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i}>
-                    <div
-                      className={`${styles.skeleton} ${styles.text}`}
-                      style={{
-                        width: "30px",
-                        height: "30px",
-                        borderRadius: "50%",
-                        marginBottom: "0.5rem",
-                      }}
-                    ></div>
-                    <div
-                      className={`${styles.skeleton} ${styles.line}`}
-                      style={{ width: "80px" }}
-                    ></div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* About Care Home Skeleton */}
-        <div className={styles.aboutCareHome}>
-          <div className={styles.mobile}>
-            <div
-              className={`${styles.skeleton} ${styles.image}`}
-              style={{ height: "300px" }}
-            ></div>
-          </div>
-          <div className={styles.careHomeDetail}>
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className={styles.info}>
-                <div
-                  className={`${styles.skeleton} ${styles.subtitle}`}
-                  style={{ width: "120px", marginBottom: "0.5rem" }}
-                ></div>
-                <div
-                  className={`${styles.skeleton} ${styles.line}`}
-                  style={{ width: "80%" }}
-                ></div>
-              </div>
-            ))}
-          </div>
-          <div className={styles.ownersSectionImage}>
-            <div
-              className={`${styles.skeleton} ${styles.image}`}
-              style={{ height: "300px" }}
-            ></div>
-          </div>
-        </div>
-
-        {/* Reviews Skeleton */}
-        <div className={styles.ratingsAndReviewWrapper}>
-          <div className={styles.header}>
-            <div
-              className={`${styles.skeleton} ${styles.title}`}
-              style={{ width: "250px" }}
-            ></div>
-            <div
-              className={`${styles.skeleton} ${styles.button}`}
-              style={{ width: "150px" }}
-            ></div>
-          </div>
-          <div className={styles.reviewsSection}>
-            {Array.from({ length: 2 }).map((_, index) => (
-              <div key={index} className={styles.reviewCard}>
-                <div className={styles.rating}>
-                  <div
-                    className={`${styles.skeleton} ${styles.text}`}
-                    style={{ width: "100px", height: "20px" }}
-                  ></div>
-                </div>
-                <div className={styles.reviewContent}>
-                  <div className={styles.reviewer}>
-                    <div
-                      className={`${styles.skeleton} ${styles.subtitle}`}
-                      style={{ width: "100px", marginBottom: "1rem" }}
-                    ></div>
-                    <div>
-                      {Array.from({ length: 4 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className={`${styles.skeleton} ${styles.line}`}
-                          style={{
-                            width: i === 3 ? "60%" : "100%",
-                            marginBottom: "0.5rem",
-                          }}
-                        ></div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className={styles.likes}>
-                    <div
-                      className={`${styles.skeleton} ${styles.text}`}
-                      style={{ width: "150px" }}
-                    ></div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </main>
     );
   }
@@ -482,18 +327,17 @@ export default function CareHomesDetailsPage() {
       </div>
     );
   }
+
   return (
     <main>
       <div className={styles.gallery}>
         {images.length === 0 ? (
-          // No images - show placeholder
           <div className={styles.noImageContainer}>
             <div className={styles.noImagePlaceholder}>
               <span>No images available</span>
             </div>
           </div>
         ) : images.length === 1 ? (
-          // Single image - full width
           <div className={styles.singleImageContainer}>
             <img
               src={resolveImageUrl(images[0].src)}
@@ -600,7 +444,9 @@ export default function CareHomesDetailsPage() {
         </div>
         <div className={styles.getInTouch}>
           <div className={styles.contactUs}>
-            <a href={`tel:${formatPhoneForDial(careHome.phone)}`}>
+            <a 
+              href={`tel:${formatPhoneForDial(careHome.phone)}`}
+            >
               <span>
                 <PhoneIcon />
                 <span>{careHome.phone}</span>
@@ -769,7 +615,6 @@ export default function CareHomesDetailsPage() {
         </div>
       </div>
 
-      {/* Image Gallery Section */}
       {careHome.images && careHome.images.length > 1 && (
         <div className={styles.imageGallerySection}>
           <h3>Image Gallery</h3>
@@ -788,64 +633,6 @@ export default function CareHomesDetailsPage() {
           </div>
         </div>
       )}
-      {/* <div className={styles.aboutCareHome}>
-        <div className={styles.mobile}>
-          <Image src={ownersSectionImage} alt="owners section image" />
-        </div>
-        <div className={styles.careHomeDetail}>
-          <div className={styles.info}>
-            <h5>Owner</h5>
-            <p>MOP Healthcare Ltd</p>
-          </div>
-          <div className={styles.info}>
-            <h5>Person in charge</h5>
-            <p>Dania Meadows</p>
-          </div>
-          <div className={styles.info}>
-            <h5>Admission criteria</h5>
-            <p>Resident aged 45 years and over</p>
-          </div>
-          <div className={styles.info}>
-            <h5>Care home building</h5>
-            <div className="">
-              <p>
-                year: <span>2016</span>
-              </p>
-              <p>
-                Number of floors:<span>2</span>
-              </p>
-              <p>
-                Last refurbishment: <span>2014</span>
-              </p>
-            </div>
-          </div>
-          <div className={styles.info}>
-            <h5>Visiting</h5>
-            <p>No restrictions to visiting hours</p>
-          </div>
-          <div className="">
-            <h5>Parking</h5>
-            <p>Free parking</p>
-          </div>
-          <div className="">
-            <h5>Room info</h5>
-            <div className="">
-              <p>
-                single room <span>(80)</span>
-              </p>
-              <p>
-                Double room:<span>40</span>
-              </p>
-              <p>
-                Last refurbishment: <span>2014</span>
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className={styles.ownersSectionImage}>
-          <Image src={ownersSectionImage} alt="owners section image" />
-        </div>
-      </div> */}
       <div className={styles.ratingsAndReviewWrapper} ref={reviewsSectionRef}>
         <div className={styles.headerTitle}>
           <h2>Rating and reviews</h2>
@@ -915,11 +702,11 @@ export default function CareHomesDetailsPage() {
           </button>
         </div>
 
-        {openReviewModal && (
+        {openReviewModal && careHome?.id && (
           <div className={styles.reviewModal} onClick={setOpenReviewModal}>
             <ReviewModal
               onClose={setOpenReviewModal}
-              careHomeId={careHomeId}
+              careHomeId={careHome.id}
               onReviewSubmitted={handleReviewSubmitted}
             />
           </div>

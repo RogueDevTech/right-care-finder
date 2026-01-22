@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
+import { errorToString } from "@/utils/error-to-string";
 import Button from "@/components/ui/button";
 import { useUserActions, Enquiry } from "@/actions-client/user";
 import styles from "./enquiries.module.scss";
@@ -171,7 +172,7 @@ export default function OwnerEnquiriesPage() {
         );
         toast.success("Enquiry marked as read");
       } else {
-        toast.error(result.error || "Failed to update enquiry");
+        toast.error(result.error ? errorToString(result.error, "Failed to update enquiry") : "Failed to update enquiry");
       }
     } catch (error) {
       console.error("Error marking enquiry as read:", error);
@@ -195,7 +196,7 @@ export default function OwnerEnquiriesPage() {
         );
         toast.success("Enquiry archived");
       } else {
-        toast.error(result.error || "Failed to archive enquiry");
+        toast.error(result.error ? errorToString(result.error, "Failed to archive enquiry") : "Failed to archive enquiry");
       }
     } catch (error) {
       console.error("Error archiving enquiry:", error);
@@ -230,7 +231,7 @@ export default function OwnerEnquiriesPage() {
         setReplyMessage("");
         toast.success("Reply sent successfully!");
       } else {
-        toast.error(result.error || "Failed to send reply");
+        toast.error(result.error ? errorToString(result.error, "Failed to send reply") : "Failed to send reply");
       }
     } catch (error) {
       console.error("Error sending reply:", error);

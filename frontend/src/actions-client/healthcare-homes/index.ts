@@ -149,6 +149,13 @@ export interface Specialization {
 export const useHealthcareHomesActions = () => {
   const client = useClient();
 
+  // Helper function to convert unknown error to string
+  const errorToString = (error: unknown, fallback: string = "An error occurred"): string => {
+    if (typeof error === "string") return error;
+    if (error instanceof Error) return error.message;
+    return fallback;
+  };
+
   const searchCareHomes = useCallback(
     async (
       params: CareHomeQueryParams = {}
@@ -186,7 +193,7 @@ export const useHealthcareHomesActions = () => {
       } else {
         return {
           success: false,
-          error: response.error,
+          error: errorToString(response.error, "Failed to fetch care homes"),
         };
       }
     },
@@ -205,7 +212,28 @@ export const useHealthcareHomesActions = () => {
       } else {
         return {
           success: false,
-          error: response.error || "Failed to fetch care home",
+          error: errorToString(response.error, "Failed to fetch care home"),
+        };
+      }
+    },
+    [client]
+  );
+
+  const getCareHomeByRegionAndSlug = useCallback(
+    async (region: string, slug: string) => {
+      const response = await client.get(
+        `/healthcare-homes/by-slug/${region}/${slug}`
+      );
+
+      if (response.data) {
+        return {
+          success: true,
+          data: (response.data as unknown as { data: CareHome })?.data,
+        };
+      } else {
+        return {
+          success: false,
+          error: errorToString(response.error, "Failed to fetch care home"),
         };
       }
     },
@@ -249,7 +277,7 @@ export const useHealthcareHomesActions = () => {
       } else {
         return {
           success: false,
-          error: response.error,
+          error: errorToString(response.error, "Failed to fetch care homes"),
         };
       }
     },
@@ -271,10 +299,10 @@ export const useHealthcareHomesActions = () => {
     } else {
       return {
         success: false,
-        error: response.error,
+        error: errorToString(response.error, "Failed to fetch region statistics"),
       };
     }
-  }, [client]);
+  }, [client, errorToString]);
 
   const getCareTypes = useCallback(async () => {
     const response = await client.get("/healthcare-homes/care-types");
@@ -287,10 +315,10 @@ export const useHealthcareHomesActions = () => {
     } else {
       return {
         success: false,
-        error: response.error,
+        error: errorToString(response.error, "Failed to fetch care types"),
       };
     }
-  }, [client]);
+  }, [client, errorToString]);
 
   const getSpecializations = useCallback(async () => {
     const response = await client.get("/healthcare-homes/specializations");
@@ -303,10 +331,10 @@ export const useHealthcareHomesActions = () => {
     } else {
       return {
         success: false,
-        error: response.error,
+        error: errorToString(response.error, "Failed to fetch specializations"),
       };
     }
-  }, [client]);
+  }, [client, errorToString]);
 
   const getFacilities = useCallback(async () => {
     const response = await client.get("/healthcare-homes/facilities");
@@ -332,10 +360,10 @@ export const useHealthcareHomesActions = () => {
     } else {
       return {
         success: false,
-        error: response.error,
+        error: errorToString(response.error, "Failed to fetch facilities"),
       };
     }
-  }, [client]);
+  }, [client, errorToString]);
 
   const updateCareHome = useCallback(
     async (
@@ -384,7 +412,7 @@ export const useHealthcareHomesActions = () => {
       } else {
         return {
           success: false,
-          error: response.error || "Failed to update care home",
+          error: errorToString(response.error, "Failed to update care home"),
         };
       }
     },
@@ -463,7 +491,7 @@ export const useHealthcareHomesActions = () => {
       } else {
         return {
           success: false,
-          error: response.error || "Failed to fetch reviews",
+          error: errorToString(response.error, "Failed to fetch reviews"),
         };
       }
     },
@@ -523,7 +551,7 @@ export const useHealthcareHomesActions = () => {
       } else {
         return {
           success: false,
-          error: response.error || "Failed to submit review",
+          error: errorToString(response.error, "Failed to submit review"),
         };
       }
     },
@@ -533,6 +561,7 @@ export const useHealthcareHomesActions = () => {
   return {
     searchCareHomes,
     getCareHomeById,
+    getCareHomeByRegionAndSlug,
     getHomeCreListings,
     getRegionStatistics,
     getCareTypes,

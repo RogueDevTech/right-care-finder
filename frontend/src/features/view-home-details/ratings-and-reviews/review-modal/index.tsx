@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useHealthcareHomesActions } from "@/actions-client/healthcare-homes";
+import { errorToString } from "@/utils/error-to-string";
 import styles from "./styles.module.scss";
 import { CloseIcon } from "@/components/icon";
 
@@ -79,7 +80,7 @@ export default function ReviewModal({ onClose, careHomeId, onReviewSubmitted }: 
           onReviewSubmitted();
         }
       } else {
-        toast.error(result.error || "Failed to submit review");
+        toast.error(result.error ? errorToString(result.error, "Failed to submit review") : "Failed to submit review");
       }
     } catch (error) {
       console.error("Error submitting review:", error);

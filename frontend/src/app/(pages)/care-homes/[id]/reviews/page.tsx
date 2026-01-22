@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+import { errorToString } from "@/utils/error-to-string";
 import styles from "../care-homes-details.module.scss";
 import {
   useHealthcareHomesActions,
@@ -28,7 +29,7 @@ export default function CareHomeAllReviewsPage() {
       setIsLoading(true);
       const res = await getCareHomeById(careHomeId);
       if (!res.success || !res.data) {
-        toast.error(res.error || "Failed to load reviews");
+        toast.error(res.error ? errorToString(res.error, "Failed to load reviews") : "Failed to load reviews");
         setCareHome(null);
       } else {
         setCareHome(res.data);

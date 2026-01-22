@@ -48,6 +48,13 @@ function AcceptInvitationContent() {
   const token = searchParams.get("token");
   const { validateInvitation, acceptInvitation } = useAdminActions();
 
+  // Helper function to convert unknown error to string
+  const errorToString = (error: unknown, fallback: string = "An error occurred"): string => {
+    if (typeof error === "string") return error;
+    if (error instanceof Error) return error.message;
+    return fallback;
+  };
+
   useEffect(() => {
     if (token) {
       validateInvitationToken();
@@ -111,7 +118,10 @@ function AcceptInvitationContent() {
         toast.success("Account created successfully! You can now log in.");
         router.push("/login");
       } else {
-        toast.error(result.error || "Failed to create account");
+        const errorMessage = result.error 
+          ? errorToString(result.error, "Failed to create account")
+          : "Failed to create account";
+        toast.error(errorMessage);
       }
     } catch (error) {
       console.error("Error accepting invitation:", error);

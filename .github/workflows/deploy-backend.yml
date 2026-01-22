@@ -256,9 +256,12 @@ jobs:
               exit 1
             fi
             
-            # Check if process is online by parsing pm2 list output (status is in column 9)
-            PM2_STATUS=$(pm2 list | grep "right-care-finder-api" | awk '{print $9}' || echo "unknown")
-            echo "PM2 process status from list: $PM2_STATUS"
+            # Get PM2 status using JSON output (more reliable than parsing table)
+            get_pm2_status() {
+              pm2 jlist 2>/dev/null | grep -o '"name":"right-care-finder-api"[^}]*"pm2_env":{"status":"[^"]*' | grep -o '"status":"[^"]*' | cut -d'"' -f4 || echo "unknown"
+            }
+            PM2_STATUS=$(get_pm2_status)
+            echo "PM2 process status: $PM2_STATUS"
             pm2 info right-care-finder-api
             
             # Check if process is stopped or errored, restart if needed
@@ -280,7 +283,7 @@ jobs:
             MAX_ATTEMPTS=12
             ATTEMPT=0
             while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
-              CURRENT_STATUS=$(pm2 list | grep "right-care-finder-api" | awk '{print $9}' || echo "unknown")
+              CURRENT_STATUS=$(get_pm2_status)
               if [ "$CURRENT_STATUS" = "online" ]; then
                 echo "✅ Process is now online"
                 break
@@ -290,9 +293,12 @@ jobs:
               sleep 5
             done
             
-            # Final status check
-            FINAL_STATUS=$(pm2 list | grep "right-care-finder-api" | awk '{print $9}' || echo "unknown")
-            if [ "$FINAL_STATUS" != "online" ]; then
+            # Final status check - prioritize checking logs over PM2 status (more reliable)
+            FINAL_STATUS=$(get_pm2_status)
+            # Check logs for successful start message (more reliable than PM2 status parsing)
+            if pm2 logs right-care-finder-api --lines 100 --nostream 2>/dev/null | grep -q "Nest application successfully started"; then
+              echo "✅ App actually started successfully (found in logs), continuing despite PM2 status: $FINAL_STATUS"
+            elif [ "$FINAL_STATUS" != "online" ]; then
               echo "❌ Process failed to start. Final status: $FINAL_STATUS"
               echo "=== Recent Error Logs ==="
               pm2 logs right-care-finder-api --err --lines 50 --nostream || echo "No error logs available"

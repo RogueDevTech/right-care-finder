@@ -4,6 +4,7 @@ import Link from "next/link";
 import { LocationIcon, PhoneIcon } from "@/components/icon";
 import styles from "./care-home-card.module.scss";
 import { CareHome } from "@/actions-client/healthcare-homes";
+import { createCareHomeUrl } from "@/utils/slug";
 
 interface CareHomeCardProps {
   careHome: CareHome;
@@ -11,9 +12,11 @@ interface CareHomeCardProps {
 }
 
 const CareHomeCard: React.FC<CareHomeCardProps> = ({ careHome, className }) => {
+  const careHomeUrl = createCareHomeUrl(careHome.region, careHome.name);
+  
   return (
     <Link
-      href={`/care-homes/${careHome.id}`}
+      href={careHomeUrl}
       className={`${styles.cardLink} ${className || ""}`}
     >
       <div className={styles.careHomeCard}>

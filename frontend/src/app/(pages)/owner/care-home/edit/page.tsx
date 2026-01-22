@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+import { errorToString } from "@/utils/error-to-string";
 import Link from "next/link";
 import { useUserActions } from "@/actions-client/user";
 import {
@@ -394,7 +395,7 @@ export default function OwnerEditCareHomePage() {
         toast.success("Care home updated successfully!");
         router.push("/owner/care-home");
       } else {
-        toast.error(result.error || "Failed to update care home");
+        toast.error(result.error ? errorToString(result.error, "Failed to update care home") : "Failed to update care home");
       }
     } catch (error) {
       console.error("Error updating care home:", error);

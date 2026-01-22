@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "react-hot-toast";
@@ -16,12 +16,35 @@ export default function SignupPage() {
     confirmPassword: "",
     phoneNumber: "",
   });
+  const [countryCode, setCountryCode] = useState("+44");
+  const [isCountryCodeOpen, setIsCountryCodeOpen] = useState(false);
+  const countryCodeRef = useRef<HTMLDivElement>(null);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
   const { signUp } = useUserActions();
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        countryCodeRef.current &&
+        !countryCodeRef.current.contains(event.target as Node)
+      ) {
+        setIsCountryCodeOpen(false);
+      }
+    };
+
+    if (isCountryCodeOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isCountryCodeOpen]);
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -70,10 +93,16 @@ export default function SignupPage() {
 
     if (!formData.phoneNumber.trim()) {
       newErrors.phoneNumber = "Phone number is required";
-    } else if (
-      !/^[\+]?[1-9][\d]{0,15}$/.test(formData.phoneNumber.replace(/\s/g, ""))
-    ) {
-      newErrors.phoneNumber = "Please enter a valid phone number";
+    } else {
+      // UK mobile number validation: +44 7XXX XXXXXX (10 digits after +44, starting with 7)
+      // Domestic format: 07XXX XXXXXX (11 digits) -> International: +44 7XXX XXXXXX (10 digits, no leading 0)
+      const phoneDigits = formData.phoneNumber.replace(/\s/g, "");
+      
+      // Check if it's exactly 10 digits starting with 7 (international format)
+      // OR 11 digits starting with 07 (domestic format)
+      if (!/^7\d{9}$/.test(phoneDigits) && !/^07\d{9}$/.test(phoneDigits)) {
+        newErrors.phoneNumber = "Please enter a valid UK mobile number (e.g., 7123 456789 or 07123 456789)";
+      }
     }
 
     setErrors(newErrors);
@@ -89,12 +118,30 @@ export default function SignupPage() {
 
     setIsLoading(true);
 
+    // Combine country code with phone number
+    // Remove spaces and handle domestic format (07XXX) -> international format (7XXX)
+    let phoneDigits = formData.phoneNumber.replace(/\s/g, "");
+    
+    // If it starts with 0, remove it (domestic format -> international format)
+    if (phoneDigits.startsWith("0")) {
+      phoneDigits = phoneDigits.substring(1);
+    }
+    
+    // Ensure it starts with 7 (UK mobile numbers)
+    if (!phoneDigits.startsWith("7")) {
+      setErrors({ phoneNumber: "UK mobile numbers must start with 7 (or 07 in domestic format)" });
+      setIsLoading(false);
+      return;
+    }
+    
+    const fullPhoneNumber = `${countryCode}${phoneDigits}`;
+    
     const result = await signUp({
       firstName: formData.firstName,
       lastName: formData.lastName,
       email: formData.email,
       password: formData.password,
-      phoneNumber: formData.phoneNumber,
+      phoneNumber: fullPhoneNumber,
     });
 
     if (result) {
@@ -183,15 +230,58 @@ export default function SignupPage() {
 
           <div className={styles.formGroup}>
             <label htmlFor="phoneNumber">Phone Number</label>
-            <input
-              type="tel"
-              id="phoneNumber"
-              name="phoneNumber"
-              value={formData.phoneNumber}
-              onChange={handleChange}
-              className={errors.phoneNumber ? styles.error : ""}
-              placeholder="Enter your phone number"
-            />
+            <div className={styles.phoneInputWrapper}>
+              <div
+                ref={countryCodeRef}
+                className={styles.countryCodeDropdown}
+              >
+                <button
+                  type="button"
+                  className={styles.countryCodeButton}
+                  onClick={() => setIsCountryCodeOpen(!isCountryCodeOpen)}
+                >
+                  <span className={styles.countryCodeDisplay}>
+                    🇬🇧 +44
+                  </span>
+                  <svg
+                    className={`${styles.dropdownIcon} ${
+                      isCountryCodeOpen ? styles.dropdownIconOpen : ""
+                    }`}
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M4 6l4 4 4-4" />
+                  </svg>
+                </button>
+                {isCountryCodeOpen && (
+                  <div className={styles.countryCodeOptions}>
+                    <div
+                      className={`${styles.countryCodeOption} ${styles.countryCodeOptionSelected}`}
+                      onClick={() => {
+                        setCountryCode("+44");
+                        setIsCountryCodeOpen(false);
+                      }}
+                    >
+                      <span>🇬🇧</span>
+                      <span>+44 (UK)</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <input
+                type="tel"
+                id="phoneNumber"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                className={`${styles.phoneInput} ${errors.phoneNumber ? styles.error : ""}`}
+                placeholder="7123 456789 or 07123 456789"
+              />
+            </div>
             {errors.phoneNumber && (
               <span className={styles.errorText}>{errors.phoneNumber}</span>
             )}

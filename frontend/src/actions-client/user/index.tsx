@@ -50,6 +50,21 @@ export const useUserActions = () => {
   const router = useRouter();
   const { session } = useAuthStore();
 
+  // Helper function to convert unknown error to string | string[]
+  const normalizeError = (error: unknown): string | string[] => {
+    if (typeof error === "string") return error;
+    if (Array.isArray(error)) return error.map(String);
+    if (error instanceof Error) return error.message;
+    return "An error occurred";
+  };
+
+  // Helper function to convert unknown error to string (for error fields)
+  const errorToString = (error: unknown, fallback: string = "An error occurred"): string => {
+    if (typeof error === "string") return error;
+    if (error instanceof Error) return error.message;
+    return fallback;
+  };
+
   const signUp = async (payload: ISignUpData) => {
     const response = await client.post("/auth/register", payload);
 
@@ -60,7 +75,7 @@ export const useUserActions = () => {
       router.push("/login");
       return response.data;
     } else {
-      handleError(response.error);
+      handleError(normalizeError(response.error));
     }
   };
 
@@ -83,7 +98,7 @@ export const useUserActions = () => {
       }
       return response.data;
     } else {
-      handleError(response.error);
+      handleError(normalizeError(response.error));
     }
   };
 
@@ -95,7 +110,7 @@ export const useUserActions = () => {
       toast.success("Password reset link sent! Please check your email.");
       return response.data;
     } else {
-      handleError(response.error);
+      handleError(normalizeError(response.error));
     }
   };
 
@@ -108,7 +123,7 @@ export const useUserActions = () => {
       toast.success("Password reset successful! You can now sign in.");
       return response.data;
     } else {
-      handleError(response.error);
+      handleError(normalizeError(response.error));
     }
   };
 
@@ -120,14 +135,14 @@ export const useUserActions = () => {
       toast.success("Verification email sent successfully!");
       return response.data;
     } else {
-      handleError(response.error);
+      handleError(normalizeError(response.error));
     }
   };
 
   const updateProfile = async (payload: IUpdateUser) => {
     const response = await client.patch("/users/me", payload);
     if (response.error) {
-      handleError(response.error);
+      handleError(normalizeError(response.error));
       return {
         success: false,
         data: null,
@@ -147,7 +162,7 @@ export const useUserActions = () => {
   }) => {
     const response = await client.patch("/users/change-password", payload);
     if (response.error) {
-      handleError(response.error);
+      handleError(normalizeError(response.error));
       return {
         success: false,
         data: null,
@@ -172,9 +187,10 @@ export const useUserActions = () => {
       const response = await client.get("/users/me/care-homes");
 
       if (response.error) {
+        const errorMessage = errorToString(response.error, "Failed to fetch care homes");
         return {
           success: false,
-          error: response.error || "Failed to fetch care homes",
+          error: errorMessage,
         };
       }
 

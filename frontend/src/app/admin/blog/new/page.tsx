@@ -7,6 +7,7 @@ import Link from "next/link";
 import AdminLayout from "@/components/layout/admin-layout";
 import { BlogEditor } from "@/components/blog";
 import { useAdminActions, CreateBlogPostData } from "@/actions-client/admin";
+import { errorToString } from "@/utils/error-to-string";
 import styles from "./page.module.scss";
 
 export default function NewBlogPostPage() {
@@ -41,7 +42,10 @@ export default function NewBlogPostPage() {
         toast.success("Blog post created");
         router.push("/admin/blog");
       } else {
-        toast.error(result.error || "Failed to create blog post");
+        const errorMessage = result.error 
+          ? errorToString(result.error, "Failed to create blog post")
+          : "Failed to create blog post";
+        toast.error(errorMessage);
       }
     } catch {
       toast.error("Unexpected error while creating blog post");

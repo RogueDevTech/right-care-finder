@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
+import { errorToString } from "@/utils/error-to-string";
 import Link from "next/link";
 import AdminLayout from "@/components/layout/admin-layout";
 import {
@@ -47,7 +48,7 @@ export default function CareHomesPage() {
         setTotalPages(Math.ceil((result.data.total || 0) / 20));
         setTotalCareHomes(result.data.total || 0);
       } else {
-        toast.error(result.error || "Failed to load care homes");
+        toast.error(result.error ? errorToString(result.error, "Failed to load care homes") : "Failed to load care homes");
       }
     } catch (error) {
       console.error("Error fetching care homes:", error);

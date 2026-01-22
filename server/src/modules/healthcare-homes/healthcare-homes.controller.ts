@@ -437,6 +437,36 @@ export class HealthcareHomesController {
   }
 
   @Version("v1")
+  @Get("by-slug/:region/:slug")
+  @Public()
+  @ApiOperation({
+    summary: "Get a care home by region and slug",
+    description:
+      "Retrieves detailed information about a specific care home by its region and URL-friendly slug (name).",
+  })
+  @ApiParam({ name: "region", description: "Region/county name (URL-friendly)" })
+  @ApiParam({ name: "slug", description: "Care home name slug (URL-friendly)" })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: "Care home retrieved successfully",
+    type: BaseResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: "Care home not found",
+  })
+  async findByRegionAndSlug(
+    @Param("region") region: string,
+    @Param("slug") slug: string
+  ) {
+    const careHome = await this.healthcareHomesService.findByRegionAndSlug(
+      region,
+      slug
+    );
+    return BaseResponseDto.success("Care home retrieved successfully", careHome);
+  }
+
+  @Version("v1")
   @Get(":id")
   @Public()
   @ApiOperation({

@@ -219,21 +219,81 @@ export default function NavBar({ session }: { session?: ISession }) {
           )}
         </div>
         <div className={styles.menuIcon}>
-          <div className="" onClick={() => setOpenModal(!openModal)}>
+          <div className={styles.menuButton} onClick={() => setOpenModal(!openModal)}>
             <MenuIcon />
           </div>
           {openModal && (
-            <div className={styles.menuDropdown}>
+            <>
+              <div className={styles.menuBackdrop} onClick={() => setOpenModal(false)}></div>
+              <div className={styles.menuDropdown}>
               <div className={styles.menuHeader}>
                 <div className={styles.logo}>
                   <Image src={AppLogo} alt="Right care logo" />
                 </div>
-                <div className="" onClick={() => setOpenModal(!openModal)}>
+                <div className={styles.closeButton} onClick={() => setOpenModal(!openModal)}>
                   <CloseBtn />
                 </div>
               </div>
               <div className={styles.menuContainer}>
                 <div className={styles.menuContent}>
+                  {session?.isLoggedIn && (
+                    <div className={styles.mobileProfileSection}>
+                      <div className={styles.mobileProfileInfo}>
+                        <div className={styles.mobileAvatar}>
+                          <span className={styles.avatarText}>
+                            {session.user?.firstName?.charAt(0) || "U"}
+                            {session.user?.lastName?.charAt(0) || ""}
+                          </span>
+                        </div>
+                        <div className={styles.mobileUserInfo}>
+                          <span className={styles.mobileUserName}>
+                            {session.user?.firstName} {session.user?.lastName}
+                          </span>
+                          <span className={styles.mobileUserEmail}>
+                            {session.user?.email}
+                          </span>
+                        </div>
+                      </div>
+                      <div className={styles.mobileProfileActions}>
+                        {session.user?.role === "admin" && (
+                          <Link 
+                            href="/admin" 
+                            className={styles.mobileProfileLink}
+                            onClick={() => setOpenModal(false)}
+                          >
+                            Admin Dashboard
+                          </Link>
+                        )}
+                        {session.user?.role === "owner" && (
+                          <Link 
+                            href="/owner" 
+                            className={styles.mobileProfileLink}
+                            onClick={() => setOpenModal(false)}
+                          >
+                            Owner Dashboard
+                          </Link>
+                        )}
+                        <button
+                          onClick={() => {
+                            handleLogout();
+                            setOpenModal(false);
+                          }}
+                          className={styles.mobileLogoutButton}
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {!session?.isLoggedIn && (
+                    <Link 
+                      href="/login" 
+                      className={styles.mobileLoginLink}
+                      onClick={() => setOpenModal(false)}
+                    >
+                      Login
+                    </Link>
+                  )}
                   <div className={styles.mobileNav}>
                     <div
                       className={styles.navName}
@@ -252,6 +312,7 @@ export default function NavBar({ session }: { session?: ISession }) {
                               key={careType.id}
                               href={`/search?careTypeId=${careType.id}`}
                               className={styles.profileLink}
+                              onClick={() => setOpenModal(false)}
                             >
                               {careType.name}
                             </Link>
@@ -280,6 +341,7 @@ export default function NavBar({ session }: { session?: ISession }) {
                                 region.region
                               )}`}
                               className={styles.profileLink}
+                              onClick={() => setOpenModal(false)}
                             >
                               {region.region} ({region.count})
                             </Link>
@@ -288,7 +350,11 @@ export default function NavBar({ session }: { session?: ISession }) {
                       </div>
                     )}
                   </div>
-                  <Link href="/care-homes" className={styles.profileLink}>
+                  <Link 
+                    href="/care-homes" 
+                    className={styles.profileLink}
+                    onClick={() => setOpenModal(false)}
+                  >
                     Care homes
                   </Link>
                   <div className={styles.mobileNav}>
@@ -313,6 +379,7 @@ export default function NavBar({ session }: { session?: ISession }) {
                                 specialization.name
                               )}`}
                               className={styles.profileLink}
+                              onClick={() => setOpenModal(false)}
                             >
                               {specialization.name}
                             </Link>
@@ -324,6 +391,7 @@ export default function NavBar({ session }: { session?: ISession }) {
                 </div>
               </div>
             </div>
+            </>
           )}
         </div>
       </div>

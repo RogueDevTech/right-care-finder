@@ -10,6 +10,7 @@ import {
   CreateBlogPostData,
 } from "@/actions-client/admin";
 import BlogEditor from "@/components/blog/BlogEditor";
+import { errorToString } from "@/utils/error-to-string";
 import styles from "./blog.module.scss";
 
 export default function BlogPage() {
@@ -71,7 +72,7 @@ export default function BlogPage() {
         setBlogPosts(result.data.data);
         setTotal(result.data.total);
       } else {
-        toast.error(result.error || "Failed to load blog posts");
+        toast.error(result.error ? errorToString(result.error, "Failed to load blog posts") : "Failed to load blog posts");
       }
     } catch (error) {
       console.error("Error loading blog posts:", error);
@@ -98,7 +99,7 @@ export default function BlogPage() {
             );
           }
         } else {
-          toast.error(result.error || "Failed to update blog post");
+          toast.error(result.error ? errorToString(result.error, "Failed to update blog post") : "Failed to update blog post");
         }
       } else {
         const result = await createBlogPost(blogForm);
@@ -107,7 +108,7 @@ export default function BlogPage() {
           setBlogPosts([result.data, ...blogPosts]);
           setTotal(total + 1);
         } else {
-          toast.error(result.error || "Failed to create blog post");
+          toast.error(result.error ? errorToString(result.error, "Failed to create blog post") : "Failed to create blog post");
         }
       }
 
@@ -147,7 +148,7 @@ export default function BlogPage() {
         setBlogPosts(blogPosts.filter((post) => post.id !== id));
         setTotal(total - 1);
       } else {
-        toast.error(result.error || "Failed to delete blog post");
+        toast.error(result.error ? errorToString(result.error, "Failed to delete blog post") : "Failed to delete blog post");
       }
     } catch (error) {
       console.error("Error deleting blog post:", error);

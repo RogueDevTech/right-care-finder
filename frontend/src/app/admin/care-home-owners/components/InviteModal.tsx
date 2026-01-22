@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
+import { errorToString } from "@/utils/error-to-string";
 import { useAdminActions, CareHomeOption } from "@/actions-client/admin";
 import styles from "./InviteModal.module.scss";
 
@@ -165,7 +166,7 @@ export default function InviteModal({
           message: "",
         });
       } else {
-        toast.error(result.error || "Failed to invite care home owner");
+        toast.error(result.error ? errorToString(result.error, "Failed to invite care home owner") : "Failed to invite care home owner");
       }
     } catch (error) {
       console.error("Error inviting care home owner:", error);

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "react-hot-toast";
+import { errorToString } from "@/utils/error-to-string";
 import Link from "next/link";
 import AdminLayout from "@/components/layout/admin-layout";
 import { useAdminActions, CareHome } from "@/actions-client/admin";
@@ -37,7 +38,7 @@ export default function CareHomeDetailPage() {
       if (result.success && result.data) {
         setCareHome(result.data);
       } else {
-        toast.error(result.error || "Failed to load care home details");
+        toast.error(result.error ? errorToString(result.error, "Failed to load care home details") : "Failed to load care home details");
       }
     } catch (error) {
       console.error("Error fetching care home details:", error);
@@ -74,7 +75,7 @@ export default function CareHomeDetailPage() {
         toast.success("Care home status updated successfully");
         setShowStatusModal(false);
       } else {
-        toast.error(result.error || "Failed to update care home status");
+        toast.error(result.error ? errorToString(result.error, "Failed to update care home status") : "Failed to update care home status");
       }
     } catch (error) {
       console.error("Error updating care home status:", error);
@@ -106,7 +107,7 @@ export default function CareHomeDetailPage() {
         );
         setShowVerificationModal(false);
       } else {
-        toast.error(result.error || "Failed to update verification status");
+        toast.error(result.error ? errorToString(result.error, "Failed to update verification status") : "Failed to update verification status");
       }
     } catch (error) {
       console.error("Error updating verification status:", error);

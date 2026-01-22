@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
+import { errorToString } from "@/utils/error-to-string";
 import Link from "next/link";
 import AdminLayout from "@/components/layout/admin-layout";
 import { useAdminActions, InvitationResponse } from "@/actions-client/admin";
@@ -61,7 +62,7 @@ export default function CareHomeOwnersPage() {
         setTotalPages(Math.ceil((result.data.pagination?.total || 0) / 20));
         setTotalInvitations(result.data.pagination?.total || 0);
       } else {
-        toast.error(result.error || "Failed to load invitations");
+        toast.error(result.error ? errorToString(result.error, "Failed to load invitations") : "Failed to load invitations");
       }
     } catch (error) {
       console.error("Error fetching invitations:", error);
@@ -102,7 +103,7 @@ export default function CareHomeOwnersPage() {
         setIsConfirmationModalOpen(false);
         setInvitationToCancel(null);
       } else {
-        toast.error(result.error || "Failed to cancel invitation");
+        toast.error(result.error ? errorToString(result.error, "Failed to cancel invitation") : "Failed to cancel invitation");
       }
     } catch (error) {
       console.error("Error cancelling invitation:", error);
@@ -129,7 +130,7 @@ export default function CareHomeOwnersPage() {
         setIsResendModalOpen(false);
         setInvitationToResend(null);
       } else {
-        toast.error(result.error || "Failed to resend invitation");
+        toast.error(result.error ? errorToString(result.error, "Failed to resend invitation") : "Failed to resend invitation");
       }
     } catch (error) {
       console.error("Error resending invitation:", error);

@@ -13,10 +13,10 @@ interface CareHomeCardProps {
 
 const CareHomeCard: React.FC<CareHomeCardProps> = ({ careHome, className }) => {
   const careHomeUrl = createCareHomeUrl(careHome.region, careHome.name);
-  
+  console.log(careHome);
   return (
     <Link
-      href={careHomeUrl}
+      href={`/care-homes/${careHome.id}`}
       className={`${styles.cardLink} ${className || ""}`}
     >
       <div className={styles.careHomeCard}>

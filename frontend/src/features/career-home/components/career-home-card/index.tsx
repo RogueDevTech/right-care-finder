@@ -58,7 +58,7 @@ const CareerHomeCard: React.FC<CareerHomeCardProps> = ({ filters = {} }) => {
           setCareHomes(careHomesData);
           setTotalPages(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            Math.ceil(((response.data as any).data.total || 0) / 20)
+            Math.ceil(((response.data as any).data.total || 0) / 20),
           );
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           setTotalCareHomes((response.data as any).data.total || 0);
@@ -96,7 +96,7 @@ const CareerHomeCard: React.FC<CareerHomeCardProps> = ({ filters = {} }) => {
     "Current careHomes state:",
     careHomes,
     "Length:",
-    careHomes.length
+    careHomes.length,
   );
 
   if (careHomes.length === 0) {
@@ -124,7 +124,8 @@ const CareerHomeCard: React.FC<CareerHomeCardProps> = ({ filters = {} }) => {
             {/* Left: Page Info */}
             <div className={styles.pageInfo}>
               <span className={styles.pageText}>
-                Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
+                Page <strong>{currentPage}</strong> of{" "}
+                <strong>{totalPages}</strong>
               </span>
               <span className={styles.separator}>•</span>
               <span className={styles.resultsText}>

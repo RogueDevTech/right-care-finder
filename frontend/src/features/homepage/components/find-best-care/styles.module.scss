@@ -169,9 +169,132 @@
 
 .loadingContainer {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+  padding: 40px 0;
+}
+
+.loaderWrapper {
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  padding: 40px;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e1e1e1;
+  border-top: 4px solid #1c7c8a;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loadingText {
   color: #7f7d7d;
   font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.skeletonGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  width: 100%;
+}
+
+.skeletonCard {
+  min-width: 235px;
+  flex: 1 1 235px;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: row;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.skeletonImage {
+  width: 64px;
+  height: 64px;
+  min-width: 64px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeletonContent {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.skeletonTitle {
+  width: 70%;
+  height: 20px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeletonDescription {
+  width: 90%;
+  height: 16px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeletonRating {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.skeletonStars {
+  width: 100px;
+  height: 16px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeletonRatingText {
+  width: 80px;
+  height: 14px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }

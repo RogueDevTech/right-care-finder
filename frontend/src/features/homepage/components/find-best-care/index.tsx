@@ -146,7 +146,25 @@ const FindBestCare: React.FC = () => {
         {toggle === "grid" ? (
           isLoading ? (
             <div className={styles.loadingContainer}>
-              <p>Loading region statistics...</p>
+              <div className={styles.loaderWrapper}>
+                <div className={styles.spinner}></div>
+                <p className={styles.loadingText}>Loading region statistics...</p>
+              </div>
+              <div className={styles.skeletonGrid}>
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className={styles.skeletonCard}>
+                    <div className={styles.skeletonImage}></div>
+                    <div className={styles.skeletonContent}>
+                      <div className={styles.skeletonTitle}></div>
+                      <div className={styles.skeletonDescription}></div>
+                      <div className={styles.skeletonRating}>
+                        <div className={styles.skeletonStars}></div>
+                        <div className={styles.skeletonRatingText}></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           ) : (
             <>

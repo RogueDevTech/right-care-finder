@@ -6,6 +6,8 @@ import { toast } from "react-hot-toast";
 import AdminLayout from "@/components/layout/admin-layout";
 import Card from "@/components/ui/card";
 import Button from "@/components/ui/button";
+import { useAdminActions } from "@/actions-client/admin";
+import { errorToString } from "@/utils/error-to-string";
 import styles from "./admin.module.scss";
 
 interface DashboardStats {
@@ -16,7 +18,7 @@ interface DashboardStats {
   recentCareHomes: Array<{
     id: string;
     name: string;
-    status: string;
+    status?: string;
     createdAt: string;
   }>;
   activeUsers: number;
@@ -27,138 +29,119 @@ export default function AdminPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const { getDashboardData } = useAdminActions();
 
   useEffect(() => {
-    // Check if user is admin
-
-    // TODO: Verify admin role with backend
     fetchDashboardStats();
-  }, [router]);
+  }, []);
 
   const fetchDashboardStats = async () => {
     try {
-      // TODO: Replace with actual API call
-      const mockStats: DashboardStats = {
-        totalUsers: 1250,
-        totalCareHomes: 89,
-        activeCareHomes: 76,
-        verifiedCareHomes: 65,
-        recentCareHomes: [
-          {
-            id: "1",
-            name: "Sunset Care Home",
-            status: "Active",
-            createdAt: "2024-01-15",
-          },
-          {
-            id: "2",
-            name: "Golden Years Residence",
-            status: "Pending",
-            createdAt: "2024-01-14",
-          },
-          {
-            id: "3",
-            name: "Comfort Care Center",
-            status: "Active",
-            createdAt: "2024-01-13",
-          },
-        ],
-        activeUsers: 890,
-        totalReviews: 2340,
-      };
-
-      setStats(mockStats);
-    } catch {
+      setIsLoading(true);
+      const result = await getDashboardData();
+      
+      if (result.success && result.data) {
+        setStats(result.data);
+      } else {
+        const errorMessage = result.error 
+          ? errorToString(result.error, "Failed to load dashboard stats")
+          : "Failed to load dashboard stats";
+        toast.error(errorMessage);
+        setStats(null);
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
       toast.error("Failed to load dashboard stats");
+      setStats(null);
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.spinner}></div>
-        <p>Loading admin dashboard...</p>
-      </div>
-    );
-  }
-
   return (
     <AdminLayout>
       <div className={styles.adminContainer}>
-        {stats && (
-          <div className={styles.statsGrid}>
-            <Card className={styles.statCard}>
-              <div className={styles.statInfo}>
-                <h3>{stats.totalUsers.toLocaleString()}</h3>
-                <p>Total Users</p>
-              </div>
-            </Card>
-
-            <Card className={styles.statCard}>
-              <div className={styles.statInfo}>
-                <h3>{stats.totalCareHomes}</h3>
-                <p>Total Care Homes</p>
-              </div>
-            </Card>
-
-            <Card className={styles.statCard}>
-              <div className={styles.statInfo}>
-                <h3>{stats.verifiedCareHomes}</h3>
-                <p>Verified Care Homes</p>
-              </div>
-            </Card>
-
-            <Card className={styles.statCard}>
-              <div className={styles.statInfo}>
-                <h3>{stats.totalReviews.toLocaleString()}</h3>
-                <p>Total Reviews</p>
-              </div>
-            </Card>
+        {isLoading ? (
+          <div className={styles.loadingContainer}>
+            <div className={styles.spinner}></div>
+            <p>Loading admin dashboard...</p>
           </div>
+        ) : (
+          <>
+            {stats && (
+              <div className={styles.statsGrid}>
+                <Card className={styles.statCard}>
+                  <div className={styles.statInfo}>
+                    <h3>{stats.totalUsers.toLocaleString()}</h3>
+                    <p>Total Users</p>
+                  </div>
+                </Card>
+
+                <Card className={styles.statCard}>
+                  <div className={styles.statInfo}>
+                    <h3>{stats.totalCareHomes}</h3>
+                    <p>Total Care Homes</p>
+                  </div>
+                </Card>
+
+                <Card className={styles.statCard}>
+                  <div className={styles.statInfo}>
+                    <h3>{stats.verifiedCareHomes}</h3>
+                    <p>Verified Care Homes</p>
+                  </div>
+                </Card>
+
+                <Card className={styles.statCard}>
+                  <div className={styles.statInfo}>
+                    <h3>{stats.totalReviews.toLocaleString()}</h3>
+                    <p>Total Reviews</p>
+                  </div>
+                </Card>
+              </div>
+            )}
+
+            <div className={styles.sectionsGrid}>
+              <Card className={styles.sectionCard}>
+                <div className={styles.sectionContent}>
+                  <h2>User Management</h2>
+                  <p>Manage user accounts, roles, and permissions</p>
+                  <Button
+                    variant="primary"
+                    onClick={() => router.push("/admin/users")}
+                  >
+                    Manage Users
+                  </Button>
+                </div>
+              </Card>
+
+              <Card className={styles.sectionCard}>
+                <div className={styles.sectionContent}>
+                  <h2>Care Home Management</h2>
+                  <p>Review, approve, and manage care home listings</p>
+                  <Button
+                    variant="primary"
+                    onClick={() => router.push("/admin/care-homes")}
+                  >
+                    Manage Care Homes
+                  </Button>
+                </div>
+              </Card>
+
+              <Card className={styles.sectionCard}>
+                <div className={styles.sectionContent}>
+                  <h2>Reviews & Ratings</h2>
+                  <p>Monitor and moderate user reviews</p>
+                  <Button
+                    variant="primary"
+                    onClick={() => router.push("/admin/reviews")}
+                  >
+                    Manage Reviews
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          </>
         )}
-
-        <div className={styles.sectionsGrid}>
-          <Card className={styles.sectionCard}>
-            <div className={styles.sectionContent}>
-              <h2>User Management</h2>
-              <p>Manage user accounts, roles, and permissions</p>
-              <Button
-                variant="primary"
-                onClick={() => router.push("/admin/users")}
-              >
-                Manage Users
-              </Button>
-            </div>
-          </Card>
-
-          <Card className={styles.sectionCard}>
-            <div className={styles.sectionContent}>
-              <h2>Care Home Management</h2>
-              <p>Review, approve, and manage care home listings</p>
-              <Button
-                variant="primary"
-                onClick={() => router.push("/admin/care-homes")}
-              >
-                Manage Care Homes
-              </Button>
-            </div>
-          </Card>
-
-          <Card className={styles.sectionCard}>
-            <div className={styles.sectionContent}>
-              <h2>Reviews & Ratings</h2>
-              <p>Monitor and moderate user reviews</p>
-              <Button
-                variant="primary"
-                onClick={() => router.push("/admin/reviews")}
-              >
-                Manage Reviews
-              </Button>
-            </div>
-          </Card>
-        </div>
       </div>
     </AdminLayout>
   );

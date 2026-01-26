@@ -1,6 +1,7 @@
 "use client";
 
 import { useClient } from "@/hooks";
+import { errorToString } from "@/utils/error-to-string";
 
 export interface UserVerification {
   id: string;
@@ -399,6 +400,53 @@ export interface BlogPostQueryParams {
 
 export const useAdminActions = () => {
   const client = useClient();
+
+  // Dashboard
+  const getDashboardData = async (): Promise<{
+    success: boolean;
+    data?: {
+      totalUsers: number;
+      totalCareHomes: number;
+      activeCareHomes: number;
+      verifiedCareHomes: number;
+      recentCareHomes: Array<{
+        id: string;
+        name: string;
+        status?: string;
+        createdAt: string;
+      }>;
+      activeUsers: number;
+      totalReviews: number;
+    };
+    error?: string;
+  }> => {
+    const response = await client.get("/admin/dashboard");
+
+    if (response.data) {
+      return {
+        success: true,
+        data: response.data as {
+          totalUsers: number;
+          totalCareHomes: number;
+          activeCareHomes: number;
+          verifiedCareHomes: number;
+          recentCareHomes: Array<{
+            id: string;
+            name: string;
+            status?: string;
+            createdAt: string;
+          }>;
+          activeUsers: number;
+          totalReviews: number;
+        },
+      };
+    } else {
+      return {
+        success: false,
+        error: errorToString(response.error, "Failed to load dashboard data"),
+      };
+    }
+  };
 
   const getUsers = async (params: UsersQueryParams = {}) => {
     const queryParams = new URLSearchParams();
@@ -1187,6 +1235,7 @@ export const useAdminActions = () => {
   };
 
   return {
+    getDashboardData,
     getUsers,
     getUserById,
     // Care Home Management

@@ -29,7 +29,11 @@ export default function CareHomeAllReviewsPage() {
       setIsLoading(true);
       const res = await getCareHomeById(careHomeId);
       if (!res.success || !res.data) {
-        toast.error(res.error ? errorToString(res.error, "Failed to load reviews") : "Failed to load reviews");
+        toast.error(
+          res.error
+            ? errorToString(res.error, "Failed to load reviews")
+            : "Failed to load reviews",
+        );
         setCareHome(null);
       } else {
         setCareHome(res.data);

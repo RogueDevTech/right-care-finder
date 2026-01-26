@@ -111,7 +111,7 @@ export default function NavBar({ session }: { session?: ISession }) {
           <div className={styles.nav}>
             <div className={styles.dropdown}>
               <button className={styles.dropbtn}>
-                Care type <DropIcon fillColor="#f6f6f6" />
+                Care type <DropIcon fillColor="#000" />
               </button>
               <div className={styles.dropdownContent}>
                 {isLoadingCareTypes ? (
@@ -130,7 +130,7 @@ export default function NavBar({ session }: { session?: ISession }) {
             </div>
             <div className={styles.dropdown}>
               <button className={styles.dropbtn}>
-                Region <DropIcon fillColor="#f6f6f6" />
+                Region <DropIcon fillColor="#000" />
               </button>
               <div className={styles.dropdownContent}>
                 {isLoadingRegionStats ? (
@@ -140,7 +140,7 @@ export default function NavBar({ session }: { session?: ISession }) {
                     <a
                       key={region.region}
                       href={`/care-homes?region=${encodeURIComponent(
-                        region.region
+                        region.region,
                       )}`}
                     >
                       {region.region} ({region.count})
@@ -154,7 +154,7 @@ export default function NavBar({ session }: { session?: ISession }) {
             </Link>
             <div className={styles.dropdown}>
               <button className={styles.dropbtn}>
-                Specialization <DropIcon fillColor="#f6f6f6" />
+                Specialization <DropIcon fillColor="#000" />
               </button>
               <div className={styles.dropdownContent}>
                 {isLoadingSpecializations ? (
@@ -164,7 +164,7 @@ export default function NavBar({ session }: { session?: ISession }) {
                     <a
                       key={specialization.id}
                       href={`/care-homes?specializations=${encodeURIComponent(
-                        specialization.name
+                        specialization.name,
                       )}`}
                     >
                       {specialization.name}
@@ -219,178 +219,187 @@ export default function NavBar({ session }: { session?: ISession }) {
           )}
         </div>
         <div className={styles.menuIcon}>
-          <div className={styles.menuButton} onClick={() => setOpenModal(!openModal)}>
+          <div
+            className={styles.menuButton}
+            onClick={() => setOpenModal(!openModal)}
+          >
             <MenuIcon />
           </div>
           {openModal && (
             <>
-              <div className={styles.menuBackdrop} onClick={() => setOpenModal(false)}></div>
+              <div
+                className={styles.menuBackdrop}
+                onClick={() => setOpenModal(false)}
+              ></div>
               <div className={styles.menuDropdown}>
-              <div className={styles.menuHeader}>
-                <div className={styles.logo}>
-                  <Image src={AppLogo} alt="Right care logo" />
+                <div className={styles.menuHeader}>
+                  <div className={styles.logo}>
+                    <Image src={AppLogo} alt="Right care logo" />
+                  </div>
+                  <div
+                    className={styles.closeButton}
+                    onClick={() => setOpenModal(!openModal)}
+                  >
+                    <CloseBtn />
+                  </div>
                 </div>
-                <div className={styles.closeButton} onClick={() => setOpenModal(!openModal)}>
-                  <CloseBtn />
-                </div>
-              </div>
-              <div className={styles.menuContainer}>
-                <div className={styles.menuContent}>
-                  {session?.isLoggedIn && (
-                    <div className={styles.mobileProfileSection}>
-                      <div className={styles.mobileProfileInfo}>
-                        <div className={styles.mobileAvatar}>
-                          <span className={styles.avatarText}>
-                            {session.user?.firstName?.charAt(0) || "U"}
-                            {session.user?.lastName?.charAt(0) || ""}
-                          </span>
+                <div className={styles.menuContainer}>
+                  <div className={styles.menuContent}>
+                    {session?.isLoggedIn && (
+                      <div className={styles.mobileProfileSection}>
+                        <div className={styles.mobileProfileInfo}>
+                          <div className={styles.mobileAvatar}>
+                            <span className={styles.avatarText}>
+                              {session.user?.firstName?.charAt(0) || "U"}
+                              {session.user?.lastName?.charAt(0) || ""}
+                            </span>
+                          </div>
+                          <div className={styles.mobileUserInfo}>
+                            <span className={styles.mobileUserName}>
+                              {session.user?.firstName} {session.user?.lastName}
+                            </span>
+                            <span className={styles.mobileUserEmail}>
+                              {session.user?.email}
+                            </span>
+                          </div>
                         </div>
-                        <div className={styles.mobileUserInfo}>
-                          <span className={styles.mobileUserName}>
-                            {session.user?.firstName} {session.user?.lastName}
-                          </span>
-                          <span className={styles.mobileUserEmail}>
-                            {session.user?.email}
-                          </span>
+                        <div className={styles.mobileProfileActions}>
+                          {session.user?.role === "admin" && (
+                            <Link
+                              href="/admin"
+                              className={styles.mobileProfileLink}
+                              onClick={() => setOpenModal(false)}
+                            >
+                              Admin Dashboard
+                            </Link>
+                          )}
+                          {session.user?.role === "owner" && (
+                            <Link
+                              href="/owner"
+                              className={styles.mobileProfileLink}
+                              onClick={() => setOpenModal(false)}
+                            >
+                              Owner Dashboard
+                            </Link>
+                          )}
+                          <button
+                            onClick={() => {
+                              handleLogout();
+                              setOpenModal(false);
+                            }}
+                            className={styles.mobileLogoutButton}
+                          >
+                            Logout
+                          </button>
                         </div>
                       </div>
-                      <div className={styles.mobileProfileActions}>
-                        {session.user?.role === "admin" && (
-                          <Link 
-                            href="/admin" 
-                            className={styles.mobileProfileLink}
-                            onClick={() => setOpenModal(false)}
-                          >
-                            Admin Dashboard
-                          </Link>
-                        )}
-                        {session.user?.role === "owner" && (
-                          <Link 
-                            href="/owner" 
-                            className={styles.mobileProfileLink}
-                            onClick={() => setOpenModal(false)}
-                          >
-                            Owner Dashboard
-                          </Link>
-                        )}
-                        <button
-                          onClick={() => {
-                            handleLogout();
-                            setOpenModal(false);
-                          }}
-                          className={styles.mobileLogoutButton}
-                        >
-                          Logout
-                        </button>
+                    )}
+                    {!session?.isLoggedIn && (
+                      <Link
+                        href="/login"
+                        className={styles.mobileLoginLink}
+                        onClick={() => setOpenModal(false)}
+                      >
+                        Login
+                      </Link>
+                    )}
+                    <div className={styles.mobileNav}>
+                      <div
+                        className={styles.navName}
+                        onClick={() => setCareTypeOpen(!careTypeOpen)}
+                      >
+                        <p>Care type</p>
+                        <DropIcon fillColor="#f6f6f6" />
                       </div>
+                      {careTypeOpen && (
+                        <div className={styles.careTypeDropdown}>
+                          {isLoadingCareTypes ? (
+                            <div>Loading...</div>
+                          ) : (
+                            careTypes.map((careType) => (
+                              <Link
+                                key={careType.id}
+                                href={`/search?careTypeId=${careType.id}`}
+                                className={styles.profileLink}
+                                onClick={() => setOpenModal(false)}
+                              >
+                                {careType.name}
+                              </Link>
+                            ))
+                          )}
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {!session?.isLoggedIn && (
-                    <Link 
-                      href="/login" 
-                      className={styles.mobileLoginLink}
+                    <div className={styles.mobileNav}>
+                      <div
+                        className={styles.navName}
+                        onClick={() => setRegionOpen(!regionOpen)}
+                      >
+                        <p>Region</p>
+                        <DropIcon fillColor="#f6f6f6" />
+                      </div>
+                      {regionOpen && (
+                        <div className={styles.careTypeDropdown}>
+                          {isLoadingRegionStats ? (
+                            <div>Loading...</div>
+                          ) : (
+                            regionStats.map((region) => (
+                              <Link
+                                key={region.region}
+                                href={`/search?region=${encodeURIComponent(
+                                  region.region,
+                                )}`}
+                                className={styles.profileLink}
+                                onClick={() => setOpenModal(false)}
+                              >
+                                {region.region} ({region.count})
+                              </Link>
+                            ))
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <Link
+                      href="/care-homes"
+                      className={styles.profileLink}
                       onClick={() => setOpenModal(false)}
                     >
-                      Login
+                      Care homes
                     </Link>
-                  )}
-                  <div className={styles.mobileNav}>
-                    <div
-                      className={styles.navName}
-                      onClick={() => setCareTypeOpen(!careTypeOpen)}
-                    >
-                      <p>Care type</p>
-                      <DropIcon fillColor="#f6f6f6" />
-                    </div>
-                    {careTypeOpen && (
-                      <div className={styles.careTypeDropdown}>
-                        {isLoadingCareTypes ? (
-                          <div>Loading...</div>
-                        ) : (
-                          careTypes.map((careType) => (
-                            <Link
-                              key={careType.id}
-                              href={`/search?careTypeId=${careType.id}`}
-                              className={styles.profileLink}
-                              onClick={() => setOpenModal(false)}
-                            >
-                              {careType.name}
-                            </Link>
-                          ))
-                        )}
+                    <div className={styles.mobileNav}>
+                      <div
+                        className={styles.navName}
+                        onClick={() =>
+                          setServicesOfferedOpen(!servicesOfferedOpen)
+                        }
+                      >
+                        <p>Specialization</p>
+                        <DropIcon fillColor="#f6f6f6" />
                       </div>
-                    )}
-                  </div>
-                  <div className={styles.mobileNav}>
-                    <div
-                      className={styles.navName}
-                      onClick={() => setRegionOpen(!regionOpen)}
-                    >
-                      <p>Region</p>
-                      <DropIcon fillColor="#f6f6f6" />
+                      {servicesOfferedOpen && (
+                        <div className={styles.careTypeDropdown}>
+                          {isLoadingSpecializations ? (
+                            <div>Loading...</div>
+                          ) : (
+                            specializations.map((specialization) => (
+                              <Link
+                                key={specialization.id}
+                                href={`/care-homes?specializations=${encodeURIComponent(
+                                  specialization.name,
+                                )}`}
+                                className={styles.profileLink}
+                                onClick={() => setOpenModal(false)}
+                              >
+                                {specialization.name}
+                              </Link>
+                            ))
+                          )}
+                        </div>
+                      )}
                     </div>
-                    {regionOpen && (
-                      <div className={styles.careTypeDropdown}>
-                        {isLoadingRegionStats ? (
-                          <div>Loading...</div>
-                        ) : (
-                          regionStats.map((region) => (
-                            <Link
-                              key={region.region}
-                              href={`/search?region=${encodeURIComponent(
-                                region.region
-                              )}`}
-                              className={styles.profileLink}
-                              onClick={() => setOpenModal(false)}
-                            >
-                              {region.region} ({region.count})
-                            </Link>
-                          ))
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <Link 
-                    href="/care-homes" 
-                    className={styles.profileLink}
-                    onClick={() => setOpenModal(false)}
-                  >
-                    Care homes
-                  </Link>
-                  <div className={styles.mobileNav}>
-                    <div
-                      className={styles.navName}
-                      onClick={() =>
-                        setServicesOfferedOpen(!servicesOfferedOpen)
-                      }
-                    >
-                      <p>Specialization</p>
-                      <DropIcon fillColor="#f6f6f6" />
-                    </div>
-                    {servicesOfferedOpen && (
-                      <div className={styles.careTypeDropdown}>
-                        {isLoadingSpecializations ? (
-                          <div>Loading...</div>
-                        ) : (
-                          specializations.map((specialization) => (
-                            <Link
-                              key={specialization.id}
-                              href={`/care-homes?specializations=${encodeURIComponent(
-                                specialization.name
-                              )}`}
-                              className={styles.profileLink}
-                              onClick={() => setOpenModal(false)}
-                            >
-                              {specialization.name}
-                            </Link>
-                          ))
-                        )}
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
-            </div>
             </>
           )}
         </div>

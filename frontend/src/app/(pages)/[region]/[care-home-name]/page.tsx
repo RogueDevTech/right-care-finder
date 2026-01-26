@@ -54,25 +54,25 @@ function chunkArray<T>(arr: T[], size: number): T[][] {
 // Format UK phone number with +44 prefix for tel: links
 function formatPhoneForDial(phone: string | undefined): string {
   if (!phone) return "";
-  
+
   // Remove all spaces and special characters except + and digits
   let cleaned = phone.replace(/[^\d+]/g, "");
-  
+
   // If it already starts with +44, return as is
   if (cleaned.startsWith("+44")) {
     return cleaned;
   }
-  
+
   // If it starts with 44 (without +), add the +
   if (cleaned.startsWith("44")) {
     return `+${cleaned}`;
   }
-  
+
   // If it starts with 0 (UK domestic format), replace 0 with +44
   if (cleaned.startsWith("0")) {
     return `+44${cleaned.substring(1)}`;
   }
-  
+
   // Otherwise, assume it's a UK number and add +44
   return `+44${cleaned}`;
 }
@@ -81,7 +81,8 @@ export default function CareHomesDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const { openReviewModal, setOpenReviewModal } = useCounterStore();
-  const { getCareHomeByRegionAndSlug, getReviews } = useHealthcareHomesActions();
+  const { getCareHomeByRegionAndSlug, getReviews } =
+    useHealthcareHomesActions();
 
   const [careHome, setCareHome] = useState<CareHome | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -130,33 +131,36 @@ export default function CareHomesDetailsPage() {
     }
   };
 
-  const fetchReviews = useCallback(async (careHomeId: string) => {
-    if (!careHomeId) return;
+  const fetchReviews = useCallback(
+    async (careHomeId: string) => {
+      if (!careHomeId) return;
 
-    setReviewsLoading(true);
-    try {
-      const response = await getReviews(careHomeId, {
-        page: 1,
-        limit: 10,
-        sortBy: "createdAt",
-        sortOrder: "DESC",
-      });
+      setReviewsLoading(true);
+      try {
+        const response = await getReviews(careHomeId, {
+          page: 1,
+          limit: 10,
+          sortBy: "createdAt",
+          sortOrder: "DESC",
+        });
 
-      if (response.success && response.data) {
-        const reviewsArray = Array.isArray(response.data.data)
-          ? response.data.data
-          : [];
-        setReviews(reviewsArray);
-      } else {
+        if (response.success && response.data) {
+          const reviewsArray = Array.isArray(response.data.data)
+            ? response.data.data
+            : [];
+          setReviews(reviewsArray);
+        } else {
+          setReviews([]);
+        }
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
         setReviews([]);
+      } finally {
+        setReviewsLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching reviews:", error);
-      setReviews([]);
-    } finally {
-      setReviewsLoading(false);
-    }
-  }, [getReviews]);
+    },
+    [getReviews],
+  );
 
   const handleReviewSubmitted = useCallback(() => {
     if (careHome?.id) {
@@ -172,7 +176,9 @@ export default function CareHomesDetailsPage() {
       try {
         const response = await getCareHomeByRegionAndSlug(region, careHomeName);
         if (!response.success) {
-          toast.error(`Failed to load care home details: ${errorToString(response.error, "Unknown error")}`);
+          toast.error(
+            `Failed to load care home details: ${errorToString(response.error, "Unknown error")}`,
+          );
           setCareHome(null);
         } else {
           setCareHome(response.data || null);
@@ -182,12 +188,12 @@ export default function CareHomesDetailsPage() {
             const careHomeImages = response.data.images.map(
               (
                 img: { id: string; url: string; alt?: string },
-                index: number
+                index: number,
               ) => ({
                 id: index + 1,
                 src: img.url,
                 alt: img.alt || `Care home image ${index + 1}`,
-              })
+              }),
             );
             setImages(careHomeImages);
             setCurrentImageIndex(0);
@@ -444,9 +450,7 @@ export default function CareHomesDetailsPage() {
         </div>
         <div className={styles.getInTouch}>
           <div className={styles.contactUs}>
-            <a 
-              href={`tel:${formatPhoneForDial(careHome.phone)}`}
-            >
+            <a href={`tel:${formatPhoneForDial(careHome.phone)}`}>
               <span>
                 <PhoneIcon />
                 <span>{careHome.phone}</span>
@@ -663,7 +667,7 @@ export default function CareHomesDetailsPage() {
                   </p>
                   <p className={styles.reviewTime}>
                     {new Date(
-                      review.createdAt || new Date().toISOString()
+                      review.createdAt || new Date().toISOString(),
                     ).toLocaleDateString("en-GB", {
                       day: "2-digit",
                       month: "long",

@@ -48,7 +48,11 @@ export default function CareHomesPage() {
         setTotalPages(Math.ceil((result.data.total || 0) / 20));
         setTotalCareHomes(result.data.total || 0);
       } else {
-        toast.error(result.error ? errorToString(result.error, "Failed to load care homes") : "Failed to load care homes");
+        toast.error(
+          result.error
+            ? errorToString(result.error, "Failed to load care homes")
+            : "Failed to load care homes",
+        );
       }
     } catch (error) {
       console.error("Error fetching care homes:", error);
@@ -350,8 +354,7 @@ export default function CareHomesPage() {
                 </span>
                 <span className={styles.separator}>•</span>
                 <span className={styles.resultsText}>
-                  {totalCareHomes}{" "}
-                  {totalCareHomes === 1 ? "result" : "results"}
+                  {totalCareHomes} {totalCareHomes === 1 ? "result" : "results"}
                 </span>
               </div>
 

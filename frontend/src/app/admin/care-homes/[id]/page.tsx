@@ -17,12 +17,18 @@ export default function CareHomeDetailPage() {
   const [isUpdatingVerification, setIsUpdatingVerification] = useState(false);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<string>("");
   const router = useRouter();
   const params = useParams();
   const careHomeId = params.id as string;
-  const { getCareHomeById, toggleCareHomeStatus, toggleCareHomeVerification } =
-    useAdminActions();
+  const {
+    getCareHomeById,
+    toggleCareHomeStatus,
+    toggleCareHomeVerification,
+    deleteCareHome,
+  } = useAdminActions();
 
   useEffect(() => {
     if (careHomeId) {
@@ -117,21 +123,34 @@ export default function CareHomeDetailPage() {
     }
   };
 
-  const handleDelete = async () => {
-    if (!careHome) return;
+  const handleDeleteClick = () => {
+    if (!careHome || isDeleting) return;
+    setShowDeleteModal(true);
+  };
 
-    if (
-      window.confirm(
-        "Are you sure you want to delete this care home? This action cannot be undone."
-      )
-    ) {
-      try {
-        // TODO: Replace with actual API call
+  const confirmDelete = async () => {
+    if (!careHome || isDeleting) return;
+
+    try {
+      setIsDeleting(true);
+      const result = await deleteCareHome(careHomeId);
+
+      if (result.success) {
         toast.success("Care home deleted successfully");
+        setShowDeleteModal(false);
         router.push("/admin/care-homes");
-      } catch {
-        toast.error("Failed to delete care home");
+      } else {
+        toast.error(
+          result.error
+            ? errorToString(result.error, "Failed to delete care home")
+            : "Failed to delete care home"
+        );
       }
+    } catch (error) {
+      console.error("Error deleting care home:", error);
+      toast.error("Failed to delete care home");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -159,7 +178,7 @@ export default function CareHomeDetailPage() {
             </button>
             <button
               className={styles.deleteButton}
-              onClick={handleDelete}
+              onClick={handleDeleteClick}
               disabled={isLoading}
             >
               Delete Care Home
@@ -534,6 +553,18 @@ export default function CareHomeDetailPage() {
         cancelText="Cancel"
         isLoading={isUpdatingVerification}
         type="info"
+      />
+
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => !isDeleting && setShowDeleteModal(false)}
+        onConfirm={confirmDelete}
+        title="Delete Care Home"
+        message="Are you sure you want to delete this care home? This action cannot be undone."
+        confirmText="Delete Care Home"
+        cancelText="Cancel"
+        isLoading={isDeleting}
+        type="danger"
       />
     </AdminLayout>
   );

@@ -617,17 +617,16 @@ export const useAdminActions = () => {
   const deleteCareHome = async (careHomeId: string) => {
     const response = await client.delete(`/admin/care-homes/${careHomeId}`);
 
-    if (response.data) {
-      return {
-        success: true,
-        data: response.data,
-      };
-    } else {
+    if (response.error) {
       return {
         success: false,
         error: response.error,
       };
     }
+    return {
+      success: true,
+      data: response.data,
+    };
   };
 
   const toggleCareHomeStatus = async (

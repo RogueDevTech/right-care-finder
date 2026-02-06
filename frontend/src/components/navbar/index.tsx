@@ -52,7 +52,7 @@ export default function NavBar({ session }: { session?: ISession }) {
 
         if (result.success && result.data) {
           setCareTypes(result.data);
-        } else {
+        } else if (result.error) {
           console.error("Failed to fetch care types:", result.error);
         }
       } catch (error) {
@@ -68,7 +68,7 @@ export default function NavBar({ session }: { session?: ISession }) {
         const result = await getSpecializations();
         if (result.success && result.data) {
           setSpecializations(result.data);
-        } else {
+        } else if (result.error) {
           console.error("Failed to fetch specializations:", result.error);
         }
       } catch (error) {
@@ -84,7 +84,7 @@ export default function NavBar({ session }: { session?: ISession }) {
         const result = await getRegionStatistics();
         if (result.success && result.data) {
           setRegionStats(result.data);
-        } else {
+        } else if (result.error) {
           console.error("Failed to fetch region statistics:", result.error);
         }
       } catch (error) {

@@ -26,40 +26,56 @@ export const useClient = () => {
   }, []);
 
   async function handleResponse<R, E>(response: globalThis.Response) {
+    const status = response.status;
+    const isOk = response.ok;
+
     return response
-      .json()
-      .then((data) => {
-        if (!response.ok) {
+      .text()
+      .then((text) => {
+        let data: unknown = undefined;
+        if (text && text.trim() !== "") {
+          try {
+            data = JSON.parse(text);
+          } catch {
+            if (!isOk) {
+              return {
+                error: (text || response.statusText) as E,
+                status,
+                data: undefined,
+              };
+            }
+          }
+        }
+
+        if (!isOk) {
           // Handle 401 Unauthorized - log out user
-          if (response.status === 401) {
+          if (status === 401) {
             toast.error("Session expired. Please log in again.");
             logout();
             return {
               error: "Session expired. Please log in again.",
-              status: response.status,
+              status,
               data: undefined,
             };
           }
-          const error: E = (data && data.message) || response.statusText;
+          const error: E = ((data && (data as { message?: E }).message) || response.statusText) as E;
           return {
             error,
-            status: response.status,
+            status,
             data: undefined,
           };
         }
 
-        const responseData: R = data || data.message || data;
-
         return {
-          data: responseData,
-          status: response.status,
+          data: data as R,
+          status,
           error: undefined,
         };
       })
       .catch((error: unknown) => {
         return {
           data: undefined,
-          status: response.status,
+          status,
           error: (error instanceof Error ? error.message : "An error occurred") as E,
         };
       });

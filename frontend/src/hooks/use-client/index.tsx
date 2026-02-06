@@ -58,7 +58,7 @@ export const useClient = () => {
               data: undefined,
             };
           }
-          const error: E = (data && (data as { message?: E }).message) || response.statusText;
+          const error: E = ((data && (data as { message?: E }).message) || response.statusText) as E;
           return {
             error,
             status,
@@ -66,10 +66,8 @@ export const useClient = () => {
           };
         }
 
-        const responseData: R = (data as R) ?? undefined;
-
         return {
-          data: responseData,
+          data: data as R,
           status,
           error: undefined,
         };

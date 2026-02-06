@@ -11,6 +11,7 @@ import {
   CareHome,
   CareHomesQueryParams,
 } from "@/actions-client/admin";
+import ConfirmationModal from "@/components/ui/confirmation-modal";
 import styles from "./care-homes.module.scss";
 
 export default function CareHomesPage() {
@@ -22,8 +23,11 @@ export default function CareHomesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCareHomes, setTotalCareHomes] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const router = useRouter();
-  const { getCareHomes } = useAdminActions();
+  const { getCareHomes, deleteCareHome } = useAdminActions();
 
   useEffect(() => {
     fetchCareHomes();
@@ -71,6 +75,58 @@ export default function CareHomesPage() {
     setCurrentPage(page);
   };
 
+  const toggleSelectAll = () => {
+    if (selectedIds.size === careHomes.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(careHomes.map((ch) => ch.id)));
+    }
+  };
+
+  const toggleSelectOne = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkDeleteClick = () => {
+    if (selectedIds.size === 0) return;
+    setShowBulkDeleteModal(true);
+  };
+
+  const confirmBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    try {
+      setIsBulkDeleting(true);
+      const ids = Array.from(selectedIds);
+      let failed = 0;
+      for (const id of ids) {
+        const result = await deleteCareHome(id);
+        if (!result.success) failed++;
+      }
+      setSelectedIds(new Set());
+      setShowBulkDeleteModal(false);
+      await fetchCareHomes();
+      if (failed === 0) {
+        toast.success(
+          `${ids.length} care home${ids.length === 1 ? "" : "s"} deleted successfully`
+        );
+      } else {
+        toast.error(
+          `${failed} of ${ids.length} delete${failed === 1 ? "" : "s"} failed`
+        );
+      }
+    } catch (error) {
+      console.error("Error bulk deleting care homes:", error);
+      toast.error("Failed to delete some care homes");
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
   return (
     <AdminLayout>
       <div className={styles.careHomesContainer}>
@@ -81,12 +137,24 @@ export default function CareHomesPage() {
             </Link>
             <h1>Care Home Management</h1>
           </div>
-          <button
-            className={styles.addButton}
-            onClick={() => router.push("/admin/care-homes/add")}
-          >
-            + Add New Care Home
-          </button>
+          <div className={styles.headerActions}>
+            {selectedIds.size > 0 && (
+              <button
+                type="button"
+                className={styles.bulkDeleteButton}
+                onClick={handleBulkDeleteClick}
+                disabled={isBulkDeleting}
+              >
+                Delete {selectedIds.size} selected
+              </button>
+            )}
+            <button
+              className={styles.addButton}
+              onClick={() => router.push("/admin/care-homes/add")}
+            >
+              + Add New Care Home
+            </button>
+          </div>
         </div>
 
         <div className={styles.filters}>
@@ -132,6 +200,7 @@ export default function CareHomesPage() {
             <table className={styles.careHomesTable}>
               <thead>
                 <tr>
+                  <th className={styles.checkboxCell}></th>
                   <th>Care Home Name</th>
                   <th>Location</th>
                   <th>Contact</th>
@@ -143,6 +212,9 @@ export default function CareHomesPage() {
               <tbody>
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <tr key={i} className={styles.skeletonRow}>
+                    <td className={styles.checkboxCell}>
+                      <div className={styles.skeletonCheckbox}></div>
+                    </td>
                     <td>
                       <div className={styles.nameCell}>
                         <div className={styles.skeletonName}></div>
@@ -183,6 +255,17 @@ export default function CareHomesPage() {
             <table className={styles.careHomesTable}>
               <thead>
                 <tr>
+                  <th className={styles.checkboxCell}>
+                    <input
+                      type="checkbox"
+                      checked={
+                        careHomes.length > 0 &&
+                        selectedIds.size === careHomes.length
+                      }
+                      onChange={toggleSelectAll}
+                      aria-label="Select all on page"
+                    />
+                  </th>
                   <th>Care Home Name</th>
                   <th>Location</th>
                   <th>Contact</th>
@@ -201,6 +284,18 @@ export default function CareHomesPage() {
                         router.push(`/admin/care-homes/${careHome.id}`)
                       }
                     >
+                      <td
+                        className={styles.checkboxCell}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(careHome.id)}
+                          onChange={() => toggleSelectOne(careHome.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          aria-label={`Select ${careHome.name}`}
+                        />
+                      </td>
                       <td>
                         <div className={styles.nameCell}>
                           <strong>{careHome.name}</strong>
@@ -430,6 +525,18 @@ export default function CareHomesPage() {
             </div>
           </div>
         )}
+
+        <ConfirmationModal
+          isOpen={showBulkDeleteModal}
+          onClose={() => !isBulkDeleting && setShowBulkDeleteModal(false)}
+          onConfirm={confirmBulkDelete}
+          title="Delete selected care homes"
+          message={`Are you sure you want to delete ${selectedIds.size} care home${selectedIds.size === 1 ? "" : "s"}? This action cannot be undone.`}
+          confirmText="Delete selected"
+          cancelText="Cancel"
+          isLoading={isBulkDeleting}
+          type="danger"
+        />
       </div>
     </AdminLayout>
   );

@@ -19,6 +19,7 @@ import {
   CareHome,
 } from "@/actions-client/healthcare-homes";
 import { toast } from "react-hot-toast";
+// import Image from "next/image";
 import { errorToString } from "@/utils/error-to-string";
 import styles from "./care-homes-details.module.scss";
 import absoluteGradient from "@/../public/abstract-wave-gradient.jpg";
@@ -57,7 +58,7 @@ function formatPhoneForDial(phone: string | undefined): string {
   if (!phone) return "";
 
   // Remove all spaces and special characters except + and digits
-  let cleaned = phone.replace(/[^\d+]/g, "");
+  const cleaned = phone.replace(/[^\d+]/g, "");
 
   // If it already starts with +44, return as is
   if (cleaned.startsWith("+44")) {
@@ -92,6 +93,7 @@ export default function CareHomesDetailsPage() {
 
   const [images, setImages] = useState<ImageType[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
 
   const reviewsSectionRef = useRef<HTMLDivElement>(null);
 
@@ -223,6 +225,10 @@ export default function CareHomesDetailsPage() {
     return () => clearInterval(interval);
   }, [images.length]);
 
+  useEffect(() => {
+    setCurrentPage(Math.floor(currentImageIndex / 2));
+  }, [currentImageIndex]);
+
   const goToPrev = () => {
     if (images.length <= 1) return;
     setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
@@ -249,20 +255,31 @@ export default function CareHomesDetailsPage() {
   if (isLoading) {
     return (
       <main>
-        {/* Slideshow Skeleton */}
-        <div className={styles.slideshow}>
-          <div className={styles.slideshowViewport}>
-            <div className={`${styles.skeleton} ${styles.image}`}></div>
-          </div>
-          <div className={styles.thumbnailsRow}>
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className={styles.thumbBtn}>
-                <div
-                  className={`${styles.skeleton} ${styles.thumbnail}`}
-                  style={{ height: "72px" }}
-                ></div>
+        {/* Hero Gallery Skeleton (matches final layout) */}
+        <div className={styles.heroGallery}>
+          {/* Mobile slider skeleton */}
+          <div className={styles.mobileSlider}>
+            <div className={styles.sliderTrack}>
+              <div className={styles.slide}>
+                <div className={`${styles.skeleton} ${styles.image}`}></div>
               </div>
-            ))}
+            </div>
+          </div>
+
+          {/* Desktop skeleton */}
+          <div className={styles.desktopGallery}>
+            <div className={styles.heroMain}>
+              <div className={`${styles.skeleton} ${styles.image}`}></div>
+            </div>
+            <div className={styles.heroSide}>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className={styles.heroThumb}>
+                  <div
+                    className={`${styles.skeleton} ${styles.thumbnail}`}
+                  ></div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -486,80 +503,176 @@ export default function CareHomesDetailsPage() {
   }
   return (
     <main>
-      <div className={styles.gallery}>
-        {images.length === 0 ? (
-          // No images - show placeholder
+      {/* <div className={styles.heroGallery}>
+        {images.length === 0 && (
           <div className={styles.noImageContainer}>
             <div className={styles.noImagePlaceholder}>
               <span>No images available</span>
             </div>
           </div>
-        ) : images.length === 1 ? (
-          // Single image - full width
-          <div className={styles.singleImageContainer}>
-            <img
+        )}
+        {images.length === 1 && (
+          <div className={styles.heroMain}>
+            <Image
               src={resolveImageUrl(images[0].src)}
               alt={images[0].alt}
-              className={styles.singleImage}
+              fill
+              className={styles.heroImage}
+              sizes="(max-width: 900px) 100vw, 900px"
+              priority
             />
           </div>
-        ) : (
-          <div className={styles.slideshow}>
-            <div className={styles.slideshowViewport}>
-              <button
-                className={styles.navButton}
-                onClick={goToPrev}
-                aria-label="Previous image"
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-                </svg>
-              </button>
-              <img
+        )}
+        {images.length > 1 && (
+          <>
+            <div className={styles.heroMain}>
+              <Image
                 src={resolveImageUrl(images[currentImageIndex].src)}
                 alt={images[currentImageIndex].alt}
-                className={styles.mainImage}
+                fill
+                className={styles.heroImage}
+                sizes="(max-width: 900px) 100vw, 900px"
+                priority
               />
-              <button
-                className={`${styles.navButton} ${styles.next}`}
-                onClick={goToNext}
-                aria-label="Next image"
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M10 6 8.59 7.41 13.17 12 8.59 16.59 10 18l6-6z" />
-                </svg>
-              </button>
-              <div className={styles.indicators}>
-                {images.map((_, idx) => (
+            </div>
+            <div className={styles.heroSide}>
+              {images
+                .map((img, idx) => ({ img, idx }))
+                .filter(({ idx }) => idx !== currentImageIndex)
+                .slice(0, 4)
+                .map(({ img, idx }) => (
                   <button
-                    key={idx}
-                    className={`${styles.dot} ${
+                    key={img.id}
+                    className={`${styles.heroThumb} ${
                       idx === currentImageIndex ? styles.active : ""
                     }`}
-                    onClick={() => setCurrentImageIndex(idx)}
-                    aria-label={`Go to image ${idx + 1}`}
+                    onClick={() => handleThumbnailClick(idx)}
+                  >
+                    <Image
+                      src={resolveImageUrl(img.src)}
+                      alt={img.alt}
+                      fill
+                      className={styles.heroThumbImage}
+                      sizes="(max-width: 900px) 33vw, 340px"
+                    />
+                  </button>
+                ))}
+            </div>
+          </>
+        )}
+      </div> */}
+
+      <div className={styles.heroGallery}>
+        {images.length === 0 && (
+          <div className={styles.noImageContainer}>
+            <div className={styles.noImagePlaceholder}>
+              <span>No images available</span>
+            </div>
+          </div>
+        )}
+
+        {images.length > 0 && (
+          <>
+            <div className={styles.mobileSlider}>
+              {(() => {
+                // Take up to 3 images
+                const slides = images.slice(0, 3).map((img) => ({
+                  img,
+                  placeholder: false,
+                }));
+
+                return (
+                  <div
+                    className={styles.sliderTrack}
+                    style={{
+                      transform: `translateX(-${currentImageIndex * 100}%)`,
+                    }}
+                  >
+                    {slides.map(({ img }, idx) => (
+                      <div key={`slide-${img.id}`} className={styles.slide}>
+                        <div className={styles.mobileImageContainer}>
+                          <Image
+                            src={resolveImageUrl(img.src)}
+                            alt={img.alt || "Property image"}
+                            fill
+                            className={styles.heroImage}
+                            sizes="100vw"
+                            priority={idx === 0}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+            {images.length > 1 && (
+              <div className={styles.mobileIndicator}>
+                {images.slice(0, 3).map((_, i) => (
+                  <button
+                    key={`ind-${i}`}
+                    className={
+                      i === currentImageIndex
+                        ? styles.indicatorActive
+                        : styles.indicatorDot
+                    }
+                    onClick={() => setCurrentImageIndex(i)}
+                    aria-label={`Go to image ${i + 1}`}
                   />
                 ))}
               </div>
+            )}
+          </>
+        )}
+
+        {/* DESKTOP LAYOUT */}
+        {images.length > 0 && (
+          <div className={styles.desktopGallery}>
+            <div className={styles.heroMain}>
+              <Image
+                src={resolveImageUrl(images[currentImageIndex].src)}
+                alt={images[currentImageIndex].alt}
+                fill
+                className={styles.heroImage}
+                priority
+              />
             </div>
 
-            <div className={styles.thumbnailsRow}>
-              {images.map((img, index) => (
-                <button
-                  key={img.id}
-                  className={`${styles.thumbBtn} ${
-                    index === currentImageIndex ? styles.selected : ""
-                  }`}
-                  onClick={() => handleThumbnailClick(index)}
-                >
-                  <img
-                    src={resolveImageUrl(img.src)}
-                    alt={img.alt}
-                    className={styles.thumbImage}
-                  />
-                </button>
-              ))}
-            </div>
+            {images.length > 1 && (
+              <div className={styles.heroSide}>
+                {(() => {
+                  const target = 3;
+                  const base = images
+                    .map((img, idx) => ({ img, idx, placeholder: false }))
+                    .filter(({ idx }) => idx !== currentImageIndex)
+                    .slice(0, target);
+                  const pad = Math.max(0, target - base.length);
+                  const filler = images[currentImageIndex];
+                  const fillers = Array.from({ length: pad }).map((_, i) => ({
+                    img: filler ?? { id: i, src: "", alt: "" },
+                    idx: currentImageIndex,
+                    placeholder: true,
+                  }));
+                  const side = [...base, ...fillers];
+                  return side.map(({ img, idx, placeholder }, i) => (
+                    <button
+                      key={`${img.id}-${i}`}
+                      className={`${styles.heroThumb} ${
+                        placeholder ? styles.placeholder : ""
+                      }`}
+                      onClick={() => !placeholder && handleThumbnailClick(idx)}
+                    >
+                      <Image
+                        src={resolveImageUrl(img.src)}
+                        alt={img.alt}
+                        fill
+                        className={styles.heroThumbImage}
+                      />
+                    </button>
+                  ));
+                })()}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -610,7 +723,7 @@ export default function CareHomesDetailsPage() {
             </a>
             <a href={`mailto:${careHome.email || ""}`}>
               <span>
-                <PhoneIcon />
+                <PhoneIcon className={styles.phoneIcon} />
                 <span>Send an email</span>
               </span>
             </a>
@@ -620,7 +733,7 @@ export default function CareHomesDetailsPage() {
               }`}
             >
               <span>
-                <PhoneIcon />
+                <PhoneIcon className={styles.phoneIcon} />
                 <span>Request a tour</span>
               </span>
             </a>
@@ -771,25 +884,96 @@ export default function CareHomesDetailsPage() {
         </div>
       </div>
 
+      <div className={styles.aboutCareHome}>
+        <div className={styles.mobile}>
+          <Image
+            src="/elderly-man.webp"
+            alt="Elderly man"
+            fill
+            sizes="(max-width: 500px) 100vw, 50vw"
+            className={styles.coverImage}
+            priority={false}
+          />
+        </div>
+        <div className={styles.careHomeDetail}>
+          <div className={styles.info}>
+            <h5>Owner</h5>
+            <p>MOP Healthcare Ltd</p>
+          </div>
+          <div className={styles.info}>
+            <h5>Person in charge</h5>
+            <p>Dania Meadows</p>
+          </div>
+          <div className={styles.info}>
+            <h5>Admission criteria</h5>
+            <p>Resident aged 45 years and over</p>
+          </div>
+          <div className={styles.info}>
+            <h5>Care home building</h5>
+            <div className={styles.buildingDetails}>
+              <p>
+                year built: <span>2016</span>
+              </p>
+              <p>
+                Number of floors: <span>2</span>
+              </p>
+              <p>
+                Last refurbishment: <span>2014</span>
+              </p>
+            </div>
+          </div>
+          <div className={styles.info}>
+            <h5>Visiting</h5>
+            <p>No restrictions to visiting hours</p>
+          </div>
+          <div className={styles.info}>
+            <h5>Parking</h5>
+            <p>Free parking</p>
+          </div>
+          <div className={styles.info}>
+            <h5>Room info</h5>
+            <div className={styles.roomDetails}>
+              <p>
+                Single rooms <span>(80)</span>
+              </p>
+              <p>
+                Couples rooms <span>(14)</span>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className={styles.ownersSectionImage}>
+          <Image
+            src="/elderly-man.webp"
+            alt="Elderly man"
+            fill
+            sizes="(max-width: 500px) 100vw, 50vw"
+            priority={false}
+            className={styles.coverImage}
+          />
+        </div>
+      </div>
+
       {/* Image Gallery Section */}
-      {careHome.images && careHome.images.length > 1 && (
+      {/* {careHome.images && careHome.images.length > 1 && (
         <div className={styles.imageGallerySection}>
           <h3>Image Gallery</h3>
           <div className={styles.imageGallery}>
             {careHome.images.map((image) => (
               <div key={image.id} className={styles.galleryImage}>
-                <img
+                <Image
                   src={resolveImageUrl(image.url)}
                   alt={image.alt || careHome.name}
-                  width={400}
-                  height={300}
+                  width={800}
+                  height={600}
                   className={styles.galleryImageImg}
+                  sizes="(max-width: 768px) 50vw, (max-width: 500px) 100vw, 25vw"
                 />
               </div>
             ))}
           </div>
         </div>
-      )}
+      )} */}
       {/* <div className={styles.aboutCareHome}>
         <div className={styles.mobile}>
           <Image src={ownersSectionImage} alt="owners section image" />
@@ -866,16 +1050,21 @@ export default function CareHomesDetailsPage() {
             reviews.map((review) => (
               <div key={review.id} className={styles.reviewRow}>
                 <div className={styles.reviewHeader}>
-                  <p className={styles.reviewerName}>
-                    {review.isAnonymous
-                      ? "Anonymous"
-                      : `${review.user?.firstName || ""} ${
-                          review.user?.lastName || ""
-                        }`.trim() ||
-                        (review.user?.email
-                          ? review.user.email.split("@")[0]
-                          : "User")}
-                  </p>
+                  <div className={styles.reviewStarsRow}>
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <span
+                        key={index}
+                        className={
+                          index < review.rating
+                            ? styles.starFilled
+                            : styles.starEmpty
+                        }
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+
                   <p className={styles.reviewTime}>
                     {new Date(
                       review.createdAt || new Date().toISOString(),
@@ -886,21 +1075,16 @@ export default function CareHomesDetailsPage() {
                     })}
                   </p>
                 </div>
-
-                <div className={styles.reviewStarsRow}>
-                  {Array.from({ length: 5 }).map((_, index) => (
-                    <span
-                      key={index}
-                      className={
-                        index < review.rating
-                          ? styles.starFilled
-                          : styles.starEmpty
-                      }
-                    >
-                      ★
-                    </span>
-                  ))}
-                </div>
+                <p className={styles.reviewerName}>
+                  {review.isAnonymous
+                    ? "Anonymous"
+                    : `${review.user?.firstName || ""} ${
+                        review.user?.lastName || ""
+                      }`.trim() ||
+                      (review.user?.email
+                        ? review.user.email.split("@")[0]
+                        : "User")}
+                </p>
 
                 <p className={styles.reviewText}>{review.comment}</p>
               </div>

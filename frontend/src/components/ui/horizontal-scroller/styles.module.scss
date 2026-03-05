@@ -1,0 +1,25 @@
+.scroller {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  > * {
+    scroll-snap-align: start;
+    width: 700px;
+  }
+
+  @media (max-width: 768px) {
+    gap: 12px;
+    width: 100%; // Full width on mobile
+    flex: 0 0 100%;
+  }
+}
+
+/* Hide scrollbar (WebKit) */
+.scroller::-webkit-scrollbar {
+  display: none;
+}

@@ -150,7 +150,10 @@ export const useHealthcareHomesActions = () => {
   const client = useClient();
 
   // Helper function to convert unknown error to string
-  const errorToString = (error: unknown, fallback: string = "An error occurred"): string => {
+  const errorToString = (
+    error: unknown,
+    fallback: string = "An error occurred",
+  ): string => {
     if (typeof error === "string") return error;
     if (error instanceof Error) return error.message;
     return fallback;
@@ -158,7 +161,7 @@ export const useHealthcareHomesActions = () => {
 
   const searchCareHomes = useCallback(
     async (
-      params: CareHomeQueryParams = {}
+      params: CareHomeQueryParams = {},
     ): Promise<{
       success: boolean;
       data?: CareHomeResponse;
@@ -197,7 +200,7 @@ export const useHealthcareHomesActions = () => {
         };
       }
     },
-    [client]
+    [client],
   );
 
   const getCareHomeById = useCallback(
@@ -216,13 +219,13 @@ export const useHealthcareHomesActions = () => {
         };
       }
     },
-    [client]
+    [client],
   );
 
   const getCareHomeByRegionAndSlug = useCallback(
     async (region: string, slug: string) => {
       const response = await client.get(
-        `/healthcare-homes/by-slug/${region}/${slug}`
+        `/healthcare-homes/by-slug/${region}/${slug}`,
       );
 
       if (response.data) {
@@ -237,12 +240,12 @@ export const useHealthcareHomesActions = () => {
         };
       }
     },
-    [client]
+    [client],
   );
 
   const getHomeCreListings = useCallback(
     async (
-      params: CareHomeQueryParams = {}
+      params: CareHomeQueryParams = {},
     ): Promise<{
       success: boolean;
       data?: CareHomeResponse;
@@ -281,7 +284,7 @@ export const useHealthcareHomesActions = () => {
         };
       }
     },
-    [client]
+    [client],
   );
 
   const getRegionStatistics = useCallback(async (): Promise<{
@@ -299,7 +302,10 @@ export const useHealthcareHomesActions = () => {
     } else {
       return {
         success: false,
-        error: errorToString(response.error, "Failed to fetch region statistics"),
+        error: errorToString(
+          response.error,
+          "Failed to fetch region statistics",
+        ),
       };
     }
   }, [client, errorToString]);
@@ -396,7 +402,7 @@ export const useHealthcareHomesActions = () => {
         careTypeId?: string;
         facilityIds?: string[];
         imageUrls?: string[];
-      }>
+      }>,
     ): Promise<{
       success: boolean;
       data?: CareHome;
@@ -416,7 +422,7 @@ export const useHealthcareHomesActions = () => {
         };
       }
     },
-    [client]
+    [client],
   );
 
   const getReviews = useCallback(
@@ -427,7 +433,7 @@ export const useHealthcareHomesActions = () => {
         limit?: number;
         sortBy?: "createdAt" | "rating";
         sortOrder?: "ASC" | "DESC";
-      }
+      },
     ): Promise<{
       success: boolean;
       data?: {
@@ -466,10 +472,9 @@ export const useHealthcareHomesActions = () => {
       const response = await client.get(url);
 
       if (response.data) {
-        return {
-          success: true,
-          data: (response.data as unknown as {
-            data: Array<{
+        const payload = response.data as unknown as {
+          data?: {
+            data?: Array<{
               id: string;
               rating: number;
               comment: string;
@@ -480,13 +485,43 @@ export const useHealthcareHomesActions = () => {
               reviewData?: Record<string, unknown>;
               user: {
                 id: string;
-                name: string;
+                email?: string;
+                firstName?: string;
+                lastName?: string;
+                name?: string;
               } | null;
             }>;
-            total: number;
-            page: number;
-            limit: number;
-          }),
+            total?: number;
+            page?: number;
+            per_page?: number;
+            total_pages?: number;
+          };
+        };
+        const listRaw = Array.isArray(payload?.data?.data)
+          ? payload.data!.data!
+          : [];
+        const list = listRaw.map((r) => {
+          const u = r.user;
+          const displayName =
+            u &&
+            ((u.name ?? `${u.firstName ?? ""} ${u.lastName ?? ""}`.trim()) ||
+              (u.email ? u.email.split("@")[0] : ""));
+          return {
+            ...r,
+            user: u ? { id: u.id, name: displayName || "" } : null,
+          };
+        });
+        const total = payload?.data?.total ?? list.length;
+        const pageNum = payload?.data?.page ?? 1;
+        const limitNum = payload?.data?.per_page ?? list.length;
+        return {
+          success: true,
+          data: {
+            data: list,
+            total: total,
+            page: pageNum,
+            limit: limitNum,
+          },
         };
       } else {
         return {
@@ -495,7 +530,7 @@ export const useHealthcareHomesActions = () => {
         };
       }
     },
-    [client]
+    [client],
   );
 
   const createReview = useCallback(
@@ -506,7 +541,7 @@ export const useHealthcareHomesActions = () => {
         comment: string;
         isAnonymous?: boolean;
         reviewData?: Record<string, unknown>;
-      }
+      },
     ): Promise<{
       success: boolean;
       data?: {
@@ -527,7 +562,7 @@ export const useHealthcareHomesActions = () => {
     }> => {
       const response = await client.post(
         `/healthcare-homes/${careHomeId}/reviews`,
-        data
+        data,
       );
 
       if (response.data) {
@@ -555,7 +590,7 @@ export const useHealthcareHomesActions = () => {
         };
       }
     },
-    [client]
+    [client],
   );
 
   return {

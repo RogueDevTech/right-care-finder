@@ -5,6 +5,7 @@ import { LocationIcon, PhoneIcon } from "@/components/icon";
 import styles from "./care-home-card.module.scss";
 import { CareHome } from "@/actions-client/healthcare-homes";
 import { createCareHomeUrl } from "@/utils/slug";
+import Image from "next/image";
 
 interface CareHomeCardProps {
   careHome: CareHome;
@@ -23,7 +24,7 @@ const CareHomeCard: React.FC<CareHomeCardProps> = ({ careHome, className }) => {
         <div className={styles.cardContainer}>
           <div className={styles.cardImage}>
             {careHome.images && careHome.images.length > 0 ? (
-              <img
+              <Image
                 src={careHome.images[0].url}
                 alt={careHome.images[0].alt || careHome.name}
                 width={400}

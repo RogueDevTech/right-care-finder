@@ -3,17 +3,26 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useCounterStore } from "@/store/useStore";
-import { LocationIcon, PhoneIcon } from "@/components/icon";
+import {
+  AdultFirstAidIcon,
+  CaringHandIcon,
+  LengthStayIcon,
+  LocationIcon,
+  PhoneIcon,
+} from "@/components/icon";
+import SectionHeader from "@/components/ui/section-header";
+import HorizontalScroller from "@/components/ui/horizontal-scroller";
+import ServiceCard from "@/components/ui/service-card";
 // import starRating from "@/../public/starRating.png";
-import primaryCare from "@/../public/primaryCategory.png";
+// import primaryCare from "@/../public/primaryCategory.png";
 // import ownersSectionImage from "@/../public/ownersSectionImage.png";
-import careProvided from "@/../public/careProvided.png";
-import lengthOfStarting from "@/../public/lenghtOfStating.png";
-import demantiaCare from "@/../public/demantiaCare.png";
-import dementia from "@/../public/dementia.png";
+// import careProvided from "@/../public/careProvided.png";
+// import lengthOfStarting from "@/../public/lenghtOfStating.png";
+// import demantiaCare from "@/../public/demantiaCare.png";
+// import dementia from "@/../public/dementia.png";
 // import rating from "@/../public/starRating.png";
 import ReviewModal from "@/features/view-home-details/ratings-and-reviews/review-modal";
-import { StarIcon } from "@/components/icon";
+// import { StarIcon } from "@/components/icon";
 import {
   useHealthcareHomesActions,
   CareHome,
@@ -282,7 +291,6 @@ export default function CareHomesDetailsPage() {
             </div>
           </div>
         </div>
-
         {/* Details Skeleton */}
         <div className={styles.details}>
           <div className={styles.nameAndReview}>
@@ -325,46 +333,152 @@ export default function CareHomesDetailsPage() {
             </div>
           </div>
         </div>
-
         {/* Cares Provided Skeleton */}
-        <div className={styles.CaresProvidedWrapper}>
-          <div
-            className={`${styles.skeleton} ${styles.title}`}
-            style={{ width: "200px", marginBottom: "2rem" }}
-          ></div>
-          <div className={styles.serviceProvided}>
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div key={index} className={styles.careCard}>
-                <div className={styles.image}>
+
+        {/* Care Provide New Wrapper Skeleton */}
+        <div className={styles.careProvideNewWrapper}>
+          <div>
+            {/* First Section Header Skeleton */}
+            <div className={styles.sectionHeaderSkeleton}>
+              <div
+                className={`${styles.skeleton} ${styles.title}`}
+                style={{ width: "200px" }}
+              ></div>
+              <div
+                className={`${styles.skeleton} ${styles.subtitle}`}
+                style={{ width: "150px" }}
+              ></div>
+            </div>
+
+            {/* First Horizontal Scroller Skeleton */}
+            <div className={styles.horizontalScrollerSkeleton}>
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className={styles.serviceCardSkeleton}>
                   <div
-                    className={`${styles.skeleton} ${styles.image}`}
-                    style={{
-                      height: "80px",
-                      width: "80px",
-                      borderRadius: "8px",
-                    }}
+                    className={`${styles.skeleton} ${styles.cardImage}`}
                   ></div>
-                </div>
-                <div className={styles.CareContent}>
                   <div
-                    className={`${styles.skeleton} ${styles.title}`}
-                    style={{ width: "80%", marginBottom: "1rem" }}
+                    className={`${styles.skeleton} ${styles.cardTitle}`}
+                    style={{ width: "80%" }}
                   ></div>
-                  <div>
+                  <div
+                    className={`${styles.skeleton} ${styles.cardDescription}`}
+                    style={{ width: "90%" }}
+                  ></div>
+                  <div className={styles.cardPointsSkeleton}>
                     {Array.from({ length: 4 }).map((_, i) => (
                       <div
                         key={i}
-                        className={`${styles.skeleton} ${styles.line}`}
-                        style={{ width: "90%", marginBottom: "0.5rem" }}
+                        className={`${styles.skeleton} ${styles.cardPoint}`}
+                        style={{ width: "70%" }}
                       ></div>
                     ))}
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            {/* Second Section Header Skeleton */}
+            <div className={styles.sectionHeaderSkeleton}>
+              <div
+                className={`${styles.skeleton} ${styles.subtitle}`}
+                style={{ width: "180px" }}
+              ></div>
+            </div>
+
+            {/* Second Horizontal Scroller Skeleton */}
+            <div className={styles.horizontalScrollerSkeleton}>
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={`second-${index}`}
+                  className={styles.serviceCardSkeleton}
+                >
+                  <div
+                    className={`${styles.skeleton} ${styles.cardImage}`}
+                  ></div>
+                  <div
+                    className={`${styles.skeleton} ${styles.cardTitle}`}
+                    style={{ width: "70%" }}
+                  ></div>
+                  <div
+                    className={`${styles.skeleton} ${styles.cardDescription}`}
+                    style={{ width: "85%" }}
+                  ></div>
+                  <div className={styles.cardPointsSkeleton}>
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className={`${styles.skeleton} ${styles.cardPoint}`}
+                        style={{ width: "60%" }}
+                      ></div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
+        {/* Length Of Stay Wrapper Skeleton */}
+        <div className={styles.lengthOfStayWrapper}>
+          <div className={styles.header}>
+            <div
+              className={`${styles.skeleton} ${styles.title}`}
+              style={{ width: "200px", margin: "0 auto" }}
+            ></div>
+          </div>
+
+          <div className={styles.content}>
+            {/* LEFT - This will appear second on mobile */}
+            <div className={styles.left}>
+              <div className={styles.card}>
+                <div
+                  className={`${styles.skeleton} ${styles.subtitle}`}
+                  style={{ width: "150px", marginBottom: "1rem" }}
+                ></div>
+                <div
+                  className={`${styles.skeleton} ${styles.line}`}
+                  style={{ width: "100%" }}
+                ></div>
+                <div
+                  className={`${styles.skeleton} ${styles.line}`}
+                  style={{ width: "95%" }}
+                ></div>
+                <div
+                  className={`${styles.skeleton} ${styles.line}`}
+                  style={{ width: "90%" }}
+                ></div>
+              </div>
+
+              <div className={styles.card}>
+                <div
+                  className={`${styles.skeleton} ${styles.subtitle}`}
+                  style={{ width: "120px", marginBottom: "1rem" }}
+                ></div>
+                <div
+                  className={`${styles.skeleton} ${styles.line}`}
+                  style={{ width: "100%" }}
+                ></div>
+                <div
+                  className={`${styles.skeleton} ${styles.line}`}
+                  style={{ width: "92%" }}
+                ></div>
+                <div
+                  className={`${styles.skeleton} ${styles.line}`}
+                  style={{ width: "85%" }}
+                ></div>
+              </div>
+            </div>
+
+            {/* RIGHT IMAGE - This will appear first on mobile due to column-reverse */}
+            <div className={styles.imageWrapper}>
+              <div
+                className={`${styles.skeleton} ${styles.image}`}
+                style={{ height: "100%", width: "100%" }}
+              ></div>
+            </div>
+          </div>
+        </div>
         {/* Facilities Skeleton */}
         <div className={styles.facilitiesContainer}>
           <div
@@ -399,36 +513,6 @@ export default function CareHomesDetailsPage() {
                 ))}
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* About Care Home Skeleton */}
-        <div className={styles.aboutCareHome}>
-          <div className={styles.mobile}>
-            <div
-              className={`${styles.skeleton} ${styles.image}`}
-              style={{ height: "300px" }}
-            ></div>
-          </div>
-          <div className={styles.careHomeDetail}>
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className={styles.info}>
-                <div
-                  className={`${styles.skeleton} ${styles.subtitle}`}
-                  style={{ width: "120px", marginBottom: "0.5rem" }}
-                ></div>
-                <div
-                  className={`${styles.skeleton} ${styles.line}`}
-                  style={{ width: "80%" }}
-                ></div>
-              </div>
-            ))}
-          </div>
-          <div className={styles.ownersSectionImage}>
-            <div
-              className={`${styles.skeleton} ${styles.image}`}
-              style={{ height: "300px" }}
-            ></div>
           </div>
         </div>
 
@@ -503,65 +587,6 @@ export default function CareHomesDetailsPage() {
   }
   return (
     <main>
-      {/* <div className={styles.heroGallery}>
-        {images.length === 0 && (
-          <div className={styles.noImageContainer}>
-            <div className={styles.noImagePlaceholder}>
-              <span>No images available</span>
-            </div>
-          </div>
-        )}
-        {images.length === 1 && (
-          <div className={styles.heroMain}>
-            <Image
-              src={resolveImageUrl(images[0].src)}
-              alt={images[0].alt}
-              fill
-              className={styles.heroImage}
-              sizes="(max-width: 900px) 100vw, 900px"
-              priority
-            />
-          </div>
-        )}
-        {images.length > 1 && (
-          <>
-            <div className={styles.heroMain}>
-              <Image
-                src={resolveImageUrl(images[currentImageIndex].src)}
-                alt={images[currentImageIndex].alt}
-                fill
-                className={styles.heroImage}
-                sizes="(max-width: 900px) 100vw, 900px"
-                priority
-              />
-            </div>
-            <div className={styles.heroSide}>
-              {images
-                .map((img, idx) => ({ img, idx }))
-                .filter(({ idx }) => idx !== currentImageIndex)
-                .slice(0, 4)
-                .map(({ img, idx }) => (
-                  <button
-                    key={img.id}
-                    className={`${styles.heroThumb} ${
-                      idx === currentImageIndex ? styles.active : ""
-                    }`}
-                    onClick={() => handleThumbnailClick(idx)}
-                  >
-                    <Image
-                      src={resolveImageUrl(img.src)}
-                      alt={img.alt}
-                      fill
-                      className={styles.heroThumbImage}
-                      sizes="(max-width: 900px) 33vw, 340px"
-                    />
-                  </button>
-                ))}
-            </div>
-          </>
-        )}
-      </div> */}
-
       <div className={styles.heroGallery}>
         {images.length === 0 && (
           <div className={styles.noImageContainer}>
@@ -753,7 +778,7 @@ export default function CareHomesDetailsPage() {
           </div>
         </div>
       </div>
-      <div className={styles.CaresProvidedWrapper}>
+      {/* <div className={styles.CaresProvidedWrapper}>
         <h2>Cares Provided</h2>
         <div className={styles.serviceProvided}>
           <div className={styles.careCard}>
@@ -863,7 +888,196 @@ export default function CareHomesDetailsPage() {
             </div>
           </div>
         </div>
+      </div> */}
+      <div className={styles.careProvideNewWrapper}>
+        <div>
+          <SectionHeader
+            title="Cares provided"
+            subtitle="Primary care categories"
+            overlayVariant="pink"
+            icon={
+              <span>
+                <CaringHandIcon />
+              </span>
+            }
+          />
+
+          {/* FIRST SCROLLER */}
+          <HorizontalScroller>
+            <ServiceCard
+              image="/care-provided-one.webp"
+              imageAlt="Older people care"
+              title="Older People Care"
+              description="Care and support for older adults who need help with daily activities due to age-related health conditions, reduced mobility, or frailty."
+              points={[
+                "Personal care and daily living support",
+                "Emotional and wellbeing support",
+                "Help with mobility and fall prevention",
+                "Safe and supportive living environment",
+                "Support with routines and daily tasks",
+                "Social and recreational activities",
+              ]}
+            />
+
+            <ServiceCard
+              image="/care-provided-two.webp"
+              imageAlt="Dementia care"
+              title="People Living with Dementia"
+              description="Specialist care for individuals at different stages of dementia who need a structured, safe, and understanding environment."
+              points={[
+                "Dementia-trained staff support",
+                "Safe and secure living spaces",
+                "Structured daily routines",
+                "Emotional reassurance and companionship",
+                "Memory and cognitive stimulation activities",
+                "Support tailored to each stage of dementia",
+                "Personal care and meal support",
+              ]}
+            />
+
+            <ServiceCard
+              image="/care-provided-elderly-three.webp"
+              imageAlt="Dementia care"
+              title="Older People Care"
+              description="Care and support for older adults who need help with daily activities due to age-related health conditions, reduced mobility, or frailty."
+              points={[
+                "Memory care routines",
+                "Cognitive engagement",
+                "Safe and secure environment",
+                "Behavioural support",
+              ]}
+            />
+
+            <ServiceCard
+              image="/care-provided-hearing-impairment-four.webp"
+              // image="/care-provided-two.webp"
+              imageAlt="hearing Impairment"
+              title="Visual or hearing impairment"
+              description="Support for individuals with reduced sight or hearing, with care adapted to help them live safely and independently."
+              points={[
+                "Memory care routines",
+                "Cognitive engagement",
+                "Safe and secure environment",
+                "Behavioural support",
+              ]}
+            />
+          </HorizontalScroller>
+
+          {/* SECOND HEADER */}
+          <SectionHeader
+            title=""
+            subtitle="Care Types provided"
+            overlayVariant="yellow"
+            icon={
+              <span>
+                <AdultFirstAidIcon />
+              </span>
+            }
+          />
+
+          {/* SECOND SCROLLER */}
+          <HorizontalScroller>
+            <ServiceCard
+              image="/care-type-provided-one.webp"
+              imageAlt="Residential care"
+              title="Residential care"
+              description="Support for people who need help with everyday activities such as washing, dressing, and meals, but who do not require regular medical treatment. Residents receive 24-hour support in a safe and comfortable living environment."
+              points={[
+                "24-hour supervision",
+                "Meals and activities",
+                "Medical monitoring",
+                "Safe accommodation",
+              ]}
+            />
+
+            <ServiceCard
+              image="/care-type-provided-two.webp"
+              imageAlt="Nursing care"
+              title="Nursing Care"
+              description="Care for individuals with medical needs that require regular monitoring and treatment by qualified nurses. This includes support with medication, ongoing health conditions, and recovery after illness or surgery."
+              points={[
+                "Medication administration",
+                "Health monitoring",
+                "Wound care",
+                "Rehabilitation support",
+              ]}
+            />
+
+            <ServiceCard
+              image="/care-type-provided-one.webp"
+              imageAlt="Dementia care"
+              title="People Living with Dementia"
+              description="Specialised care designed to support individuals living with dementia."
+              points={[
+                "Memory care routines",
+                "Cognitive engagement",
+                "Safe and secure environment",
+                "Behavioural support",
+              ]}
+            />
+
+            <ServiceCard
+              image="/care-type-provided-two.webp"
+              imageAlt="Dementia care"
+              title="People Living with Dementia"
+              description="Specialised care designed to support individuals living with dementia."
+              points={[
+                "Memory care routines",
+                "Cognitive engagement",
+                "Safe and secure environment",
+                "Behavioural support",
+              ]}
+            />
+          </HorizontalScroller>
+        </div>
       </div>
+
+      <div className={styles.lengthOfStayWrapper}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>
+            <span className={styles.icon}>
+              <LengthStayIcon />
+            </span>
+            Length Of Stay
+          </h2>
+        </div>
+
+        <div className={styles.content}>
+          {/* LEFT */}
+          <div className={styles.left}>
+            <div className={styles.card}>
+              <h3>Permanent stay</h3>
+              <p>
+                Long-term accommodation and ongoing support for individuals who
+                are no longer able to live independently. This option provides a
+                stable living environment with continuous care tailored to
+                personal needs.
+              </p>
+            </div>
+
+            <div className={styles.card}>
+              <h3>Respite Stay</h3>
+              <p>
+                Short-term care designed to support recovery after illness or
+                hospital discharge, or to give family carers temporary relief.
+                This option offers flexible stays while ensuring individuals
+                receive the care and attention they need.
+              </p>
+            </div>
+          </div>
+
+          {/* RIGHT IMAGE */}
+          <div className={styles.imageWrapper}>
+            <Image
+              src="/elderly-care-image.webp"
+              alt="Length of stay care"
+              fill
+              className={styles.image}
+            />
+          </div>
+        </div>
+      </div>
+
       <div className={styles.facilitiesContainer}>
         <h3>Facilities</h3>
         <div className={styles.facilitiesCardContainer}>

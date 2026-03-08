@@ -33,7 +33,7 @@ export default function ServiceCard({
   return (
     <div className={`${styles.card} ${className || ""}`}>
       <div className={styles.imageWrap}>
-        <Image src={image} alt={imageAlt} className={styles.image} />
+        <Image src={image} alt={imageAlt} fill className={styles.image} />
       </div>
       <div className={styles.content}>
         <div className={styles.titleChip}>{title}</div>

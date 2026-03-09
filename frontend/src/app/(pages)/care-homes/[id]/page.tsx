@@ -3,22 +3,32 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useCounterStore } from "@/store/useStore";
-import { LocationIcon, PhoneIcon } from "@/components/icon";
+import {
+  AdultFirstAidIcon,
+  CaringHandIcon,
+  LengthStayIcon,
+  LocationIcon,
+  PhoneIcon,
+} from "@/components/icon";
+import SectionHeader from "@/components/ui/section-header";
+import HorizontalScroller from "@/components/ui/horizontal-scroller";
+import ServiceCard from "@/components/ui/service-card";
 // import starRating from "@/../public/starRating.png";
-import primaryCare from "@/../public/primaryCategory.png";
+// import primaryCare from "@/../public/primaryCategory.png";
 // import ownersSectionImage from "@/../public/ownersSectionImage.png";
-import careProvided from "@/../public/careProvided.png";
-import lengthOfStarting from "@/../public/lenghtOfStating.png";
-import demantiaCare from "@/../public/demantiaCare.png";
-import dementia from "@/../public/dementia.png";
+// import careProvided from "@/../public/careProvided.png";
+// import lengthOfStarting from "@/../public/lenghtOfStating.png";
+// import demantiaCare from "@/../public/demantiaCare.png";
+// import dementia from "@/../public/dementia.png";
 // import rating from "@/../public/starRating.png";
 import ReviewModal from "@/features/view-home-details/ratings-and-reviews/review-modal";
-import { StarIcon } from "@/components/icon";
+// import { StarIcon } from "@/components/icon";
 import {
   useHealthcareHomesActions,
   CareHome,
 } from "@/actions-client/healthcare-homes";
 import { toast } from "react-hot-toast";
+// import Image from "next/image";
 import { errorToString } from "@/utils/error-to-string";
 import styles from "./care-homes-details.module.scss";
 import absoluteGradient from "@/../public/abstract-wave-gradient.jpg";
@@ -57,7 +67,7 @@ function formatPhoneForDial(phone: string | undefined): string {
   if (!phone) return "";
 
   // Remove all spaces and special characters except + and digits
-  let cleaned = phone.replace(/[^\d+]/g, "");
+  const cleaned = phone.replace(/[^\d+]/g, "");
 
   // If it already starts with +44, return as is
   if (cleaned.startsWith("+44")) {
@@ -92,6 +102,7 @@ export default function CareHomesDetailsPage() {
 
   const [images, setImages] = useState<ImageType[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
 
   const reviewsSectionRef = useRef<HTMLDivElement>(null);
 
@@ -223,6 +234,10 @@ export default function CareHomesDetailsPage() {
     return () => clearInterval(interval);
   }, [images.length]);
 
+  useEffect(() => {
+    setCurrentPage(Math.floor(currentImageIndex / 2));
+  }, [currentImageIndex]);
+
   const goToPrev = () => {
     if (images.length <= 1) return;
     setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
@@ -249,23 +264,33 @@ export default function CareHomesDetailsPage() {
   if (isLoading) {
     return (
       <main>
-        {/* Slideshow Skeleton */}
-        <div className={styles.slideshow}>
-          <div className={styles.slideshowViewport}>
-            <div className={`${styles.skeleton} ${styles.image}`}></div>
-          </div>
-          <div className={styles.thumbnailsRow}>
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className={styles.thumbBtn}>
-                <div
-                  className={`${styles.skeleton} ${styles.thumbnail}`}
-                  style={{ height: "72px" }}
-                ></div>
+        {/* Hero Gallery Skeleton (matches final layout) */}
+        <div className={styles.heroGallery}>
+          {/* Mobile slider skeleton */}
+          <div className={styles.mobileSlider}>
+            <div className={styles.sliderTrack}>
+              <div className={styles.slide}>
+                <div className={`${styles.skeleton} ${styles.image}`}></div>
               </div>
-            ))}
+            </div>
+          </div>
+
+          {/* Desktop skeleton */}
+          <div className={styles.desktopGallery}>
+            <div className={styles.heroMain}>
+              <div className={`${styles.skeleton} ${styles.image}`}></div>
+            </div>
+            <div className={styles.heroSide}>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className={styles.heroThumb}>
+                  <div
+                    className={`${styles.skeleton} ${styles.thumbnail}`}
+                  ></div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-
         {/* Details Skeleton */}
         <div className={styles.details}>
           <div className={styles.nameAndReview}>
@@ -308,46 +333,152 @@ export default function CareHomesDetailsPage() {
             </div>
           </div>
         </div>
-
         {/* Cares Provided Skeleton */}
-        <div className={styles.CaresProvidedWrapper}>
-          <div
-            className={`${styles.skeleton} ${styles.title}`}
-            style={{ width: "200px", marginBottom: "2rem" }}
-          ></div>
-          <div className={styles.serviceProvided}>
-            {Array.from({ length: 5 }).map((_, index) => (
-              <div key={index} className={styles.careCard}>
-                <div className={styles.image}>
+
+        {/* Care Provide New Wrapper Skeleton */}
+        <div className={styles.careProvideNewWrapper}>
+          <div>
+            {/* First Section Header Skeleton */}
+            <div className={styles.sectionHeaderSkeleton}>
+              <div
+                className={`${styles.skeleton} ${styles.title}`}
+                style={{ width: "200px" }}
+              ></div>
+              <div
+                className={`${styles.skeleton} ${styles.subtitle}`}
+                style={{ width: "150px" }}
+              ></div>
+            </div>
+
+            {/* First Horizontal Scroller Skeleton */}
+            <div className={styles.horizontalScrollerSkeleton}>
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className={styles.serviceCardSkeleton}>
                   <div
-                    className={`${styles.skeleton} ${styles.image}`}
-                    style={{
-                      height: "80px",
-                      width: "80px",
-                      borderRadius: "8px",
-                    }}
+                    className={`${styles.skeleton} ${styles.cardImage}`}
                   ></div>
-                </div>
-                <div className={styles.CareContent}>
                   <div
-                    className={`${styles.skeleton} ${styles.title}`}
-                    style={{ width: "80%", marginBottom: "1rem" }}
+                    className={`${styles.skeleton} ${styles.cardTitle}`}
+                    style={{ width: "80%" }}
                   ></div>
-                  <div>
+                  <div
+                    className={`${styles.skeleton} ${styles.cardDescription}`}
+                    style={{ width: "90%" }}
+                  ></div>
+                  <div className={styles.cardPointsSkeleton}>
                     {Array.from({ length: 4 }).map((_, i) => (
                       <div
                         key={i}
-                        className={`${styles.skeleton} ${styles.line}`}
-                        style={{ width: "90%", marginBottom: "0.5rem" }}
+                        className={`${styles.skeleton} ${styles.cardPoint}`}
+                        style={{ width: "70%" }}
                       ></div>
                     ))}
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+
+            {/* Second Section Header Skeleton */}
+            <div className={styles.sectionHeaderSkeleton}>
+              <div
+                className={`${styles.skeleton} ${styles.subtitle}`}
+                style={{ width: "180px" }}
+              ></div>
+            </div>
+
+            {/* Second Horizontal Scroller Skeleton */}
+            <div className={styles.horizontalScrollerSkeleton}>
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={`second-${index}`}
+                  className={styles.serviceCardSkeleton}
+                >
+                  <div
+                    className={`${styles.skeleton} ${styles.cardImage}`}
+                  ></div>
+                  <div
+                    className={`${styles.skeleton} ${styles.cardTitle}`}
+                    style={{ width: "70%" }}
+                  ></div>
+                  <div
+                    className={`${styles.skeleton} ${styles.cardDescription}`}
+                    style={{ width: "85%" }}
+                  ></div>
+                  <div className={styles.cardPointsSkeleton}>
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className={`${styles.skeleton} ${styles.cardPoint}`}
+                        style={{ width: "60%" }}
+                      ></div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
+        {/* Length Of Stay Wrapper Skeleton */}
+        <div className={styles.lengthOfStayWrapper}>
+          <div className={styles.header}>
+            <div
+              className={`${styles.skeleton} ${styles.title}`}
+              style={{ width: "200px", margin: "0 auto" }}
+            ></div>
+          </div>
+
+          <div className={styles.content}>
+            {/* LEFT - This will appear second on mobile */}
+            <div className={styles.left}>
+              <div className={styles.card}>
+                <div
+                  className={`${styles.skeleton} ${styles.subtitle}`}
+                  style={{ width: "150px", marginBottom: "1rem" }}
+                ></div>
+                <div
+                  className={`${styles.skeleton} ${styles.line}`}
+                  style={{ width: "100%" }}
+                ></div>
+                <div
+                  className={`${styles.skeleton} ${styles.line}`}
+                  style={{ width: "95%" }}
+                ></div>
+                <div
+                  className={`${styles.skeleton} ${styles.line}`}
+                  style={{ width: "90%" }}
+                ></div>
+              </div>
+
+              <div className={styles.card}>
+                <div
+                  className={`${styles.skeleton} ${styles.subtitle}`}
+                  style={{ width: "120px", marginBottom: "1rem" }}
+                ></div>
+                <div
+                  className={`${styles.skeleton} ${styles.line}`}
+                  style={{ width: "100%" }}
+                ></div>
+                <div
+                  className={`${styles.skeleton} ${styles.line}`}
+                  style={{ width: "92%" }}
+                ></div>
+                <div
+                  className={`${styles.skeleton} ${styles.line}`}
+                  style={{ width: "85%" }}
+                ></div>
+              </div>
+            </div>
+
+            {/* RIGHT IMAGE - This will appear first on mobile due to column-reverse */}
+            <div className={styles.imageWrapper}>
+              <div
+                className={`${styles.skeleton} ${styles.image}`}
+                style={{ height: "100%", width: "100%" }}
+              ></div>
+            </div>
+          </div>
+        </div>
         {/* Facilities Skeleton */}
         <div className={styles.facilitiesContainer}>
           <div
@@ -382,36 +513,6 @@ export default function CareHomesDetailsPage() {
                 ))}
               </div>
             ))}
-          </div>
-        </div>
-
-        {/* About Care Home Skeleton */}
-        <div className={styles.aboutCareHome}>
-          <div className={styles.mobile}>
-            <div
-              className={`${styles.skeleton} ${styles.image}`}
-              style={{ height: "300px" }}
-            ></div>
-          </div>
-          <div className={styles.careHomeDetail}>
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className={styles.info}>
-                <div
-                  className={`${styles.skeleton} ${styles.subtitle}`}
-                  style={{ width: "120px", marginBottom: "0.5rem" }}
-                ></div>
-                <div
-                  className={`${styles.skeleton} ${styles.line}`}
-                  style={{ width: "80%" }}
-                ></div>
-              </div>
-            ))}
-          </div>
-          <div className={styles.ownersSectionImage}>
-            <div
-              className={`${styles.skeleton} ${styles.image}`}
-              style={{ height: "300px" }}
-            ></div>
           </div>
         </div>
 
@@ -486,80 +587,117 @@ export default function CareHomesDetailsPage() {
   }
   return (
     <main>
-      <div className={styles.gallery}>
-        {images.length === 0 ? (
-          // No images - show placeholder
+      <div className={styles.heroGallery}>
+        {images.length === 0 && (
           <div className={styles.noImageContainer}>
             <div className={styles.noImagePlaceholder}>
               <span>No images available</span>
             </div>
           </div>
-        ) : images.length === 1 ? (
-          // Single image - full width
-          <div className={styles.singleImageContainer}>
-            <img
-              src={resolveImageUrl(images[0].src)}
-              alt={images[0].alt}
-              className={styles.singleImage}
-            />
-          </div>
-        ) : (
-          <div className={styles.slideshow}>
-            <div className={styles.slideshowViewport}>
-              <button
-                className={styles.navButton}
-                onClick={goToPrev}
-                aria-label="Previous image"
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
-                </svg>
-              </button>
-              <img
-                src={resolveImageUrl(images[currentImageIndex].src)}
-                alt={images[currentImageIndex].alt}
-                className={styles.mainImage}
-              />
-              <button
-                className={`${styles.navButton} ${styles.next}`}
-                onClick={goToNext}
-                aria-label="Next image"
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M10 6 8.59 7.41 13.17 12 8.59 16.59 10 18l6-6z" />
-                </svg>
-              </button>
-              <div className={styles.indicators}>
-                {images.map((_, idx) => (
+        )}
+
+        {images.length > 0 && (
+          <>
+            <div className={styles.mobileSlider}>
+              {(() => {
+                // Take up to 3 images
+                const slides = images.slice(0, 3).map((img) => ({
+                  img,
+                  placeholder: false,
+                }));
+
+                return (
+                  <div
+                    className={styles.sliderTrack}
+                    style={{
+                      transform: `translateX(-${currentImageIndex * 100}%)`,
+                    }}
+                  >
+                    {slides.map(({ img }, idx) => (
+                      <div key={`slide-${img.id}`} className={styles.slide}>
+                        <div className={styles.mobileImageContainer}>
+                          <Image
+                            src={resolveImageUrl(img.src)}
+                            alt={img.alt || "Property image"}
+                            fill
+                            className={styles.heroImage}
+                            sizes="100vw"
+                            priority={idx === 0}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+            {images.length > 1 && (
+              <div className={styles.mobileIndicator}>
+                {images.slice(0, 3).map((_, i) => (
                   <button
-                    key={idx}
-                    className={`${styles.dot} ${
-                      idx === currentImageIndex ? styles.active : ""
-                    }`}
-                    onClick={() => setCurrentImageIndex(idx)}
-                    aria-label={`Go to image ${idx + 1}`}
+                    key={`ind-${i}`}
+                    className={
+                      i === currentImageIndex
+                        ? styles.indicatorActive
+                        : styles.indicatorDot
+                    }
+                    onClick={() => setCurrentImageIndex(i)}
+                    aria-label={`Go to image ${i + 1}`}
                   />
                 ))}
               </div>
+            )}
+          </>
+        )}
+
+        {/* DESKTOP LAYOUT */}
+        {images.length > 0 && (
+          <div className={styles.desktopGallery}>
+            <div className={styles.heroMain}>
+              <Image
+                src={resolveImageUrl(images[currentImageIndex].src)}
+                alt={images[currentImageIndex].alt}
+                fill
+                className={styles.heroImage}
+                priority
+              />
             </div>
 
-            <div className={styles.thumbnailsRow}>
-              {images.map((img, index) => (
-                <button
-                  key={img.id}
-                  className={`${styles.thumbBtn} ${
-                    index === currentImageIndex ? styles.selected : ""
-                  }`}
-                  onClick={() => handleThumbnailClick(index)}
-                >
-                  <img
-                    src={resolveImageUrl(img.src)}
-                    alt={img.alt}
-                    className={styles.thumbImage}
-                  />
-                </button>
-              ))}
-            </div>
+            {images.length > 1 && (
+              <div className={styles.heroSide}>
+                {(() => {
+                  const target = 3;
+                  const base = images
+                    .map((img, idx) => ({ img, idx, placeholder: false }))
+                    .filter(({ idx }) => idx !== currentImageIndex)
+                    .slice(0, target);
+                  const pad = Math.max(0, target - base.length);
+                  const filler = images[currentImageIndex];
+                  const fillers = Array.from({ length: pad }).map((_, i) => ({
+                    img: filler ?? { id: i, src: "", alt: "" },
+                    idx: currentImageIndex,
+                    placeholder: true,
+                  }));
+                  const side = [...base, ...fillers];
+                  return side.map(({ img, idx, placeholder }, i) => (
+                    <button
+                      key={`${img.id}-${i}`}
+                      className={`${styles.heroThumb} ${
+                        placeholder ? styles.placeholder : ""
+                      }`}
+                      onClick={() => !placeholder && handleThumbnailClick(idx)}
+                    >
+                      <Image
+                        src={resolveImageUrl(img.src)}
+                        alt={img.alt}
+                        fill
+                        className={styles.heroThumbImage}
+                      />
+                    </button>
+                  ));
+                })()}
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -610,7 +748,7 @@ export default function CareHomesDetailsPage() {
             </a>
             <a href={`mailto:${careHome.email || ""}`}>
               <span>
-                <PhoneIcon />
+                <PhoneIcon className={styles.phoneIcon} />
                 <span>Send an email</span>
               </span>
             </a>
@@ -620,7 +758,7 @@ export default function CareHomesDetailsPage() {
               }`}
             >
               <span>
-                <PhoneIcon />
+                <PhoneIcon className={styles.phoneIcon} />
                 <span>Request a tour</span>
               </span>
             </a>
@@ -640,7 +778,7 @@ export default function CareHomesDetailsPage() {
           </div>
         </div>
       </div>
-      <div className={styles.CaresProvidedWrapper}>
+      {/* <div className={styles.CaresProvidedWrapper}>
         <h2>Cares Provided</h2>
         <div className={styles.serviceProvided}>
           <div className={styles.careCard}>
@@ -750,7 +888,196 @@ export default function CareHomesDetailsPage() {
             </div>
           </div>
         </div>
+      </div> */}
+      <div className={styles.careProvideNewWrapper}>
+        <div>
+          <SectionHeader
+            title="Cares provided"
+            subtitle="Primary care categories"
+            overlayVariant="pink"
+            icon={
+              <span>
+                <CaringHandIcon />
+              </span>
+            }
+          />
+
+          {/* FIRST SCROLLER */}
+          <HorizontalScroller>
+            <ServiceCard
+              image="/care-provided-one.webp"
+              imageAlt="Older people care"
+              title="Older People Care"
+              description="Care and support for older adults who need help with daily activities due to age-related health conditions, reduced mobility, or frailty."
+              points={[
+                "Personal care and daily living support",
+                "Emotional and wellbeing support",
+                "Help with mobility and fall prevention",
+                "Safe and supportive living environment",
+                "Support with routines and daily tasks",
+                "Social and recreational activities",
+              ]}
+            />
+
+            <ServiceCard
+              image="/care-provided-two.webp"
+              imageAlt="Dementia care"
+              title="People Living with Dementia"
+              description="Specialist care for individuals at different stages of dementia who need a structured, safe, and understanding environment."
+              points={[
+                "Dementia-trained staff support",
+                "Safe and secure living spaces",
+                "Structured daily routines",
+                "Emotional reassurance and companionship",
+                "Memory and cognitive stimulation activities",
+                "Support tailored to each stage of dementia",
+                "Personal care and meal support",
+              ]}
+            />
+
+            <ServiceCard
+              image="/care-provided-elderly-three.webp"
+              imageAlt="Dementia care"
+              title="Older People Care"
+              description="Care and support for older adults who need help with daily activities due to age-related health conditions, reduced mobility, or frailty."
+              points={[
+                "Memory care routines",
+                "Cognitive engagement",
+                "Safe and secure environment",
+                "Behavioural support",
+              ]}
+            />
+
+            <ServiceCard
+              image="/care-provided-hearing-impairment-four.webp"
+              // image="/care-provided-two.webp"
+              imageAlt="hearing Impairment"
+              title="Visual or hearing impairment"
+              description="Support for individuals with reduced sight or hearing, with care adapted to help them live safely and independently."
+              points={[
+                "Memory care routines",
+                "Cognitive engagement",
+                "Safe and secure environment",
+                "Behavioural support",
+              ]}
+            />
+          </HorizontalScroller>
+
+          {/* SECOND HEADER */}
+          <SectionHeader
+            title=""
+            subtitle="Care Types provided"
+            overlayVariant="yellow"
+            icon={
+              <span>
+                <AdultFirstAidIcon />
+              </span>
+            }
+          />
+
+          {/* SECOND SCROLLER */}
+          <HorizontalScroller>
+            <ServiceCard
+              image="/care-type-provided-one.webp"
+              imageAlt="Residential care"
+              title="Residential care"
+              description="Support for people who need help with everyday activities such as washing, dressing, and meals, but who do not require regular medical treatment. Residents receive 24-hour support in a safe and comfortable living environment."
+              points={[
+                "24-hour supervision",
+                "Meals and activities",
+                "Medical monitoring",
+                "Safe accommodation",
+              ]}
+            />
+
+            <ServiceCard
+              image="/care-type-provided-two.webp"
+              imageAlt="Nursing care"
+              title="Nursing Care"
+              description="Care for individuals with medical needs that require regular monitoring and treatment by qualified nurses. This includes support with medication, ongoing health conditions, and recovery after illness or surgery."
+              points={[
+                "Medication administration",
+                "Health monitoring",
+                "Wound care",
+                "Rehabilitation support",
+              ]}
+            />
+
+            <ServiceCard
+              image="/care-type-provided-one.webp"
+              imageAlt="Dementia care"
+              title="People Living with Dementia"
+              description="Specialised care designed to support individuals living with dementia."
+              points={[
+                "Memory care routines",
+                "Cognitive engagement",
+                "Safe and secure environment",
+                "Behavioural support",
+              ]}
+            />
+
+            <ServiceCard
+              image="/care-type-provided-two.webp"
+              imageAlt="Dementia care"
+              title="People Living with Dementia"
+              description="Specialised care designed to support individuals living with dementia."
+              points={[
+                "Memory care routines",
+                "Cognitive engagement",
+                "Safe and secure environment",
+                "Behavioural support",
+              ]}
+            />
+          </HorizontalScroller>
+        </div>
       </div>
+
+      <div className={styles.lengthOfStayWrapper}>
+        <div className={styles.header}>
+          <h2 className={styles.title}>
+            <span className={styles.icon}>
+              <LengthStayIcon />
+            </span>
+            Length Of Stay
+          </h2>
+        </div>
+
+        <div className={styles.content}>
+          {/* LEFT */}
+          <div className={styles.left}>
+            <div className={styles.card}>
+              <h3>Permanent stay</h3>
+              <p>
+                Long-term accommodation and ongoing support for individuals who
+                are no longer able to live independently. This option provides a
+                stable living environment with continuous care tailored to
+                personal needs.
+              </p>
+            </div>
+
+            <div className={styles.card}>
+              <h3>Respite Stay</h3>
+              <p>
+                Short-term care designed to support recovery after illness or
+                hospital discharge, or to give family carers temporary relief.
+                This option offers flexible stays while ensuring individuals
+                receive the care and attention they need.
+              </p>
+            </div>
+          </div>
+
+          {/* RIGHT IMAGE */}
+          <div className={styles.imageWrapper}>
+            <Image
+              src="/elderly-care-image.webp"
+              alt="Length of stay care"
+              fill
+              className={styles.image}
+            />
+          </div>
+        </div>
+      </div>
+
       <div className={styles.facilitiesContainer}>
         <h3>Facilities</h3>
         <div className={styles.facilitiesCardContainer}>
@@ -771,25 +1098,96 @@ export default function CareHomesDetailsPage() {
         </div>
       </div>
 
+      <div className={styles.aboutCareHome}>
+        <div className={styles.mobile}>
+          <Image
+            src="/elderly-man.webp"
+            alt="Elderly man"
+            fill
+            sizes="(max-width: 500px) 100vw, 50vw"
+            className={styles.coverImage}
+            priority={false}
+          />
+        </div>
+        <div className={styles.careHomeDetail}>
+          <div className={styles.info}>
+            <h5>Owner</h5>
+            <p>MOP Healthcare Ltd</p>
+          </div>
+          <div className={styles.info}>
+            <h5>Person in charge</h5>
+            <p>Dania Meadows</p>
+          </div>
+          <div className={styles.info}>
+            <h5>Admission criteria</h5>
+            <p>Resident aged 45 years and over</p>
+          </div>
+          <div className={styles.info}>
+            <h5>Care home building</h5>
+            <div className={styles.buildingDetails}>
+              <p>
+                year built: <span>2016</span>
+              </p>
+              <p>
+                Number of floors: <span>2</span>
+              </p>
+              <p>
+                Last refurbishment: <span>2014</span>
+              </p>
+            </div>
+          </div>
+          <div className={styles.info}>
+            <h5>Visiting</h5>
+            <p>No restrictions to visiting hours</p>
+          </div>
+          <div className={styles.info}>
+            <h5>Parking</h5>
+            <p>Free parking</p>
+          </div>
+          <div className={styles.info}>
+            <h5>Room info</h5>
+            <div className={styles.roomDetails}>
+              <p>
+                Single rooms <span>(80)</span>
+              </p>
+              <p>
+                Couples rooms <span>(14)</span>
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className={styles.ownersSectionImage}>
+          <Image
+            src="/elderly-man.webp"
+            alt="Elderly man"
+            fill
+            sizes="(max-width: 500px) 100vw, 50vw"
+            priority={false}
+            className={styles.coverImage}
+          />
+        </div>
+      </div>
+
       {/* Image Gallery Section */}
-      {careHome.images && careHome.images.length > 1 && (
+      {/* {careHome.images && careHome.images.length > 1 && (
         <div className={styles.imageGallerySection}>
           <h3>Image Gallery</h3>
           <div className={styles.imageGallery}>
             {careHome.images.map((image) => (
               <div key={image.id} className={styles.galleryImage}>
-                <img
+                <Image
                   src={resolveImageUrl(image.url)}
                   alt={image.alt || careHome.name}
-                  width={400}
-                  height={300}
+                  width={800}
+                  height={600}
                   className={styles.galleryImageImg}
+                  sizes="(max-width: 768px) 50vw, (max-width: 500px) 100vw, 25vw"
                 />
               </div>
             ))}
           </div>
         </div>
-      )}
+      )} */}
       {/* <div className={styles.aboutCareHome}>
         <div className={styles.mobile}>
           <Image src={ownersSectionImage} alt="owners section image" />
@@ -866,16 +1264,21 @@ export default function CareHomesDetailsPage() {
             reviews.map((review) => (
               <div key={review.id} className={styles.reviewRow}>
                 <div className={styles.reviewHeader}>
-                  <p className={styles.reviewerName}>
-                    {review.isAnonymous
-                      ? "Anonymous"
-                      : `${review.user?.firstName || ""} ${
-                          review.user?.lastName || ""
-                        }`.trim() ||
-                        (review.user?.email
-                          ? review.user.email.split("@")[0]
-                          : "User")}
-                  </p>
+                  <div className={styles.reviewStarsRow}>
+                    {Array.from({ length: 5 }).map((_, index) => (
+                      <span
+                        key={index}
+                        className={
+                          index < review.rating
+                            ? styles.starFilled
+                            : styles.starEmpty
+                        }
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+
                   <p className={styles.reviewTime}>
                     {new Date(
                       review.createdAt || new Date().toISOString(),
@@ -886,21 +1289,16 @@ export default function CareHomesDetailsPage() {
                     })}
                   </p>
                 </div>
-
-                <div className={styles.reviewStarsRow}>
-                  {Array.from({ length: 5 }).map((_, index) => (
-                    <span
-                      key={index}
-                      className={
-                        index < review.rating
-                          ? styles.starFilled
-                          : styles.starEmpty
-                      }
-                    >
-                      ★
-                    </span>
-                  ))}
-                </div>
+                <p className={styles.reviewerName}>
+                  {review.isAnonymous
+                    ? "Anonymous"
+                    : `${review.user?.firstName || ""} ${
+                        review.user?.lastName || ""
+                      }`.trim() ||
+                      (review.user?.email
+                        ? review.user.email.split("@")[0]
+                        : "User")}
+                </p>
 
                 <p className={styles.reviewText}>{review.comment}</p>
               </div>
